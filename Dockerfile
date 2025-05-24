@@ -6,7 +6,7 @@ RUN mkdir -p /usr/src/pcmall_backend && chown -R node:node /usr/src/pcmall_backe
 
 WORKDIR /usr/src/pcmall_backend
 
-COPY package.json yarn.lock ./
+COPY --chown=package.json yarn.lock ./
 
 USER node
 
