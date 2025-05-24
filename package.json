@@ -12,7 +12,7 @@
   "scripts": {
     "start": "mode src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",
-    "seed": "node src/seeder/index.js",
+    "seed": "node src/seeder/index.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
