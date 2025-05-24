@@ -69,7 +69,7 @@ const verifyRoleCallBack = (req, resolve, reject, requiredRights) => async (err,
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
     }
 
-    const rolesData = await Role.findOne({ _id: user.role });
+    const rolesData = await Role.findOne({ role: { $in: user.roles } });
     if (!rolesData) {
       return reject(new ApiError(httpStatus.NOT_FOUND, 'Role not found!'));
     }

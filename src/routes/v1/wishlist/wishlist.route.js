@@ -5,6 +5,6 @@ const wishlistController = require('../../../controllers/wishlist/wishlist.contr
 const { authorizeV3 } = require('../../../middlewares/auth');
 const { USER_ROLE } = require('../../../helpers/constant.helper');
 
-route.post('/', authorizeV3([USER_ROLE.BUYER]), wishlistController.addRemoveWishlist);
+route.post('/', authorizeV3(USER_ROLE.BUYER), wishlistController.addRemoveWishlist);
 
 module.exports = route;

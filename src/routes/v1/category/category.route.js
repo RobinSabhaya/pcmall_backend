@@ -5,6 +5,6 @@ const { USER_ROLE } = require('../../../helpers/constant.helper');
 
 const router = express.Router();
 
-router.get('/all', authorizeV3([USER_ROLE.BUYER]), categoryController.getAllCategories);
+router.get('/all', authorizeV3(USER_ROLE.BUYER), categoryController.getAllCategories);
 
 module.exports = router;
