@@ -1,19 +1,44 @@
 const express = require('express');
-const authRoute = require('./auth.route');
-const userRoute = require('./user.route');
-const docsRoute = require('./docs.route');
+const authRoute = require('./auth');
+const cartRoute = require('./cart');
+const categoryRoute = require('./category');
+const checkoutRoute = require('./checkout');
+const orderRoute = require('./orders');
+const userRoute = require('./user');
+const wishlistRoute = require('./wishlist');
+const docsRoute = require('../v1/docs/docs.route');
 const config = require('../../config/config');
 
 const router = express.Router();
 
 const defaultRoutes = [
   {
-    path: '/auth',
+    path: '/',
     route: authRoute,
   },
   {
-    path: '/users',
+    path: '/',
+    route: cartRoute,
+  },
+  {
+    path: '/',
+    route: categoryRoute,
+  },
+  {
+    path: '/',
+    route: checkoutRoute,
+  },
+  {
+    path: '/',
+    route: orderRoute,
+  },
+  {
+    path: '/',
     route: userRoute,
+  },
+  {
+    path: '/',
+    route: wishlistRoute,
   },
 ];
 

@@ -1,0 +1,68 @@
+const ACCOUNT_STATUS = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  DELETED: 'DELETED',
+};
+
+const USER_ROLE = {
+  BUYER: 'BUYER',
+  SELLER: 'SELLER',
+  ADMIN: 'ADMIN',
+  SUPER_ADMIN: 'SUPER_ADMIN',
+};
+
+const AUTH_PROVIDER = {
+  EMAIL: 'EMAIL',
+  GOOGLE: 'GOOGLE',
+  FACEBOOK: 'FACEBOOK',
+  APPLE: 'APPLE',
+};
+
+const USER_GENDER = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  OTHER: 'OTHER',
+};
+
+const USER_LANGUAGE = {
+  ENGLISH: 'ENGLISH',
+  GUJARATI: 'GUJARATI',
+  HINDI: 'HINDI',
+};
+
+const USER_TIMEZONES = {
+  UTC: 'UTC',
+};
+
+const USER_CURRENCY = {
+  USD: 'USD',
+  INR: 'INR',
+};
+
+const TOKEN_TYPES = {
+  ACCESS: 'access',
+  REFRESH: 'refresh',
+  RESET_PASSWORD: 'resetPassword',
+  VERIFY_EMAIL: 'verifyEmail',
+};
+
+const PAYMENT_STATUS = {
+  SUCCESS: 'SUCCESS',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+  SUCCESS: 'SUCCESS',
+  PENDING: 'PENDING',
+};
+
+module.exports = {
+  ACCOUNT_STATUS,
+  USER_ROLE,
+  AUTH_PROVIDER,
+  USER_GENDER,
+  USER_LANGUAGE,
+  USER_TIMEZONES,
+  USER_CURRENCY,
+  TOKEN_TYPES,
+  PAYMENT_STATUS,
+};
