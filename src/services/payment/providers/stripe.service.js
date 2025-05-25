@@ -35,7 +35,7 @@ async function createCheckoutSession(payload) {
       _id: shippingAddress,
     });
 
-    const userData = await userService.getUser({
+    const userData = await userService.getFilterUser({
       _id: user._id,
     });
 

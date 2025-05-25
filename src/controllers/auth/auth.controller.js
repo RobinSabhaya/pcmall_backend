@@ -13,7 +13,7 @@ const register = catchAsync(async (req, res) => {
   // Match password and confirm password
   if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
-  let user = await userService.getUser({ email });
+  let user = await userService.getFilterUser({ email });
 
   if (user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');

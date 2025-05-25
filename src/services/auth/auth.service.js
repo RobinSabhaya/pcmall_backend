@@ -40,7 +40,7 @@ const logout = async (refreshToken) => {
 const refreshAuth = async (refreshToken) => {
   try {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, TOKEN_TYPES.REFRESH);
-    const user = await userService.getUser({ _id: refreshTokenDoc.user });
+    const user = await userService.getFilterUser({ _id: refreshTokenDoc.user });
     if (!user) {
       throw new Error();
     }
@@ -60,7 +60,7 @@ const refreshAuth = async (refreshToken) => {
 const resetPassword = async (resetPasswordToken, newPassword) => {
   try {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, TOKEN_TYPES.RESET_PASSWORD);
-    const user = await userService.getUser({ _id: resetPasswordTokenDoc.user });
+    const user = await userService.getFilterUser({ _id: resetPasswordTokenDoc.user });
     if (!user) {
       throw new Error();
     }
@@ -79,7 +79,7 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
 const verifyEmail = async (verifyEmailToken) => {
   try {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, TOKEN_TYPES.VERIFY_EMAIL);
-    const user = await userService.getUser({ _id: verifyEmailTokenDoc.user });
+    const user = await userService.getFilterUser({ _id: verifyEmailTokenDoc.user });
     if (!user) {
       throw new Error();
     }

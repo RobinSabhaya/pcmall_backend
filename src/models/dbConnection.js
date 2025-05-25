@@ -9,6 +9,7 @@ const dbConnection = () => {
       logger.info('Database connected ✅');
     })
     .catch((err) => {
+      console.log("🚀 ~ dbConnection ~ err:", err)
       logger.error('Database not connected ❌');
     });
 };
