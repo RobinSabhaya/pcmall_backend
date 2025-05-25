@@ -19,4 +19,4 @@ const userAuditLogSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('UserAuditLog', userAuditLogSchema);
+module.exports = mongoose.model('User_AuditLog', userAuditLogSchema);

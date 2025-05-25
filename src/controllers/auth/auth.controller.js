@@ -8,13 +8,21 @@ const { findOneAndUpdateDoc } = require('../../helpers/mongoose.helper');
 const ApiError = require('../../utils/ApiError');
 
 const register = catchAsync(async (req, res) => {
-  const { first_name, password, confirm_password } = req.body;
+  const { first_name, email, password, confirm_password } = req.body;
 
   // Match password and confirm password
   if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
+  let user = await userService.getUser({ email });
+
+  if (user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
+  }
+
+  if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+
   // Create User
-  const user = await userService.createUser(req.body);
+  user = await userService.createUser(req.body);
 
   // set profile details
   await findOneAndUpdateDoc(

@@ -1,6 +1,4 @@
-const httpStatus = require('http-status');
 const { User, Address } = require('../../models/user');
-const ApiError = require('../../utils/ApiError');
 
 /**
  * Create user
@@ -8,9 +6,6 @@ const ApiError = require('../../utils/ApiError');
  * @returns {Promise<User>}
  */
 const createUser = (reqBody) => {
-  if (User.isEmailTaken) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
-  }
   return User.create(reqBody);
 };
 

@@ -42,4 +42,4 @@ const userSecuritySchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('UserSecurity', userSecuritySchema);
+module.exports = mongoose.model('User_Security', userSecuritySchema);
