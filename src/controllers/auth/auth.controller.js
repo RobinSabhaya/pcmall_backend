@@ -5,6 +5,7 @@ const userService = require('../../services/user/user.service');
 const tokenService = require('../../services/auth/token.service');
 const { parseDeviceInfo } = require('../../helpers/function.helper');
 const { findOneAndUpdateDoc } = require('../../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
 const ApiError = require('../../utils/ApiError');
 
 const register = catchAsync(async (req, res) => {
@@ -26,7 +27,7 @@ const register = catchAsync(async (req, res) => {
 
   // set profile details
   await findOneAndUpdateDoc(
-    'UserProfile',
+    MONGOOSE_MODELS.USER_PROFILE,
     {
       user: user._id,
       first_name,
