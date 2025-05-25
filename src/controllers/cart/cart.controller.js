@@ -21,13 +21,13 @@ const addToCart = catchAsync(async (req, res) => {
     /** create cart */
     const cartData = await cartService.createCart(
       {
-        productId,
-        customerId: req.user._id,
+        product: productExists._id,
+        user: req.user._id,
         quantity,
       },
       {
-        productId,
-        customerId: req.user._id,
+        product: productExists._id,
+        user: req.user._id,
         quantity,
       },
       {
@@ -51,7 +51,7 @@ const updateToCart = catchAsync(async (req, res) => {
     const { cartId, quantity } = req.body;
 
     /** Check cart exists or not */
-    const cartExists = await cartService.getCart({ id: cartId });
+    const cartExists = await cartService.getCart({ _id: cartId });
 
     if (!cartExists) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
@@ -60,7 +60,7 @@ const updateToCart = catchAsync(async (req, res) => {
     /** create cart */
     const cartData = await cartService.createCart(
       {
-        cartId,
+        _id: cartId,
       },
       {
         quantity,
@@ -85,7 +85,7 @@ const removeToCart = catchAsync(async (req, res) => {
     const { cartId } = req.params;
 
     /** Check cart exists or not */
-    const cartExists = await cartService.getCart({ id: cartId });
+    const cartExists = await cartService.getCart({ _id: cartId });
 
     if (!cartExists) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
@@ -93,7 +93,7 @@ const removeToCart = catchAsync(async (req, res) => {
 
     /** create cart */
     await cartService.removeCart({
-      cartId,
+      _id: cartId,
     });
 
     return res.status(httpStatus.OK).json({
@@ -112,7 +112,7 @@ const getAllCart = catchAsync(async (req, res) => {
     // Get all cart data
     const cartData = await cartService.getAllCart(
       {
-        customerId: new mongoose.Types.ObjectId(req.user._id),
+        user: new mongoose.Types.ObjectId(req.user._id),
       },
       options
     );

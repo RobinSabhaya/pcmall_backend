@@ -114,6 +114,20 @@ const getUser = (filter, options = {}) => {
         path: '$primary_address',
       },
     },
+    {
+      $lookup: {
+        from: 'user_profiles',
+        localField: '_id',
+        foreignField: 'user',
+        as: 'user_profile',
+      },
+    },
+    {
+      $unwind: {
+        preserveNullAndEmptyArrays: true,
+        path: '$user_profile',
+      },
+    },
   ]);
 };
 

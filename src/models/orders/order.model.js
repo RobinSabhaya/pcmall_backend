@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 const OrderItemSchema = new mongoose.Schema({
-  productId: {
+  product: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     required: true,
@@ -14,7 +14,7 @@ const OrderItemSchema = new mongoose.Schema({
 
 const OrderSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Types.ObjectId,
       ref: 'User',
       required: true,

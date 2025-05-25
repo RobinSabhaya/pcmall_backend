@@ -22,22 +22,22 @@ const addRemoveWishlist = catchAsync(async (req, res) => {
       });
     }
 
-    let wishlistData = await wishlistService.getWishlist({ productId });
+    let wishlistData = await wishlistService.getWishlist({ product: productId });
     if (wishlistData) {
       await wishlistService.removeWishlist({
-        productId: productId,
-        customerId: user._id,
+        product: productExists._id,
+        user: user._id,
       });
       message = 'Wishlist removed successfully!!';
     } else {
       wishlistData = wishlistService.createWishlist(
         {
-          customerId: user._id,
-          productId,
+          user: user._id,
+          product: productExists._id,
         },
         {
-          customerId: user._id,
-          productId,
+          user: user._id,
+          product: productExists._id,
         },
         {
           new: true,

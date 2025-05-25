@@ -10,7 +10,7 @@ const getOrderList = catchAsync(async (req, res) => {
 
   const orderData = await orderService.getOrderList(
     {
-      customerId: new mongoose.Types.ObjectId(_id),
+      user: new mongoose.Types.ObjectId(_id),
     },
     options
   );

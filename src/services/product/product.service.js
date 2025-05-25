@@ -45,11 +45,11 @@ const getAllProducts = (filter, options = {}) => {
       $lookup: {
         from: 'carts',
         localField: '_id',
-        foreignField: 'productId',
+        foreignField: 'product',
         pipeline: [
           {
             $match: {
-              customerId: user,
+              user,
             },
           },
         ],
@@ -60,11 +60,11 @@ const getAllProducts = (filter, options = {}) => {
       $lookup: {
         from: 'wishlists',
         localField: '_id',
-        foreignField: 'productId',
+        foreignField: 'product',
         pipeline: [
           {
             $match: {
-              customerId: user,
+              user,
             },
           },
         ],

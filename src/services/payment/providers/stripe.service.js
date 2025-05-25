@@ -41,7 +41,7 @@ async function createCheckoutSession(payload) {
 
     const order = await orderService.updateOrder(
       {
-        userId: user._id,
+        user: user._id,
         items,
         shippingAddress,
         subtotal,
@@ -50,7 +50,7 @@ async function createCheckoutSession(payload) {
         totalAmount,
       },
       {
-        userId: user._id,
+        user: user._id,
         items,
         shippingAddress,
         subtotal,

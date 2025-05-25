@@ -48,7 +48,7 @@ const getAllCart = async (filter, options = {}) => {
     {
       $lookup: {
         from: 'products',
-        localField: 'productId',
+        localField: 'product',
         foreignField: '_id',
         pipeline: [
           {
@@ -78,12 +78,12 @@ const getAllCart = async (filter, options = {}) => {
             },
           },
         ],
-        as: 'productId',
+        as: 'product',
       },
     },
     {
       $unwind: {
-        path: '$productId',
+        path: '$product',
         preserveNullAndEmptyArrays: true,
       },
     },
