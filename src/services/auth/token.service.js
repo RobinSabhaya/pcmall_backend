@@ -34,7 +34,7 @@ const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
  * @param {object} options
  * @returns {Promise<Token>}
  */
-const saveToken = async (token, userId, expires, type,options) => {
+const saveToken = async (token, userId, expires, type, options) => {
   const tokenDoc = await Token.findOneAndUpdate(
     {
       type,
@@ -45,7 +45,7 @@ const saveToken = async (token, userId, expires, type,options) => {
       user: userId,
       token,
       expires: expires.toDate(),
-      blacklisted:false,
+      blacklisted: false,
     },
     options
   );
@@ -141,6 +141,15 @@ const saveDeviceInfo = async (filter, payload, options = {}) => {
   return Token.findOneAndUpdate(filter, payload, options);
 };
 
+/**
+ * Save device info
+ * @param {object} filter
+ * @returns {Promise<Token>}
+ */
+const deleteToken = async (filter) => {
+  return Token.findOneAndDelete(filter);
+};
+
 module.exports = {
   generateToken,
   saveToken,
@@ -149,4 +158,5 @@ module.exports = {
   generateResetPasswordToken,
   generateVerifyEmailToken,
   saveDeviceInfo,
+  deleteToken,
 };

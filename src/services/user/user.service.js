@@ -17,7 +17,7 @@ const createUser = (reqBody) => {
  * @returns {Promise<User>}
  */
 const updateUser = (filter, reqBody, options = {}) => {
-  return User.findOneAndUpdate(filter, reqBody, options).populate('addresses');
+  return User.findOneAndUpdate(filter, reqBody, options);
 };
 
 /**

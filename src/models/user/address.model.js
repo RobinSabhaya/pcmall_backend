@@ -15,16 +15,16 @@ const addressSchema = new mongoose.Schema(
     postalCode: { type: String },
     country: { type: String, required: true },
     isPrimary: { type: Boolean, default: false },
-    geo_location: {
-      type: {
-        type: String,
-        enum: ['Point'],
-        default: 'Point',
-      },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
-      },
-    },
+    // geo_location: {
+    //   type: {
+    //     type: String,
+    //     enum: ['Point'],
+    //     default: 'Point',
+    //   },
+    //   coordinates: {
+    //     type: [Number], // [longitude, latitude]
+    //   },
+    // },
   },
   {
     timestamps: true,
@@ -32,6 +32,6 @@ const addressSchema = new mongoose.Schema(
   }
 );
 
-addressSchema.index({ geo_location: '2dsphere' });
+// addressSchema.index({ geo_location: '2dsphere' });
 
 module.exports = mongoose.model('Address', addressSchema);

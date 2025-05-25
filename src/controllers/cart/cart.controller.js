@@ -122,7 +122,7 @@ const getAllCart = catchAsync(async (req, res) => {
     }, 0);
 
     const totalPrice = cartData.reduce((acc, c) => {
-      return acc + c.productId.price * c.quantity;
+      return acc + c.product.price * c.quantity;
     }, 0);
 
     return res.status(httpStatus.OK).json({

@@ -2,39 +2,59 @@ const mongoose = require('mongoose');
 const userService = require('../../services/user/user.service');
 const catchAsync = require('../../utils/catchAsync');
 const ApiError = require('../../utils/ApiError');
+const { findOneAndUpdateDoc } = require('../../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
 const httpStatus = require('http-status');
 
 const updateUser = catchAsync(async (req, res) => {
   const userId = req.user._id;
+  const { line1, line2, state, city, country, first_name, last_name, dob, gender, profile_picture, language } = req.body;
+  let userData;
 
   try {
-    await userService.updateManyAddress(
-      {
+    // Add or Update Address
+    if (line1 || line2 || state || city || country) {
+      await userService.updateManyAddress(
+        {
+          user: userId,
+        },
+        {
+          isPrimary: false,
+        }
+      );
+
+      const addressData = await userService.addAddress({
         user: userId,
-      },
-      {
-        isPrimary: false,
-      }
-    );
-
-    const addressData = await userService.addAddress({
-      user: userId,
-      ...req.body,
-      isPrimary: true,
-    });
-
-    const userData = await userService.updateUser(
-      {
-        _id: userId,
-      },
-      {
         ...req.body,
-        primary_address: addressData._id,
-      },
-      {
-        new: true,
-      }
-    );
+        isPrimary: true,
+      });
+
+      userData = await userService.updateUser(
+        {
+          _id: userId,
+        },
+        {
+          ...req.body,
+          primary_address: addressData._id,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    // Add or update User Profile
+    if (first_name || last_name || dob || gender || profile_picture || language)
+      await findOneAndUpdateDoc(
+        MONGOOSE_MODELS.USER_PROFILE,
+        {
+          user: userId,
+        },
+        req.body,
+        {
+          upsert: true,
+        }
+      );
 
     return res.status(httpStatus.OK).json({
       success: true,
