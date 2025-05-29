@@ -51,6 +51,7 @@ const createShipping = catchAsync(async (req, res) => {
       success: true,
       data: {
         shipment,
+        rates: shippoShipment.rates,
       },
       message: 'Shipping created successfully!',
     });
