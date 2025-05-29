@@ -36,7 +36,7 @@ const createShipping = catchAsync(async (req, res) => {
       fromAddress: shippoShipment.addressFrom,
       toAddress: shippoShipment.addressTo,
       parcel,
-      rates:shippoShipment.rates,
+      rates: shippoShipment.rates,
       // selectedRate: selectedRate,
       shipmentType: SHIPMENT_TYPE.OUTGOING,
       isReturn: false,
@@ -51,7 +51,6 @@ const createShipping = catchAsync(async (req, res) => {
       success: true,
       data: {
         shipment,
-        rates,
       },
       message: 'Shipping created successfully!',
     });
