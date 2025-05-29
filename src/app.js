@@ -14,6 +14,7 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const { dbConnection } = require('./models/dbConnection');
+const webhookRoutes = require('./routes/v1/webhooks');
 
 const app = express();
 
@@ -27,6 +28,9 @@ dbConnection();
 
 // set security HTTP headers
 app.use(helmet());
+
+// webhook routes
+app.use(webhookRoutes);
 
 // parse json request body
 app.use(express.json());

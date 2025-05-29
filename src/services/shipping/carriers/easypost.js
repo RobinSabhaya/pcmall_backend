@@ -1,5 +1,8 @@
-const EasyPost = require("@easypost/api");
-const api = new EasyPost(process.env.EASYPOST_API_KEY);
+const EasyPost = require('@easypost/api');
+const {
+  shipping: { shippingApiKey },
+} = require('../../../config/config');
+const api = new EasyPost(shippingApiKey);
 
 async function easypostShippingStrategy(order, session) {
   const shipment = new api.Shipment({
@@ -12,12 +15,12 @@ async function easypostShippingStrategy(order, session) {
       country: order.shipping.country,
     },
     from_address: {
-      company: "My Company",
-      street1: "123 Origin St",
-      city: "San Francisco",
-      state: "CA",
-      zip: "94111",
-      country: "US",
+      company: 'My Company',
+      street1: '123 Origin St',
+      city: 'San Francisco',
+      state: 'CA',
+      zip: '94111',
+      country: 'US',
     },
     parcel: {
       length: 10,

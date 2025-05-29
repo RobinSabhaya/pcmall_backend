@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const { SHIPPING_STATUS, SHIPMENT_TYPE } = require('../../helpers/constant.helper');
 
 const trackingStatusSchema = new mongoose.Schema(
   {
     status: String,
-    status_details: String,
-    status_date: Date,
+    statusDetails: String,
+    statusDate: Date,
   },
   { _id: false }
 );
@@ -29,9 +30,9 @@ const parcelSchema = new mongoose.Schema(
     length: Number,
     width: Number,
     height: Number,
-    distance_unit: { type: String, default: "in" },
+    distanceUnit: { type: String, default: 'in' },
     weight: Number,
-    mass_unit: { type: String, default: "lb" },
+    massUnit: { type: String, default: 'lb' },
   },
   { _id: false }
 );
@@ -39,65 +40,57 @@ const parcelSchema = new mongoose.Schema(
 const rateSchema = new mongoose.Schema(
   {
     provider: String,
-    servicelevel_name: String,
+    serviceLevelName: String,
     amount: String,
     currency: String,
-    estimated_days: Number,
-    object_id: String,
+    estimatedDays: Number,
+    objectId: String,
   },
   { _id: false }
 );
 
 const labelSchema = new mongoose.Schema(
   {
-    label_url: String,
-    label_type: String,
-    tracking_number: String,
+    labelUrl: String,
+    labelType: String,
+    trackingNumber: String,
     carrier: String,
-    transaction_id: String,
+    transactionId: String,
   },
   { _id: false }
 );
 
 const shipmentSchema = new mongoose.Schema(
   {
-    shippo_shipment_id: { type: String, unique: true, index: true },
-    status: { type: String, default: "PENDING", index: true },
-
-    from_address: addressSchema,
-    to_address: addressSchema,
+    shippoShipmentId: { type: String, unique: true, index: true },
+    status: { type: String, default: SHIPPING_STATUS.PENDING, index: true },
+    fromAddress: addressSchema,
+    toAddress: addressSchema,
     parcel: parcelSchema,
-
     rates: [rateSchema],
-    selected_rate: rateSchema,
-
+    selectedRate: rateSchema,
     label: labelSchema,
-
-    tracking_status: trackingStatusSchema,
-    tracking_history: [trackingStatusSchema],
-
+    trackingStatus: trackingStatusSchema,
+    trackingHistory: [trackingStatusSchema],
     metadata: {
-      order_id: String,
-      user_id: String,
-      custom_tags: [String],
+      orderId: String,
+      userId: String,
+      customTags: [String],
     },
-
-    is_return: { type: Boolean, default: false },
-    shipment_type: {
+    isReturn: { type: Boolean, default: false },
+    shipmentType: {
       type: String,
-      enum: ["OUTGOING", "RETURN"],
-      default: "OUTGOING",
+      enum: Object.values(SHIPMENT_TYPE),
+      default: SHIPMENT_TYPE.OUTGOING,
     },
-
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 
 // Optional TTL (e.g., auto-delete after 60 days if unneeded)
 // shipmentSchema.index({ createdAt: 1 }, { expireAfterSeconds: 5184000 });
 
-module.exports = mongoose.model("Shipment", shipmentSchema);
+module.exports = mongoose.model('Shipment', shipmentSchema);

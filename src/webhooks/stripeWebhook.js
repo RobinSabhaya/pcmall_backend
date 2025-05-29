@@ -1,18 +1,20 @@
-const STRIPE_KEY = process.env.STRIPE_KEY;
-const SHIPPING_CARRIER = process.env.SHIPPING_CARRIER;
-const stripe = require('stripe')(STRIPE_KEY);
+const {
+  paymentGateway: { paymentSecretKey, paymentWebhookSecret },
+  shipping: { shippingCarrier },
+} = require('../config/config');
+const stripe = require('stripe')(paymentSecretKey);
 const { runWithTransaction } = require('../models/transaction/transaction');
 const orderService = require('../services/orders/order.service');
 const paymentService = require('../services/payment/payment.service');
-const { handleShipping } = require('../services/shipping/shippingStrategy');
-const { PAYMENT_STATUS } = require('../helpers/constant.helper');
+const userService = require('../services/user/user.service');
+const { PAYMENT_STATUS, USER_ROLE } = require('../helpers/constant.helper');
 
 async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(req.body, sig, paymentWebhookSecret);
   } catch (err) {
     return res.status(400).json({
       success: false,
@@ -21,6 +23,21 @@ async function handleStripeWebhook(req, res) {
   }
 
   const session = event.data?.object;
+
+  const { metadata } = session;
+  /** Get user address */
+  const userData = await userService.getFilterUser({
+    _id: metadata.userId,
+  });
+
+  const adminData = await userService.getFilterUser({
+    roles: {
+      $in: [USER_ROLE.SUPER_ADMIN],
+    },
+  });
+  const userPrimaryAddressData = await userService.getAddress({
+    user: metadata.userId,
+  });
 
   switch (event.type) {
     case 'checkout.session.completed':
@@ -44,9 +61,6 @@ async function handleStripeWebhook(req, res) {
             }
             // { session: dbSession }
           );
-
-          // Handle shipping
-          await handleShipping(SHIPPING_CARRIER, order, dbSession);
         });
       } catch (err) {
         console.error('Webhook error (session.completed):', err);

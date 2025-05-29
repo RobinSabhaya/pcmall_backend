@@ -1,5 +1,7 @@
 const { Product } = require('../../models/product');
-const IMAGE_URL = process.env.IMAGE_URL;
+const {
+  common: { imageUrl },
+} = require('../../config/config');
 
 /**
  * Get product
@@ -88,7 +90,7 @@ const getAllProducts = (filter, options = {}) => {
                   ],
                 },
                 {
-                  $concat: [IMAGE_URL, 'uploads/', '$$image'],
+                  $concat: [imageUrl, 'uploads/', '$$image'],
                 },
                 [],
               ],

@@ -1,5 +1,7 @@
 const Cart = require('../../models/cart/cart.model');
-const IMAGE_URL = process.env.IMAGE_URL;
+const {
+  common: { imageUrl },
+} = require('../../config/config');
 
 /**
  * Create a cart
@@ -68,7 +70,7 @@ const getAllCart = async (filter, options = {}) => {
                         ],
                       },
                       {
-                        $concat: [IMAGE_URL, 'uploads/', '$$image'],
+                        $concat: [imageUrl, 'uploads/', '$$image'],
                       },
                       [],
                     ],

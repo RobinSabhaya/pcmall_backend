@@ -16,13 +16,10 @@ const addRemoveWishlist = catchAsync(async (req, res) => {
     });
 
     if (!productExists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found',
-      });
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
     }
 
-    let wishlistData = await wishlistService.getWishlist({ product: productId });
+    let wishlistData = await wishlistService.getWishlist({ product: productId, user: user._id });
     if (wishlistData) {
       await wishlistService.removeWishlist({
         product: productExists._id,
@@ -30,7 +27,7 @@ const addRemoveWishlist = catchAsync(async (req, res) => {
       });
       message = 'Wishlist removed successfully!!';
     } else {
-      wishlistData = wishlistService.createWishlist(
+      wishlistData = await wishlistService.createWishlist(
         {
           user: user._id,
           product: productExists._id,

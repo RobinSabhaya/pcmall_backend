@@ -55,6 +55,15 @@ const PAYMENT_STATUS = {
   PENDING: 'PENDING',
 };
 
+const SHIPPING_STATUS = {
+  PENDING: 'PENDING',
+};
+
+const SHIPMENT_TYPE = {
+  OUTGOING: 'OUTGOING',
+  RETURN: 'RETURN',
+};
+
 module.exports = {
   ACCOUNT_STATUS,
   USER_ROLE,
@@ -65,4 +74,6 @@ module.exports = {
   USER_CURRENCY,
   TOKEN_TYPES,
   PAYMENT_STATUS,
+  SHIPPING_STATUS,
+  SHIPMENT_TYPE,
 };

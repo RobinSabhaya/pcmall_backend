@@ -1,11 +1,12 @@
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_KEY);
+const {
+  paymentGateway: { paymentProvider, paymentSecretKey, paymentSuccessUrl, paymentCancelUrl },
+} = require('../../../config/config');
+const stripe = new Stripe(paymentSecretKey);
 const paymentService = require('../../payment/payment.service');
 const orderService = require('../../orders/order.service');
 const userService = require('../../user/user.service');
 const { runWithTransaction } = require('../../../models/transaction/transaction');
-const STRIPE_SUCCESS_URL = process.env.STRIPE_SUCCESS_URL;
-const STRIPE_CANCEL_URL = process.env.STRIPE_CANCEL_URL;
 
 const createPaymentIntent = async ({ amount, currency }) => {
   return await stripe.paymentIntents.create({
@@ -26,7 +27,7 @@ async function createCheckoutSession(payload) {
   let session;
 
   await runWithTransaction(async (dbSession) => {
-    const subtotal = items.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
+    const subtotal = items.reduce((acc, item) => acc + item.unit_amount * item.quantity, 0);
     const tax = subtotal * 0.1;
     const shippingCost = 10;
     const totalAmount = (tax + shippingCost) * 100;
@@ -68,9 +69,9 @@ async function createCheckoutSession(payload) {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: `${STRIPE_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: STRIPE_CANCEL_URL,
-      metadata: { orderId: order._id.toString() },
+      success_url: `${paymentSuccessUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: paymentCancelUrl,
+      metadata: { orderId: order._id.toString(), userId: String(user._id) },
       customer_email: userData.email,
       shipping_address_collection: {
         allowed_countries: ['IN'],
@@ -80,14 +81,14 @@ async function createCheckoutSession(payload) {
     await paymentService.createPayment(
       {
         orderId: order._id,
-        provider: 'stripe',
+        provider: paymentProvider,
         sessionId: session.id,
         amount: totalAmount,
         currency,
       },
       {
         orderId: order._id,
-        provider: 'stripe',
+        provider: paymentProvider,
         sessionId: session.id,
         amount: totalAmount,
         currency,

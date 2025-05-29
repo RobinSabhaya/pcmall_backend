@@ -1,101 +1,157 @@
-const {
-  createShipment,
-  buyLabel,
-  trackShipment,
-} = require("../../src/services/shipping/carriers/shippo");
-const shippingService = require("../../src/services/shipping/shipping.service");
+const httpStatus = require('http-status');
+const { createShipment, buyLabel, trackShipment } = require('../../services/shipping/carriers/shippo');
+const shippingService = require('../../services/shipping/shipping.service');
+const userService = require('../../services/user/user.service');
+const ApiError = require('../../utils/ApiError');
+const catchAsync = require('../../utils/catchAsync');
+const { SHIPMENT_TYPE, USER_ROLE } = require('../../helpers/constant.helper');
+const { generateAddressForShipping } = require('../../helpers/function.helper');
 
 // Create a shipment, buy label, and save to DB
-const createAndBuyLabel = async (req, res) => {
+const createShipping = catchAsync(async (req, res) => {
   try {
-    const { from_address, to_address, parcel, metadata } = req.body;
+    const { parcel } = req.body;
+    const { _id } = req.user;
 
-    // 1. Create shipment
-    const shippoShipment = await createShipment({
-      from_address,
-      to_address,
-      parcel,
-    });
+    const userData = await userService.getFilterUser({ _id });
+    const userAddressData = await userService.getAddress({ user: _id, isPrimary: true }).lean();
 
-    const rates = shippoShipment.rates;
-    const selectedRate = rates[0]; // Pick cheapest for now
+    const adminData = await userService.getFilterUser({ roles: { $in: [USER_ROLE.SUPER_ADMIN] } });
+    const adminAddressData = await userService.getAddress({ user: adminData._id.toString(), isPrimary: true }).lean();
 
-    const label = await buyLabel(selectedRate.objectId);
+    // Create shipment
+    const shippoShipment = await createShipment(
+      generateAddressForShipping({ phone: userData.phone_number, email: userData.email, ...userAddressData }),
+      generateAddressForShipping({ phone: adminData.phone_number, email: adminData.email, ...adminAddressData }),
+      parcel
+    );
+
+    // Priority to select USPS
+    // const selectedRate = rates.sort((a, b) => +a.amount - +b.amount).find((rate) => rate.provider === 'USPS');
+
+    // const label = await buyLabel(selectedRate?.objectId || rates[0]?.objectId);
 
     const payload = {
-      shippo_shipment_id: shippoShipment.objectId,
-      from_address,
-      to_address,
+      shippoShipmentId: shippoShipment.objectId,
+      fromAddress: shippoShipment.addressFrom,
+      toAddress: shippoShipment.addressTo,
       parcel,
-      rates,
-      selected_rate: selectedRate,
-      label: {
-        label_url: label.labelUrl,
-        label_type: label.labelFileType,
-        tracking_number: label.trackingNumber,
-        carrier: label.trackingUrlProvider,
-        transaction_id: label.objectId,
-      },
-      tracking_status: label.trackingStatus || {},
-      tracking_history: label.trackingStatus ? [label.trackingStatus] : [],
-      status: label.trackingStatus || "UNKNOWN",
-      metadata,
-      shipment_type: "OUTGOING",
-      is_return: false,
+      rates:shippoShipment.rates,
+      // selectedRate: selectedRate,
+      shipmentType: SHIPMENT_TYPE.OUTGOING,
+      isReturn: false,
     };
 
-    const shipment = shippingService.createAndUpdateShipping(payload, payload, {
+    const shipment = await shippingService.createAndUpdateShipping(payload, payload, {
       new: true,
       upsert: true,
     });
 
-    return res.status(200).json({
+    return res.status(httpStatus.OK).json({
       success: true,
-      data: shipment,
-      message: "Shipping created successfully!",
+      data: {
+        shipment,
+        rates,
+      },
+      message: 'Shipping created successfully!',
     });
   } catch (error) {
-    console.error("Create shipment error:", error);
-    return res.status(400).json({
-      success: false,
-      message: error.message || "Something went wrong",
-    });
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
-};
+});
 
-// Manual tracking endpoint (optional)
-const track = async (req, res) => {
+/** Buy label */
+const generateBuyLabel = catchAsync(async (req, res) => {
   try {
-    const { carrier, tracking_number } = req.params;
+    const { shippoShipmentId, selectedRate } = req.body;
 
-    const tracking = await trackShipment(carrier, tracking_number);
-    console.log("🚀 ~ track ~ tracking:", tracking);
+    let shipment = await shippingService.getShipping({
+      shippoShipmentId,
+    });
+
+    if (!shipment) throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not valid.');
+
+    /** Create label */
+    const label = await buyLabel(selectedRate?.objectId);
+
+    const payload = {
+      label: {
+        labelUrl: label.labelUrl,
+        labelType: label.labelFileType,
+        trackingNumber: label.trackingNumber,
+        carrier: label.trackingUrlProvider,
+        transactionId: label.objectId,
+      },
+      trackingStatus: {
+        status: label.status,
+        statusDetails: '',
+        statusDate: new Date(),
+      },
+      trackingHistory: [
+        {
+          status: label.status,
+          statusDetails: '',
+          statusDate: new Date(),
+        },
+      ],
+      status: label.trackingStatus || 'UNKNOWN',
+    };
+
+    shipment = await shippingService.createAndUpdateShipping({ shippoShipmentId: shipment.shippoShipmentId }, payload, {
+      new: true,
+    });
+
+    return res.status(httpStatus.OK).json({
+      success: true,
+      data: {
+        shipment,
+        label,
+      },
+      message: 'Label generated successfully',
+    });
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+  }
+});
+
+// Manual tracking
+const track = catchAsync(async (req, res) => {
+  try {
+    const { carrier, trackingNumber, tracking_number } = req.body;
+    let tracking;
+
+    if (tracking_number) {
+      let tracking = await shippingService.getShipping({ 'label.trackingNumber': tracking_number });
+      if (!tracking) throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not found');
+    }
+
+    tracking = await trackShipment(carrier, trackingNumber);
 
     // Optional: update DB with fresh status
-    // await shippingService.createAndUpdateShipping(
-    //   { "label.tracking_number": tracking_number },
-    //   {
-    //     tracking_status: tracking.,
-    //     $push: { tracking_history: tracking.tracking_status },
-    //     status: tracking.tracking_status?.status || "UNKNOWN",
-    //   }
-    // );
+    tracking = await shippingService.createAndUpdateShipping(
+      { 'label.trackingNumber': tracking_number },
+      {
+        trackingHistory: tracking?.trackingHistory,
+        trackingStatus: tracking?.trackingStatus,
+        metadata: tracking?.metadata,
+      },
+      {
+        new: true,
+      }
+    );
 
-    res.status(200).json({
+    return res.status(httpStatus.OK).json({
       success: true,
       data: tracking,
-      message: "Shipping created successfully!",
+      message: 'Shipping update successfully!',
     });
   } catch (error) {
-    console.error("Create shipment error:", error);
-    res.status(400).json({
-      success: false,
-      message: error.message || "Something went wrong",
-    });
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
-};
+});
 
 module.exports = {
-  createAndBuyLabel,
+  createShipping,
   track,
+  generateBuyLabel,
 };

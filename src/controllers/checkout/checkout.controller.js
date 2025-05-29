@@ -1,17 +1,16 @@
 const catchAsync = require('../../utils/catchAsync');
-const stripeService = require('../../services/payment/providers/stripe.service');
+const ApiError = require('../../utils/ApiError');
+const { handlePayment } = require('../../services/payment/paymentStrategy');
+const {
+  paymentGateway: { paymentProvider },
+} = require('../../config/config');
+const httpStatus = require('http-status');
 
 // checkout
 const checkout = catchAsync(async (req, res) => {
   try {
     const user = req.user;
     const { shippingAddress, currency, items } = req.body;
-
-    // create payment intent v1
-    // const intent = await stripeService.createPaymentIntent({
-    //   amount,
-    //   currency,
-    // });
 
     // example
     // [
@@ -29,14 +28,14 @@ const checkout = catchAsync(async (req, res) => {
       price_data: {
         currency,
         product_data: {
-          name: 'ele.name',
+          name: ele.product_name,
         },
-        unit_amount: ele.unitPrice * 100,
+        unit_amount: ele.unit_amount * 100,
       },
       quantity: ele.quantity || 1,
     }));
 
-    const checkoutUrl = await stripeService.createCheckoutSession({
+    const checkoutUrl = await handlePayment(paymentProvider).createCheckoutSession({
       user,
       line_items,
       shippingAddress,
@@ -44,32 +43,12 @@ const checkout = catchAsync(async (req, res) => {
       items,
     });
 
-    // save in db in v1
-    // await paymentService.createPayment({
-    //   customerId,
-    //   customerEmail: session.customer_email,
-    //   cartIds,
-    //   paymentIntentId: session.payment_intent,
-    //   amount: session.amount_total,
-    //   currency: session.currency,
-    //   status: session.payment_status,
-    //   stripeSessionId: session.id,
-    // });
-
-    // return res.json({
-    //   success: true,
-    //   data: {
-    //     client_secret: intent.client_secret,
-    //   },
-    //   message: "Checkout successfully!",
-    // });
-
     return res.json({
       success: true,
       data: {
         checkoutUrl,
       },
-      message: 'Checkout successfully!',
+      message: 'Checkout link generate successfully!',
     });
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
