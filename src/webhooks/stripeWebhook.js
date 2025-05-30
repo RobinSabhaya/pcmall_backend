@@ -6,8 +6,9 @@ const stripe = require('stripe')(paymentSecretKey);
 const { runWithTransaction } = require('../models/transaction/transaction');
 const orderService = require('../services/orders/order.service');
 const paymentService = require('../services/payment/payment.service');
-const userService = require('../services/user/user.service');
-const { PAYMENT_STATUS, USER_ROLE } = require('../helpers/constant.helper');
+const { PAYMENT_STATUS } = require('../helpers/constant.helper');
+const httpStatus = require('http-status');
+const { handleShipping } = require('../services/shipping/shippingStrategy');
 
 async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
@@ -16,7 +17,7 @@ async function handleStripeWebhook(req, res) {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, paymentWebhookSecret);
   } catch (err) {
-    return res.status(400).json({
+    return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       message: `Webhook Error: ${err.message}`,
     });
@@ -25,19 +26,6 @@ async function handleStripeWebhook(req, res) {
   const session = event.data?.object;
 
   const { metadata } = session;
-  /** Get user address */
-  const userData = await userService.getFilterUser({
-    _id: metadata.userId,
-  });
-
-  const adminData = await userService.getFilterUser({
-    roles: {
-      $in: [USER_ROLE.SUPER_ADMIN],
-    },
-  });
-  const userPrimaryAddressData = await userService.getAddress({
-    user: metadata.userId,
-  });
 
   switch (event.type) {
     case 'checkout.session.completed':
@@ -61,10 +49,18 @@ async function handleStripeWebhook(req, res) {
             }
             // { session: dbSession }
           );
+
+          /** Buy Label */
+          const { shipment, label } = await handleShipping(shippingCarrier).generateBuyLabel({
+            rateObjectId: metadata.rateObjectId,
+            shippoShipmentId: metadata.shippoShipmentId,
+          });
+          console.log('🚀 ~ const{shipment,label}=awaithandleShipping ~ shipment:', shipment);
+          console.log('🚀 ~ const{shipment,label}=awaithandleShipping ~ label:', label);
         });
       } catch (err) {
         console.error('Webhook error (session.completed):', err);
-        return res.status(500).send({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
           success: false,
           message: 'Failed to process payment',
         });
@@ -83,7 +79,7 @@ async function handleStripeWebhook(req, res) {
       console.log(`Unhandled event type: ${event.type}`);
   }
 
-  res.status(200).json({ received: true });
+  return res.status(200).json({ received: true });
 }
 
 async function handlePaymentFailure(session) {

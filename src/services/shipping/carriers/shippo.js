@@ -2,6 +2,7 @@ const {
   shipping: { shippingApiKey },
 } = require('../../../config/config');
 const { Shippo } = require('shippo');
+const shippingService = require('../shipping.service');
 
 const shippo = new Shippo({
   apiKeyHeader: shippingApiKey,
@@ -12,14 +13,14 @@ const shippo = new Shippo({
  * @param {string} payload
  * @returns
  */
-const createShipment = async (addressFrom ,addressTo, parcel ) => {
+const createShipment = async (addressFrom, addressTo, parcel) => {
   const shipment = await shippo.shipments.create({
     addressFrom,
     addressTo,
     parcels: [parcel],
     async: false,
   });
-  console.log("🚀 ~ createShipment ~ shipment:", shipment)
+  console.log('🚀 ~ createShipment ~ shipment:', shipment);
 
   if (!shipment.rates || shipment.rates.length === 0) {
     throw new Error('No rates returned by Shippo');
@@ -47,4 +48,54 @@ const trackShipment = async (carrier, trackingNumber) => {
   return tracking;
 };
 
-module.exports = { createShipment, buyLabel, trackShipment };
+/**
+ * Generate Buy Label
+ * @param {object} reqBody
+ * @return {object} {shipping,label}
+ */
+const generateBuyLabel = async (reqBody) => {
+  const { shippoShipmentId, rateObjectId } = reqBody;
+
+  let shipment = await shippingService.getShipping({
+    shippoShipmentId,
+  });
+
+  if (!shipment) throw new Error('Shipping not valid.');
+
+  /** Create label */
+  const label = await buyLabel(rateObjectId);
+
+  const payload = {
+    label: {
+      labelUrl: label.labelUrl,
+      labelType: label.labelFileType,
+      trackingNumber: label.trackingNumber,
+      carrier: label.trackingUrlProvider,
+      transactionId: label.objectId,
+    },
+    trackingStatus: {
+      status: label.status,
+      statusDetails: '',
+      statusDate: new Date(),
+    },
+    trackingHistory: [
+      {
+        status: label.status,
+        statusDetails: '',
+        statusDate: new Date(),
+      },
+    ],
+    status: label.trackingStatus || 'UNKNOWN',
+  };
+
+  shipment = await shippingService.createAndUpdateShipping({ shippoShipmentId: shipment.shippoShipmentId }, payload, {
+    new: true,
+  });
+
+  return {
+    shipment,
+    label,
+  };
+};
+
+module.exports = { createShipment, buyLabel, trackShipment, generateBuyLabel };

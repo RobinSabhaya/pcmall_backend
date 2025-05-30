@@ -10,7 +10,7 @@ const httpStatus = require('http-status');
 const checkout = catchAsync(async (req, res) => {
   try {
     const user = req.user;
-    const { shippingAddress, currency, items } = req.body;
+    const { shippingAddress, currency, items, shippoShipmentId, rateObjectId } = req.body;
 
     // example
     // [
@@ -41,6 +41,8 @@ const checkout = catchAsync(async (req, res) => {
       shippingAddress,
       currency,
       items,
+      shippoShipmentId,
+      rateObjectId,
     });
 
     return res.json({

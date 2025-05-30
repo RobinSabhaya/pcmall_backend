@@ -22,7 +22,7 @@ const createPaymentIntent = async ({ amount, currency }) => {
  * @returns {string} success url
  */
 async function createCheckoutSession(payload) {
-  const { user, items, shippingAddress, line_items, currency } = payload;
+  const { user, items, shippingAddress, line_items, currency, shippoShipmentId, rateObjectId } = payload;
 
   let session;
 
@@ -71,7 +71,7 @@ async function createCheckoutSession(payload) {
       mode: 'payment',
       success_url: `${paymentSuccessUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: paymentCancelUrl,
-      metadata: { orderId: order._id.toString(), userId: String(user._id) },
+      metadata: { orderId: order._id.toString(), userId: String(user._id), shippoShipmentId, rateObjectId },
       customer_email: userData.email,
       shipping_address_collection: {
         allowed_countries: ['IN'],
