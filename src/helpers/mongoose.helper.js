@@ -78,6 +78,17 @@ const paginationQuery = (options, stages = []) => {
 };
 
 /**
+ * Create doc
+ * @param {string} modelName
+ * @param {object} reqBody
+ * @param {object} options
+ * @returns {Promise<mongoose.model>}
+ */
+const createDoc = (modelName, reqBody, options) => {
+  return mongoose.model(modelName).create(reqBody);
+};
+
+/**
  * Find one and Update doc
  * @param {string} modelName
  * @param {object} filter
@@ -89,7 +100,51 @@ const findOneAndUpdateDoc = (modelName, filter, reqBody, options = {}) => {
   return mongoose.model(modelName).findOneAndUpdate(filter, reqBody, options);
 };
 
+/**
+ * Find one and Delete doc
+ * @param {string} modelName
+ * @param {object} filter
+ * @returns {Promise<mongoose.model>}
+ */
+const findOneAndDeleteDoc = (modelName, filter) => {
+  return mongoose.model(modelName).findOneAndDelete(filter);
+};
+
+/**
+ * Find one doc
+ * @param {string} modelName
+ * @param {object} filter
+ * @param {object} options
+ * @returns {Promise<mongoose.model>}
+ */
+const findOneDoc = (modelName, filter, options) => {
+  return mongoose
+    .model(modelName)
+    .findOne(filter)
+    .populate(options?.populate || [])
+    .sort(options?.sort || {});
+};
+
+/**
+ * Find doc
+ * @param {string} modelName
+ * @param {object} filter
+ * @param {object} options
+ * @returns {Promise<mongoose.model>}
+ */
+const findDoc = (modelName, filter) => {
+  return mongoose
+    .model(modelName)
+    .find(filter)
+    .populate(options?.populate || [])
+    .sort(options?.sort || {});
+};
+
 module.exports = {
   paginationQuery,
+  createDoc,
   findOneAndUpdateDoc,
+  findOneAndDeleteDoc,
+  findOneDoc,
+  findDoc,
 };

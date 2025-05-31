@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const subCategorySchema = new mongoose.Schema(
   {
@@ -6,15 +6,15 @@ const subCategorySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    tags: [],
-    deleted_at: {
+    tags: [String],
+    deletedAt: {
       type: Date,
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
-const subCategoryModel = mongoose.model("SubCategory", subCategorySchema);
+const subCategoryModel = mongoose.model('SubCategory', subCategorySchema);
 
 module.exports = subCategoryModel;

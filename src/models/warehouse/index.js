@@ -1,0 +1,1 @@
+module.exports.Warehouse = require('./warehouse.model');

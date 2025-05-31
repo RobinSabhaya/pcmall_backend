@@ -1,37 +1,29 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const { CONFIRMATION_TYPE } = require('../../helpers/constant.helper');
 
 const productSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
+    title: { type: String, trim: true },
+    description: { type: String, trim: true },
+    slug: { type: String, unique: true },
     brand: {
-      type: String,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
-    discount: {
-      type: Number,
-    },
-    img: {
-      type: Array,
-      required: true,
-    },
-    colors: {
-      type: Array,
-      required: true,
-    },
-    categoryId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "category",
+      ref: 'Product_Brand',
+      required: true,
     },
+    modelNumber: { type: String },
+    tags: [String],
+    isPublished: { type: Boolean, default: false },
+    approvalStatus: { type: String, enum: Object.values(CONFIRMATION_TYPE), default: CONFIRMATION_TYPE.PENDING },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+    },
+    createdBy: { type: mongoose.Types.ObjectId, ref: 'User' },
+    updatedBy: { type: mongoose.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
-const productModel = mongoose.model("Product", productSchema);
+const productModel = mongoose.model('Product', productSchema);
 module.exports = productModel;
