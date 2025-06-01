@@ -1,6 +1,7 @@
 const {
   paymentGateway: { paymentSecretKey, paymentWebhookSecret },
   shipping: { shippingCarrier },
+  sms: { smsCarrier },
 } = require('../config/config');
 const stripe = require('stripe')(paymentSecretKey);
 const { runWithTransaction } = require('../models/transaction/transaction');
@@ -11,6 +12,9 @@ const httpStatus = require('http-status');
 const { handleShipping } = require('../services/shipping/shippingStrategy');
 const { findOneDoc } = require('../helpers/mongoose.helper');
 const { MONGOOSE_MODELS } = require('../helpers/mongoose.model.helper');
+const { handleSMS } = require('../services/sms/smsStrategy');
+const { ORDER_PAYMENT_SHIPPING_SUCCESS_SMS } = require('../helpers/template.helper');
+const moment = require('moment');
 
 async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
@@ -43,11 +47,19 @@ async function handleStripeWebhook(req, res) {
             }
           );
 
+          /** Get User data */
+          const userData = await findOneDoc(MONGOOSE_MODELS.USER, {
+            _id: metadata.userId,
+          });
+          const userProfileData = await findOneDoc(MONGOOSE_MODELS.USER, {
+            user: metadata.userId,
+          });
+
           /** Get shipping */
           const shippingData = await findOneDoc(MONGOOSE_MODELS.SHIPMENT, { shippoShipmentId: metadata.shippoShipmentId });
 
           // Update Order
-          await orderService.updateOrder(
+          const order = await orderService.updateOrder(
             { _id: payment.orderId },
             {
               status: PAYMENT_STATUS.PAID,
@@ -64,6 +76,19 @@ async function handleStripeWebhook(req, res) {
           });
 
           if (!shipment || !label) throw new ApiError(httpStatus.BAD_REQUEST, 'Shipment and Label has been fail');
+
+          /** Send SMS */
+          if (userData?.phone_number)
+            await handleSMS(smsCarrier).sendSMS({
+              to: userData?.phone_number,
+              body: ORDER_PAYMENT_SHIPPING_SUCCESS_SMS({
+                customerName:
+                  userProfileData?.first_name + ' ' + (userProfileData?.last_name && userProfileData?.last_name) || 'User',
+                orderDate: moment(order?.updatedAt).format('DD-MM-YYYY') || moment().format('DD-MM-YYYY'),
+                orderId: String(order?._id),
+                storeName: 'PCMall',
+              }),
+            });
         });
       } catch (err) {
         console.error('Webhook error (session.completed):', err);

@@ -58,6 +58,13 @@ const envVarsSchema = Joi.object()
     // shippo
     SHIPPING_API_KEY: Joi.string().description('shipping API key'),
     SHIPPING_WEBHOOK: Joi.string().description('shipping webhook'),
+
+    /** sms provider */
+    SMS_PROVIDER: Joi.string().description('shipping carrier').required(),
+    // twilio
+    TWILIO_ACCOUNT_SID: Joi.string().description('Twilio Account SID'),
+    TWILIO_AUTH_TOKEN: Joi.string().description('Twilio auth token'),
+    TWILIO_PHONE_NUMBER: Joi.string().description('Twilio phone number'),
   })
   .unknown();
 
@@ -116,8 +123,14 @@ module.exports = {
     cipherSecret: envVars.CIPHER_SECRET,
   },
   shipping: {
-    shippingCarrier : envVars.SHIPPING_CARRIER,
-    shippingApiKey : envVars.SHIPPING_API_KEY,
-    shippingWebhook : envVars.SHIPPING_WEBHOOK,
-  }
+    shippingCarrier: envVars.SHIPPING_CARRIER,
+    shippingApiKey: envVars.SHIPPING_API_KEY,
+    shippingWebhook: envVars.SHIPPING_WEBHOOK,
+  },
+  sms: {
+    smsCarrier: envVars.SMS_PROVIDER,
+    accountSid: envVars.TWILIO_ACCOUNT_SID,
+    accountAuthToken: envVars.TWILIO_AUTH_TOKEN,
+    accountPhoneNumber: envVars.TWILIO_PHONE_NUMBER,
+  },
 };
