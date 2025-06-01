@@ -49,7 +49,7 @@ const getAllProducts = catchAsync(async (req, res) => {
 
     return res.status(httpStatus.OK).json({
       success: true,
-      data: productData,
+      data: productData[0],
     });
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');

@@ -3,8 +3,8 @@ const { ACCOUNT_STATUS } = require('../../helpers/constant.helper');
 
 const BrandSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, unique: true },
-    slug: { type: String, required: true, unique: true },
+    name: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, trim : true },
 
     description: { type: String },
     mission: { type: String },

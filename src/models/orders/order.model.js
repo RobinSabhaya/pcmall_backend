@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 const OrderItemSchema = new mongoose.Schema({
-  product: {
+  productSku: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
+    ref: 'Product_Sku',
     required: true,
   },
   quantity: { type: Number, required: true },
@@ -35,12 +35,15 @@ const OrderSchema = new mongoose.Schema(
       enum: Object.values(PAYMENT_STATUS),
       default: PAYMENT_STATUS.PENDING,
     },
-    shippingProvider: { type: String },
-    shippingTracking: { type: Object },
+    shipping: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Shipment',
+    },
     metadata: { type: Object },
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 

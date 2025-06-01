@@ -9,6 +9,8 @@ const paymentService = require('../services/payment/payment.service');
 const { PAYMENT_STATUS } = require('../helpers/constant.helper');
 const httpStatus = require('http-status');
 const { handleShipping } = require('../services/shipping/shippingStrategy');
+const { findOneDoc } = require('../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../helpers/mongoose.model.helper');
 
 async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
@@ -41,11 +43,16 @@ async function handleStripeWebhook(req, res) {
             }
           );
 
+          /** Get shipping */
+          const shippingData = await findOneDoc(MONGOOSE_MODELS.SHIPMENT, { shippoShipmentId: metadata.shippoShipmentId });
+
           // Update Order
-          const order = await orderService.updateOrder(
+          await orderService.updateOrder(
             { _id: payment.orderId },
             {
               status: PAYMENT_STATUS.PAID,
+              paymentId: session.payment_intent,
+              shipping: shippingData._id,
             }
             // { session: dbSession }
           );
@@ -55,8 +62,8 @@ async function handleStripeWebhook(req, res) {
             rateObjectId: metadata.rateObjectId,
             shippoShipmentId: metadata.shippoShipmentId,
           });
-          console.log('🚀 ~ const{shipment,label}=awaithandleShipping ~ shipment:', shipment);
-          console.log('🚀 ~ const{shipment,label}=awaithandleShipping ~ label:', label);
+
+          if (!shipment || !label) throw new ApiError(httpStatus.BAD_REQUEST, 'Shipment and Label has been fail');
         });
       } catch (err) {
         console.error('Webhook error (session.completed):', err);
@@ -79,7 +86,7 @@ async function handleStripeWebhook(req, res) {
       console.log(`Unhandled event type: ${event.type}`);
   }
 
-  return res.status(200).json({ received: true });
+  return res.status(httpStatus.OK).json({ received: true });
 }
 
 async function handlePaymentFailure(session) {

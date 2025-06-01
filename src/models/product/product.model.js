@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema(
   {
     title: { type: String, trim: true },
     description: { type: String, trim: true },
-    slug: { type: String, unique: true },
+    slug: { type: String, trim: true },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product_Brand',

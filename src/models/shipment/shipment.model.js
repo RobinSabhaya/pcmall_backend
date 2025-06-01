@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-const { SHIPPING_STATUS, SHIPMENT_TYPE } = require('../../helpers/constant.helper');
+const { SHIPPING_STATUS, SHIPMENT_TYPE, SHIPPING_CARRIERS } = require('../../helpers/constant.helper');
+const {
+  shipping: { shippingCarrier },
+} = require('../../config/config');
 
 const trackingStatusSchema = new mongoose.Schema(
   {
@@ -82,6 +85,11 @@ const shipmentSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(SHIPMENT_TYPE),
       default: SHIPMENT_TYPE.OUTGOING,
+    },
+    shippingCarrier: {
+      type: String,
+      enum: Object.values(SHIPPING_CARRIERS),
+      default: shippingCarrier,
     },
   },
   {

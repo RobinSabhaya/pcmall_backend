@@ -2,6 +2,7 @@ const { Product } = require('../../models/product');
 const {
   common: { imageUrl },
 } = require('../../config/config');
+const { paginationQuery } = require('../../helpers/mongoose.helper');
 
 /**
  * Get product
@@ -21,26 +22,52 @@ const getProduct = (filter, options = {}) => {
  */
 const getAllProducts = (filter, options = {}) => {
   const { user } = options;
+  const pagination = paginationQuery(options);
   return Product.aggregate([
     {
       $lookup: {
         from: 'categories',
-        localField: 'categoryId',
+        localField: 'category',
         foreignField: '_id',
         pipeline: [
           {
             $match: {
-              categoryName: filter.categories,
+              ...(filter?.categories && { categoryName: filter?.categories }),
             },
           },
         ],
-        as: 'categoryId',
+        as: 'category',
       },
     },
     {
       $unwind: {
-        path: '$categoryId',
+        path: '$category',
         preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: 'product_variants',
+        localField: '_id',
+        foreignField: 'product',
+        pipeline: [
+          {
+            $lookup: {
+              from: 'product_skus',
+              localField: '_id',
+              foreignField: 'variant',
+              pipeline: [
+                {
+                  $match: {
+                    ...(filter.prices && { ...filter.prices }),
+                  },
+                },
+              ],
+              as: 'product_skus',
+            },
+          },
+        ],
+        as: 'product_variants',
       },
     },
     {
@@ -111,12 +138,7 @@ const getAllProducts = (filter, options = {}) => {
         wishlistProducts: null,
       },
     },
-    {
-      $match: {
-        ...(filter.prices && { ...filter.prices }),
-        ...(filter.colors && { ...filter.colors }),
-      },
-    },
+    ...pagination,
   ]);
 };
 

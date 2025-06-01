@@ -80,8 +80,16 @@ const INVENTORY_TYPE = {
 
 const PRODUCT_SKU_STATUS = {
   ACTIVE: 'active',
-  INACTIVE : 'inactive'
-}
+  INACTIVE: 'inactive',
+};
+
+const PAYMENT_PROVIDERS = {
+  STRIPE: 'stripe',
+};
+
+const SHIPPING_CARRIERS = {
+  SHIPPO: 'shippo',
+};
 
 module.exports = {
   ACCOUNT_STATUS,
@@ -97,5 +105,7 @@ module.exports = {
   SHIPMENT_TYPE,
   CONFIRMATION_TYPE,
   INVENTORY_TYPE,
-  PRODUCT_SKU_STATUS
+  PRODUCT_SKU_STATUS,
+  PAYMENT_PROVIDERS,
+  SHIPPING_CARRIERS
 };

@@ -5,6 +5,6 @@ const { USER_ROLE } = require('../../../helpers/constant.helper');
 
 const router = express.Router();
 
-router.post('/all', authorizeV3(USER_ROLE.BUYER), orderController.getOrderList);
+router.get('/all', authorizeV3(USER_ROLE.BUYER), orderController.getOrderList);
 
 module.exports = router;

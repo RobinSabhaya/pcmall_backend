@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-const { PAYMENT_STATUS, USER_CURRENCY } = require('../../helpers/constant.helper');
+const { PAYMENT_STATUS, USER_CURRENCY, PAYMENT_PROVIDERS } = require('../../helpers/constant.helper');
+const {
+  paymentGateway: { paymentProvider },
+} = require('../../config/config');
 
 const PaymentSchema = new mongoose.Schema(
   {
@@ -10,8 +13,9 @@ const PaymentSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ['stripe', 'paypal', 'razorpay'],
+      enum: Object.values(PAYMENT_PROVIDERS),
       required: true,
+      default: paymentProvider,
     },
     sessionId: { type: String },
     transactionId: { type: String },
@@ -25,6 +29,7 @@ const PaymentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 
