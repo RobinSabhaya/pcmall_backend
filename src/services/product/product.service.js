@@ -47,6 +47,20 @@ const getAllProducts = (filter, options = {}) => {
     },
     {
       $lookup: {
+        from: 'product_brands',
+        localField: 'brand',
+        foreignField: '_id',
+        as: 'brand',
+      },
+    },
+    {
+      $unwind: {
+        path: '$brand',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
         from: 'product_variants',
         localField: '_id',
         foreignField: 'product',
