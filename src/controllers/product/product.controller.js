@@ -45,6 +45,7 @@ const getAllProducts = catchAsync(async (req, res) => {
     // Get all cart data
     const productData = await productService.getAllProducts(filter, {
       user: new mongoose.Types.ObjectId(req.user._id),
+      ...options,
     });
 
     return res.status(httpStatus.OK).json({

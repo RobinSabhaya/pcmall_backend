@@ -117,18 +117,18 @@ const getAllCart = catchAsync(async (req, res) => {
       options
     );
 
-    const totalQty = cartData.reduce((acc, c) => {
-      return acc + c.quantity;
+    const totalQty = cartData[0]?.results?.reduce((acc, c) => {
+      return acc + c?.quantity;
     }, 0);
 
-    const totalPrice = cartData.reduce((acc, c) => {
-      return acc + c.product.price * c.quantity;
+    const totalPrice = cartData[0]?.results?.reduce((acc, c) => {
+      return acc + c?.product?.product_variants?.product_skus?.price * c?.quantity;
     }, 0);
 
     return res.status(httpStatus.OK).json({
       success: true,
       data: {
-        items: cartData,
+        items: cartData[0] || [],
         totalQty,
         totalPrice,
       },

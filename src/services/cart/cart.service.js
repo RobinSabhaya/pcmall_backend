@@ -2,6 +2,7 @@ const Cart = require('../../models/cart/cart.model');
 const {
   common: { imageUrl },
 } = require('../../config/config');
+const { paginationQuery } = require('../../helpers/mongoose.helper');
 
 /**
  * Create a cart
@@ -41,6 +42,7 @@ const getCart = (filter, options = {}) => {
  * @returns {Promise<Cart>}
  */
 const getAllCart = async (filter, options = {}) => {
+  const pagination = paginationQuery(options);
   return await Cart.aggregate([
     {
       $match: {
@@ -54,29 +56,47 @@ const getAllCart = async (filter, options = {}) => {
         foreignField: '_id',
         pipeline: [
           {
-            $addFields: {
-              img: {
-                $map: {
-                  input: '$img',
-                  as: 'image',
-                  in: {
-                    $cond: [
-                      {
-                        $and: [
-                          {
-                            $ne: ['$image', ''],
-                            $ne: ['$image', null],
-                          },
-                        ],
-                      },
-                      {
-                        $concat: [imageUrl, 'uploads/', '$$image'],
-                      },
-                      [],
-                    ],
+            $lookup: {
+              from: 'product_brands',
+              localField: 'brand',
+              foreignField: '_id',
+              as: 'brand',
+            },
+          },
+          {
+            $unwind: {
+              path: '$brand',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'product_variants',
+              localField: '_id',
+              foreignField: 'product',
+              pipeline: [
+                {
+                  $lookup: {
+                    from: 'product_skus',
+                    localField: '_id',
+                    foreignField: 'variant',
+                    as: 'product_skus',
                   },
                 },
-              },
+                {
+                  $unwind: {
+                    path: '$product_skus',
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+              ],
+              as: 'product_variants',
+            },
+          },
+          {
+            $unwind: {
+              path: '$product_variants',
+              preserveNullAndEmptyArrays: true,
             },
           },
         ],
@@ -89,6 +109,7 @@ const getAllCart = async (filter, options = {}) => {
         preserveNullAndEmptyArrays: true,
       },
     },
+    ...pagination,
   ]);
 };
 
