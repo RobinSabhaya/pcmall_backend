@@ -80,8 +80,20 @@ const getAllProducts = (filter, options = {}) => {
               as: 'product_skus',
             },
           },
+          {
+            $unwind: {
+              path: '$product_skus',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
         ],
         as: 'product_variants',
+      },
+    },
+    {
+      $unwind: {
+        path: '$product_variants',
+        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -114,32 +126,32 @@ const getAllProducts = (filter, options = {}) => {
         as: 'wishlistProducts',
       },
     },
-    {
-      $addFields: {
-        img: {
-          $map: {
-            input: '$img',
-            as: 'image',
-            in: {
-              $cond: [
-                {
-                  $and: [
-                    {
-                      $ne: ['$image', ''],
-                      $ne: ['$image', null],
-                    },
-                  ],
-                },
-                {
-                  $concat: [imageUrl, 'uploads/', '$$image'],
-                },
-                [],
-              ],
-            },
-          },
-        },
-      },
-    },
+    // {
+    //   $addFields: {
+    //     img: {
+    //       $map: {
+    //         input: '$img',
+    //         as: 'image',
+    //         in: {
+    //           $cond: [
+    //             {
+    //               $and: [
+    //                 {
+    //                   $ne: ['$image', ''],
+    //                   $ne: ['$image', null],
+    //                 },
+    //               ],
+    //             },
+    //             {
+    //               $concat: [imageUrl, 'uploads/', '$$image'],
+    //             },
+    //             [],
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
     {
       $addFields: {
         isInCart: {
