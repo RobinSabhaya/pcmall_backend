@@ -36,7 +36,7 @@ const getAllProducts = catchAsync(async (req, res) => {
     // Set prices
     if (prices) {
       filter.prices = {
-        price: { $gte: prices?.min || 0, $lte: prices?.max || 10000 },
+        price: { $gte: prices?.min || 0, $lte: prices?.max || 1000000 },
       };
     }
 
