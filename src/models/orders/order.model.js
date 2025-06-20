@@ -7,7 +7,7 @@ const OrderItemSchema = new mongoose.Schema({
     ref: 'Product_Sku',
     required: true,
   },
-  quantity: { type: Number, required: true },
+  quantity: { type: Number, required: true, default: 1 },
   unitPrice: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
 });

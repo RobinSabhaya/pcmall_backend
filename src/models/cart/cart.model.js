@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 const cartSchema = new mongoose.Schema(
   {
@@ -13,6 +14,10 @@ const cartSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       default: 1,
+    },
+    status: {
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.PENDING,
     },
   },
   {

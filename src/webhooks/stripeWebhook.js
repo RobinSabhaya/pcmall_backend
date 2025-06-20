@@ -10,7 +10,7 @@ const paymentService = require('../services/payment/payment.service');
 const { PAYMENT_STATUS } = require('../helpers/constant.helper');
 const httpStatus = require('http-status');
 const { handleShipping } = require('../services/shipping/shippingStrategy');
-const { findOneDoc } = require('../helpers/mongoose.helper');
+const { findOneDoc, findOneAndUpdateDoc, findDoc } = require('../helpers/mongoose.helper');
 const { MONGOOSE_MODELS } = require('../helpers/mongoose.model.helper');
 const { handleSMS } = require('../services/sms/smsStrategy');
 const { ORDER_PAYMENT_SHIPPING_SUCCESS_SMS } = require('../helpers/template.helper');
@@ -69,26 +69,34 @@ async function handleStripeWebhook(req, res) {
             // { session: dbSession }
           );
 
+          /** Update Stock and Inventory  */
+          await paymentService.updateStockInInventory(
+            { order },
+            {
+              stock: { $inc: -orderItem.quantity },
+              reserved: { $inc: orderItem.quantity },
+            }
+          );
+
           /** Buy Label */
           const { shipment, label } = await handleShipping(shippingCarrier).generateBuyLabel({
             rateObjectId: metadata.rateObjectId,
             shippoShipmentId: metadata.shippoShipmentId,
           });
 
-          if (!shipment || !label) throw new ApiError(httpStatus.BAD_REQUEST, 'Shipment and Label has been fail');
+          if (!shipment || !label) console.error('Shipment and Label has been fail');
 
+          // TODO: Make Async with Queue (Background Jobs)
           /** Send SMS */
-          if (userData?.phone_number)
-            await handleSMS(smsCarrier).sendSMS({
-              to: userData?.phone_number,
-              body: ORDER_PAYMENT_SHIPPING_SUCCESS_SMS({
-                customerName:
-                  userProfileData?.first_name + ' ' + (userProfileData?.last_name && userProfileData?.last_name) || 'User',
-                orderDate: moment(order?.updatedAt).format('DD-MM-YYYY') || moment().format('DD-MM-YYYY'),
-                orderId: String(order?._id),
-                storeName: 'PCMall',
-              }),
-            });
+          if (userData?.phone_number) await paymentService.orderConfirmationSMS({ userProfileData, order });
+
+          /** Send Email */
+          if (userData?.email) await paymentService.orderConfirmationEmail({ userProfileData, order });
+
+          /** Remove from Cart */
+          if (metadata?.cartIds?.length <= 10) {
+            await paymentService.updateAllCartStatus({ cartIds: metadata?.cartIds }, { status: PAYMENT_STATUS.PAID });
+          }
         });
       } catch (err) {
         console.error('Webhook error (session.completed):', err);
@@ -100,11 +108,19 @@ async function handleStripeWebhook(req, res) {
       break;
 
     case 'checkout.session.async_payment_failed':
-      await handlePaymentFailure(session);
+      try {
+        await handlePaymentFailure(session);
+      } catch (error) {
+        console.error('Webhook error (session.failed)', error);
+      }
       break;
 
     case 'checkout.session.expired':
-      await handlePaymentExpired(session);
+      try {
+        await handlePaymentExpired(session);
+      } catch (error) {
+        console.error('Webhook error (session.expired)', error);
+      }
       break;
 
     default:
@@ -121,10 +137,20 @@ async function handlePaymentFailure(session) {
     // { session }
   );
 
-  await orderService.updateOrder(
+  const order = await orderService.updateOrder(
+    MONGOOSE_MODELS.INVENTORY,
     { _id: payment.orderId },
     { status: PAYMENT_STATUS.FAILED }
     // { session }
+  );
+
+  /** If order fail then update stock and reserved */
+  await paymentService.updateStockInInventory(
+    { order },
+    {
+      stock: { $inc: orderItem.quantity },
+      reserved: { $inc: -orderItem.quantity },
+    }
   );
 }
 
@@ -135,10 +161,19 @@ async function handlePaymentExpired(session) {
     // { session }
   );
 
-  await orderService.updateOrder(
+  const order = await orderService.updateOrder(
     { _id: payment.orderId },
     { status: PAYMENT_STATUS.EXPIRED }
     // { session }
+  );
+
+  /** If order fail then update stock and reserved */
+  await paymentService.updateStockInInventory(
+    { order },
+    {
+      stock: { $inc: orderItem.quantity },
+      reserved: { $inc: -orderItem.quantity },
+    }
   );
 }
 

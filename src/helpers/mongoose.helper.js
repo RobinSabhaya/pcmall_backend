@@ -140,6 +140,21 @@ const findDoc = (modelName, filter) => {
     .sort(options?.sort || {});
 };
 
+/**
+ * Update Many docs
+ * @param {string} modelName
+ * @param {object} filter
+ * @param {object} options
+ * @returns {Promise<mongoose.model>}
+ */
+const updateManyDoc = (modelName, filter) => {
+  return mongoose
+    .model(modelName)
+    .updateMany(filter)
+    .populate(options?.populate || [])
+    .sort(options?.sort || {});
+};
+
 module.exports = {
   paginationQuery,
   createDoc,
@@ -147,4 +162,5 @@ module.exports = {
   findOneAndDeleteDoc,
   findOneDoc,
   findDoc,
+  updateManyDoc,
 };

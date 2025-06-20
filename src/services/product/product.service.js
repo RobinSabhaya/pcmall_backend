@@ -3,6 +3,7 @@ const {
   common: { imageUrl },
 } = require('../../config/config');
 const { paginationQuery } = require('../../helpers/mongoose.helper');
+const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 /**
  * Get product
@@ -105,6 +106,7 @@ const getAllProducts = (filter, options = {}) => {
           {
             $match: {
               user,
+              status: PAYMENT_STATUS.PENDING,
             },
           },
         ],
