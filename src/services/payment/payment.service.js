@@ -4,6 +4,10 @@ const {
 } = require('../../config/config');
 const { ORDER_PAYMENT_SHIPPING_SUCCESS_SMS } = require('../../helpers/template.helper');
 const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
+const { findOneDoc, findOneAndUpdateDoc, findDoc, updateManyDoc } = require('../../helpers/mongoose.helper');
+const { handleSMS } = require('../sms/smsStrategy');
+const moment = require('moment');
+const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 /**
  * Create payment
  * @param {object} filter
@@ -27,7 +31,7 @@ const updateAllCartStatus = async (filter, reqBody, options) => {
     const { cartIds } = filter;
 
     const cartIdsData = await findDoc(MONGOOSE_MODELS.CART, {
-      _id: { $in: metadata?.cartIds?.map((i) => i) },
+      _id: { $in: cartIds?.map((i) => i) },
       status: PAYMENT_STATUS.PENDING,
     });
 
@@ -39,7 +43,7 @@ const updateAllCartStatus = async (filter, reqBody, options) => {
     await updateManyDoc(
       MONGOOSE_MODELS.CART,
       {
-        _id: metadata?.cartIds?.map((i) => i),
+        _id: { $in: cartIds?.map((i) => i) },
         status: PAYMENT_STATUS.PENDING,
       },
       reqBody
@@ -56,7 +60,7 @@ const updateAllCartStatus = async (filter, reqBody, options) => {
  */
 const orderConfirmationSMS = async (payload) => {
   try {
-    const { userProfileData, order } = payload;
+    const { userData, userProfileData, order } = payload;
     await handleSMS(smsCarrier).sendSMS({
       to: userData?.phone_number,
       body: ORDER_PAYMENT_SHIPPING_SUCCESS_SMS({
@@ -99,20 +103,47 @@ const orderConfirmationEmail = async (payload) => {
  */
 const updateStockInInventory = async (payload, reqBody, options) => {
   try {
-    const { order } = payload;
+    const { order, eventType } = payload;
     /** Inventory Management */
     for (const orderItem of order?.items) {
-      let inventoryData = await findOneDoc(MONGOOSE_MODELS.INVENTORY, { sku: orderItem.productSku });
+      let productSkuData = await findOneDoc(MONGOOSE_MODELS.PRODUCT_SKU, { variant: orderItem.variant });
+      let inventoryData = await findOneDoc(MONGOOSE_MODELS.INVENTORY, { sku: productSkuData._id });
 
       if (!inventoryData) {
         console.error('updateStockInInventory: Inventory not found');
         return;
       }
 
-      /** If order success then update stock and reserved */
-      inventoryData = await findOneAndUpdateDoc(MONGOOSE_MODELS.INVENTORY, { _id: inventoryData._id }, reqBody, {
-        new: true,
-      });
+      switch (eventType) {
+        case 'checkout.session.completed':
+          /** If order success then update stock and reserved */
+          inventoryData = await findOneAndUpdateDoc(
+            MONGOOSE_MODELS.INVENTORY,
+            { _id: inventoryData._id },
+            {
+              $inc: { stock: -orderItem.quantity, reserved: orderItem.quantity },
+            },
+            {
+              new: true,
+            }
+          );
+          break;
+
+        default:
+          /** If order success then update stock and reserved */
+          inventoryData = await findOneAndUpdateDoc(
+            MONGOOSE_MODELS.INVENTORY,
+            { _id: inventoryData._id },
+            {
+              $inc: { stock: orderItem.quantity, reserved: -orderItem.quantity },
+            },
+            {
+              new: true,
+            }
+          );
+          break;
+      }
+      console.log('🚀 ~ updateStockInInventory ~ inventoryData:', inventoryData);
     }
     return;
   } catch (error) {

@@ -7,6 +7,8 @@ const paymentService = require('../../payment/payment.service');
 const orderService = require('../../orders/order.service');
 const userService = require('../../user/user.service');
 const { runWithTransaction } = require('../../../models/transaction/transaction');
+const { findOneDoc } = require('../../../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../../../helpers/mongoose.model.helper');
 
 const createPaymentIntent = async ({ amount, currency }) => {
   return await stripe.paymentIntents.create({
@@ -22,12 +24,36 @@ const createPaymentIntent = async ({ amount, currency }) => {
  * @returns {string} success url
  */
 async function createCheckoutSession(payload) {
-  const { user, items, shippingAddress, line_items, currency, shippoShipmentId, rateObjectId } = payload;
+  const { user, shippingAddress, items, currency, shippoShipmentId, rateObjectId, cartIds } = payload;
 
   let session;
 
   await runWithTransaction(async (dbSession) => {
-    const subtotal = items.reduce((acc, item) => acc + item.unit_amount * item.quantity, 0);
+    let line_items = [];
+    let itemsData = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const productSkuData = await findOneDoc(MONGOOSE_MODELS.PRODUCT_SKU, { variant: item.productVariantId });
+      line_items.push({
+        price_data: {
+          currency,
+          product_data: {
+            name: item.product_name,
+          },
+          unit_amount: productSkuData.price * 100,
+        },
+        quantity: item?.quantity || 1,
+      });
+
+      itemsData.push({
+        variant: item.productVariantId,
+        quantity: item?.quantity || 1,
+        unitPrice: productSkuData.price * 100,
+        totalPrice: productSkuData.price * 100 * item?.quantity,
+      });
+    }
+    const subtotal = line_items.reduce((acc, item) => acc + item.price_data.unit_amount * item.quantity, 0);
     const tax = subtotal * 0.1;
     const shippingCost = 10;
     const totalAmount = (tax + shippingCost) * 100;
@@ -43,7 +69,7 @@ async function createCheckoutSession(payload) {
     const order = await orderService.updateOrder(
       {
         user: user._id,
-        items,
+        items: itemsData,
         shippingAddress,
         subtotal,
         tax,
@@ -52,7 +78,7 @@ async function createCheckoutSession(payload) {
       },
       {
         user: user._id,
-        items,
+        items: itemsData,
         shippingAddress,
         subtotal,
         tax,
@@ -71,7 +97,13 @@ async function createCheckoutSession(payload) {
       mode: 'payment',
       success_url: `${paymentSuccessUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: paymentCancelUrl,
-      metadata: { orderId: order._id.toString(), userId: String(user._id), shippoShipmentId, rateObjectId },
+      metadata: {
+        orderId: order._id.toString(),
+        userId: String(user._id),
+        shippoShipmentId,
+        rateObjectId,
+        cartIds: JSON.stringify(cartIds),
+      },
       customer_email: userData.email,
       shipping_address_collection: {
         allowed_countries: ['IN'],

@@ -7,15 +7,16 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    product: {
+    variant: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
+      ref: 'Product_Variant',
     },
     quantity: {
       type: Number,
       default: 1,
     },
     status: {
+      type: String,
       enum: Object.values(PAYMENT_STATUS),
       default: PAYMENT_STATUS.PENDING,
     },

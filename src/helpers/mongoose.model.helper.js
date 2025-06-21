@@ -10,8 +10,9 @@ const MONGOOSE_MODELS = {
   PRODUCT_INVENTORY: 'Product_Inventory',
   WAREHOUSE: 'Warehouse',
   CATEGORY: 'Category',
-  INVENTORY: 'Inventory',
-  CART: 'Cart'
+  INVENTORY: 'Product_Inventory',
+  CART: 'Cart',
+  ORDER: 'Order',
 };
 
 module.exports = {

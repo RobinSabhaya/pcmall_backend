@@ -5,12 +5,14 @@ const {
   paymentGateway: { paymentProvider },
 } = require('../../config/config');
 const httpStatus = require('http-status');
+const { findOneDoc, findDoc } = require('../../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
 
 // checkout
 const checkout = catchAsync(async (req, res) => {
   try {
     const user = req.user;
-    const { shippingAddress, currency, items, shippoShipmentId, rateObjectId } = req.body;
+    const { shippingAddress, currency, items, shippoShipmentId, rateObjectId, cartIds } = req.body;
 
     // example
     // [
@@ -19,30 +21,26 @@ const checkout = catchAsync(async (req, res) => {
     //         currency,
     //         product_data: { name: "item.name" },
     //         unit_amount: 10 * 100,
+    //           productVariantId:
     //       },
     //       quantity: 1,
     //     },
     //   ]
 
-    const line_items = items.map((ele) => ({
-      price_data: {
-        currency,
-        product_data: {
-          name: ele.product_name,
-        },
-        unit_amount: ele.unit_amount * 100,
-      },
-      quantity: ele.quantity || 1,
-    }));
+    const productVariantData = await findDoc(MONGOOSE_MODELS.PRODUCT_VARIANT, {
+      _id: items.map((i) => i.productVariantId),
+    });
+
+    if (!productVariantData?.length) throw new ApiError(httpStatus.BAD_REQUEST, 'Product variant not valid');
 
     const checkoutUrl = await handlePayment(paymentProvider).createCheckoutSession({
       user,
-      line_items,
+      items,
       shippingAddress,
       currency,
-      items,
       shippoShipmentId,
       rateObjectId,
+      cartIds,
     });
 
     return res.json({

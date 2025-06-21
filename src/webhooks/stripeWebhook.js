@@ -63,20 +63,14 @@ async function handleStripeWebhook(req, res) {
             { _id: payment.orderId },
             {
               status: PAYMENT_STATUS.PAID,
-              paymentId: session.payment_intent,
+              paymentId: payment._id,
               shipping: shippingData._id,
             }
             // { session: dbSession }
           );
 
           /** Update Stock and Inventory  */
-          await paymentService.updateStockInInventory(
-            { order },
-            {
-              stock: { $inc: -orderItem.quantity },
-              reserved: { $inc: orderItem.quantity },
-            }
-          );
+          await paymentService.updateStockInInventory({ order, eventType: event.type });
 
           /** Buy Label */
           const { shipment, label } = await handleShipping(shippingCarrier).generateBuyLabel({
@@ -88,14 +82,17 @@ async function handleStripeWebhook(req, res) {
 
           // TODO: Make Async with Queue (Background Jobs)
           /** Send SMS */
-          if (userData?.phone_number) await paymentService.orderConfirmationSMS({ userProfileData, order });
+          if (userData?.phone_number) await paymentService.orderConfirmationSMS({ userData, userProfileData, order });
 
           /** Send Email */
-          if (userData?.email) await paymentService.orderConfirmationEmail({ userProfileData, order });
+          if (userData?.email) await paymentService.orderConfirmationEmail({ userData, userProfileData, order });
 
           /** Remove from Cart */
-          if (metadata?.cartIds?.length <= 10) {
-            await paymentService.updateAllCartStatus({ cartIds: metadata?.cartIds }, { status: PAYMENT_STATUS.PAID });
+          if (JSON.parse(metadata?.cartIds || [])?.length <= 10) {
+            await paymentService.updateAllCartStatus(
+              { cartIds: JSON.parse(metadata?.cartIds || []) },
+              { status: PAYMENT_STATUS.PAID }
+            );
           }
         });
       } catch (err) {
@@ -109,7 +106,7 @@ async function handleStripeWebhook(req, res) {
 
     case 'checkout.session.async_payment_failed':
       try {
-        await handlePaymentFailure(session);
+        await handlePaymentFailure({ event }, session);
       } catch (error) {
         console.error('Webhook error (session.failed)', error);
       }
@@ -117,7 +114,7 @@ async function handleStripeWebhook(req, res) {
 
     case 'checkout.session.expired':
       try {
-        await handlePaymentExpired(session);
+        await handlePaymentExpired({ event }, session);
       } catch (error) {
         console.error('Webhook error (session.expired)', error);
       }
@@ -130,7 +127,8 @@ async function handleStripeWebhook(req, res) {
   return res.status(httpStatus.OK).json({ received: true });
 }
 
-async function handlePaymentFailure(session) {
+async function handlePaymentFailure(payload, session) {
+  const { event } = payload;
   const payment = await paymentService.createPayment(
     { sessionId: session.id },
     { status: PAYMENT_STATUS.FAILED }
@@ -145,16 +143,11 @@ async function handlePaymentFailure(session) {
   );
 
   /** If order fail then update stock and reserved */
-  await paymentService.updateStockInInventory(
-    { order },
-    {
-      stock: { $inc: orderItem.quantity },
-      reserved: { $inc: -orderItem.quantity },
-    }
-  );
+  await paymentService.updateStockInInventory({ order, eventType: event.type });
 }
 
-async function handlePaymentExpired(session) {
+async function handlePaymentExpired(payload, session) {
+  const { event } = payload;
   const payment = await paymentService.createPayment(
     { sessionId: session.id },
     { status: PAYMENT_STATUS.EXPIRED }
@@ -168,13 +161,7 @@ async function handlePaymentExpired(session) {
   );
 
   /** If order fail then update stock and reserved */
-  await paymentService.updateStockInInventory(
-    { order },
-    {
-      stock: { $inc: orderItem.quantity },
-      reserved: { $inc: -orderItem.quantity },
-    }
-  );
+  await paymentService.updateStockInInventory({ order, eventType: event.type });
 }
 
 module.exports = { handleStripeWebhook };

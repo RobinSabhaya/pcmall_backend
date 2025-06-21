@@ -72,7 +72,7 @@ async function fetchProducts() {
       const productSkuPayload = {
         seller: '683ae9fc5f6597738bf9dd6a',
         variant: productVariantData?._id,
-        product: productData?._id,
+        product: productDetailsData?._id,
         skuCode: generateSKU({
           name: productDetailsData?.title,
           category: productCategoryData?.categoryName || 'Category',
@@ -83,7 +83,7 @@ async function fetchProducts() {
           category: productCategoryData?.categoryName || 'Category',
           brand: brandData?.name || 'Brand',
         }),
-        price: (product?.price || 1) * 83,
+        price: Number((product?.price || 1) * 83).toFixed(2),
         discount: product?.discountPercentage || 0,
       };
 

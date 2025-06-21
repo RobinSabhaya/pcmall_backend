@@ -4,46 +4,46 @@ const mongoose = require('mongoose');
 const catchAsync = require('../../utils/catchAsync');
 const ApiError = require('../../utils/ApiError');
 const httpStatus = require('http-status');
+const { findOneDoc } = require('../../helpers/mongoose.helper');
+const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
+const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 const addToCart = catchAsync(async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
+  const { productVariantId, quantity } = req.body;
 
-    /** Check product exists or not */
-    const productExists = await productService.getProduct({
-      _id: productId,
-    });
+  /** Check product exists or not */
+  const productVariantExists = await findOneDoc(MONGOOSE_MODELS.PRODUCT_VARIANT, {
+    _id: productVariantId,
+  });
 
-    if (!productExists) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
-    }
-
-    /** create cart */
-    const cartData = await cartService.createCart(
-      {
-        product: productExists._id,
-        user: req.user._id,
-        quantity,
-      },
-      {
-        product: productExists._id,
-        user: req.user._id,
-        quantity,
-      },
-      {
-        upsert: true,
-        new: true,
-      }
-    );
-
-    return res.status(httpStatus.OK).json({
-      success: true,
-      data: cartData,
-      message: 'Cart added successfully',
-    });
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+  if (!productVariantExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
   }
+
+  /** create cart */
+  const cartData = await cartService.createCart(
+    {
+      variant: productVariantExists._id,
+      user: req.user._id,
+      quantity,
+      status: PAYMENT_STATUS.PENDING,
+    },
+    {
+      variant: productVariantExists._id,
+      user: req.user._id,
+      quantity,
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    data: cartData,
+    message: 'Cart added successfully',
+  });
 });
 
 const updateToCart = catchAsync(async (req, res) => {

@@ -51,61 +51,61 @@ const getAllCart = async (filter, options = {}) => {
     },
     {
       $lookup: {
-        from: 'products',
-        localField: 'product',
+        from: 'product_variants',
+        localField: 'variant',
         foreignField: '_id',
         pipeline: [
           {
             $lookup: {
-              from: 'product_brands',
-              localField: 'brand',
+              from: 'products',
+              localField: 'product',
               foreignField: '_id',
-              as: 'brand',
+              pipeline: [
+                {
+                  $lookup: {
+                    from: 'product_brands',
+                    localField: 'brand',
+                    foreignField: '_id',
+                    as: 'brand',
+                  },
+                },
+                {
+                  $unwind: {
+                    path: '$brand',
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+              ],
+              as: 'product',
             },
           },
           {
             $unwind: {
-              path: '$brand',
+              path: '$product',
               preserveNullAndEmptyArrays: true,
             },
           },
           {
             $lookup: {
-              from: 'product_variants',
+              from: 'product_skus',
               localField: '_id',
-              foreignField: 'product',
-              pipeline: [
-                {
-                  $lookup: {
-                    from: 'product_skus',
-                    localField: '_id',
-                    foreignField: 'variant',
-                    as: 'product_skus',
-                  },
-                },
-                {
-                  $unwind: {
-                    path: '$product_skus',
-                    preserveNullAndEmptyArrays: true,
-                  },
-                },
-              ],
-              as: 'product_variants',
+              foreignField: 'variant',
+              as: 'product_skus',
             },
           },
           {
             $unwind: {
-              path: '$product_variants',
+              path: '$product_skus',
               preserveNullAndEmptyArrays: true,
             },
           },
         ],
-        as: 'product',
+        as: 'product_variants',
       },
     },
     {
       $unwind: {
-        path: '$product',
+        path: '$product_variants',
         preserveNullAndEmptyArrays: true,
       },
     },

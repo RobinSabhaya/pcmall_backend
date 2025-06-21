@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
 
 const OrderItemSchema = new mongoose.Schema({
-  productSku: {
+  variant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product_Sku',
+    ref: 'Product_Variant',
     required: true,
   },
   quantity: { type: Number, required: true, default: 1 },
