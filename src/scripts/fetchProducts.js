@@ -56,6 +56,7 @@ async function fetchProducts() {
         images: product?.images,
         attributeCombination: {
           brand: brandData?.name || 'Brand',
+          dimensions: product?.dimensions || {},
         },
       };
 

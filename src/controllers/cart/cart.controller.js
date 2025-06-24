@@ -113,6 +113,7 @@ const getAllCart = catchAsync(async (req, res) => {
     const cartData = await cartService.getAllCart(
       {
         user: new mongoose.Types.ObjectId(req.user._id),
+        status: PAYMENT_STATUS.PENDING,
       },
       options
     );

@@ -5,8 +5,8 @@ const inventoryLogSchema = new mongoose.Schema(
   {
     inventory: { type: mongoose.Types.ObjectId, ref: 'Inventory' },
     type: { type: String, enum: Object.values(INVENTORY_TYPE) },
-    quantity: Number,
-    reference: String,
+    quantity: { type: Number, default: 1 },
+    reference: { type: String, default: null },
   },
   {
     timestamps: true,

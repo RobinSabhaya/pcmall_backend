@@ -95,8 +95,124 @@ function generateSKU(payload) {
   return parts.filter(Boolean).join('-');
 }
 
+function getItemVolume(item) {
+  return item.length * item.width * item.height * item.quantity;
+}
+
+function getBoxVolume(box) {
+  return box.length * box.width * box.height;
+}
+
+function getTotalWeight(cart) {
+  return cart.reduce((sum, item) => sum + item.weightOz * item.quantity, 0);
+}
+
+function getTotalVolume(cart) {
+  return cart.reduce((sum, item) => sum + getItemVolume(item), 0);
+}
+
+/**
+ * Try fitting into available boxes by volume + dimension constraints
+ * @param {object} cart
+ * @returns {object} selected box
+ */
+function selectBestBox(cart) {
+  const boxes = [
+    { name: 'Small Box', length: 8, width: 6, height: 2 },
+
+    { name: 'Medium Box', length: 12, width: 9, height: 4 },
+
+    { name: 'Large Box', length: 16, width: 12, height: 6 },
+  ];
+
+  // const cartItems = [
+  //   {
+  //     name: 'T-shirt',
+
+  //     quantity: 3,
+
+  //     weightOz: 8,
+
+  //     length: 10,
+
+  //     width: 8,
+
+  //     height: 1,
+  //   },
+
+  //   {
+  //     name: 'Mug',
+
+  //     quantity: 2,
+
+  //     weightOz: 16,
+
+  //     length: 5,
+
+  //     width: 5,
+
+  //     height: 5,
+  //   },
+  // ];
+
+  const totalVolume = getTotalVolume(cart);
+
+  for (let box of boxes) {
+    const boxVolume = getBoxVolume(box);
+
+    if (boxVolume < totalVolume) continue;
+
+    // Check max dimension fit (simplified)
+
+    const maxItem = cart.reduce(
+      (acc, item) => {
+        acc.length = Math.max(acc.length, item.length);
+
+        acc.width = Math.max(acc.width, item.width);
+
+        acc.height = Math.max(acc.height, item.height);
+
+        return acc;
+      },
+      { length: 0, width: 0, height: 0 }
+    );
+
+    if (box.length >= maxItem.length && box.width >= maxItem.width && box.height >= maxItem.height) {
+      return box;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Build parcel objects
+ * @param {object} cart
+ * @returns
+ */
+function buildParcelObject(cart) {
+  const totalWeightOz = getTotalWeight(cart);
+
+  const selectedBox = selectBestBox(cart);
+
+  if (!selectedBox) {
+    throw new Error('No available box fits the items.');
+  }
+
+  return {
+    length: selectedBox.length,
+    width: selectedBox.width,
+    height: selectedBox.height,
+    distance_unit: 'in',
+    weight: totalWeightOz,
+    mass_unit: 'oz',
+  };
+}
+
 module.exports = {
   parseDeviceInfo,
   generateAddressForShipping,
   generateSKU,
+  selectBestBox,
+  buildParcelObject,
 };

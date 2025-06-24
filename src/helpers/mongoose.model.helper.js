@@ -11,6 +11,7 @@ const MONGOOSE_MODELS = {
   WAREHOUSE: 'Warehouse',
   CATEGORY: 'Category',
   INVENTORY: 'Product_Inventory',
+  INVENTORY_LOG: 'Inventory_Log',
   CART: 'Cart',
   ORDER: 'Order',
 };

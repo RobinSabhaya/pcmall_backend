@@ -57,36 +57,6 @@ const getAllCart = async (filter, options = {}) => {
         pipeline: [
           {
             $lookup: {
-              from: 'products',
-              localField: 'product',
-              foreignField: '_id',
-              pipeline: [
-                {
-                  $lookup: {
-                    from: 'product_brands',
-                    localField: 'brand',
-                    foreignField: '_id',
-                    as: 'brand',
-                  },
-                },
-                {
-                  $unwind: {
-                    path: '$brand',
-                    preserveNullAndEmptyArrays: true,
-                  },
-                },
-              ],
-              as: 'product',
-            },
-          },
-          {
-            $unwind: {
-              path: '$product',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
               from: 'product_skus',
               localField: '_id',
               foreignField: 'variant',
@@ -106,6 +76,36 @@ const getAllCart = async (filter, options = {}) => {
     {
       $unwind: {
         path: '$product_variants',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'product_variants.product',
+        foreignField: '_id',
+        pipeline: [
+          {
+            $lookup: {
+              from: 'product_brands',
+              localField: 'brand',
+              foreignField: '_id',
+              as: 'brand',
+            },
+          },
+          {
+            $unwind: {
+              path: '$brand',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ],
+        as: 'product',
+      },
+    },
+    {
+      $unwind: {
+        path: '$product',
         preserveNullAndEmptyArrays: true,
       },
     },

@@ -7,7 +7,7 @@ const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
 const { findOneDoc, findOneAndUpdateDoc, findDoc, updateManyDoc } = require('../../helpers/mongoose.helper');
 const { handleSMS } = require('../sms/smsStrategy');
 const moment = require('moment');
-const { PAYMENT_STATUS } = require('../../helpers/constant.helper');
+const { PAYMENT_STATUS, INVENTORY_TYPE } = require('../../helpers/constant.helper');
 /**
  * Create payment
  * @param {object} filter
@@ -114,35 +114,48 @@ const updateStockInInventory = async (payload, reqBody, options) => {
         return;
       }
 
+      let payload = {};
+      let inventoryPayload = {};
       switch (eventType) {
         case 'checkout.session.completed':
-          /** If order success then update stock and reserved */
-          inventoryData = await findOneAndUpdateDoc(
-            MONGOOSE_MODELS.INVENTORY,
-            { _id: inventoryData._id },
-            {
-              $inc: { stock: -orderItem.quantity, reserved: orderItem.quantity },
-            },
-            {
-              new: true,
-            }
-          );
+          inventoryPayload = {
+            $inc: { stock: -orderItem.quantity, reserved: orderItem.quantity },
+          };
+
+          payload = {
+            inventory: inventoryData._id,
+            type: INVENTORY_TYPE.RESERVE,
+            quantity: orderItem.quantity,
+            reference: null,
+          };
           break;
 
         default:
-          /** If order success then update stock and reserved */
-          inventoryData = await findOneAndUpdateDoc(
-            MONGOOSE_MODELS.INVENTORY,
-            { _id: inventoryData._id },
-            {
-              $inc: { stock: orderItem.quantity, reserved: -orderItem.quantity },
-            },
-            {
-              new: true,
-            }
-          );
+          inventoryPayload = {
+            $inc: { stock: orderItem.quantity, reserved: -orderItem.quantity },
+          };
+          payload = {
+            inventory: inventoryData._id,
+            type: INVENTORY_TYPE.ADJUSTMENT,
+            quantity: orderItem.quantity,
+            reference: null,
+          };
+
+          console.log(`ADJUSTMENT STOCK: ${orderItem?.quantity || 1}`);
           break;
       }
+
+      /** If order success then update stock and reserved */
+      await findOneAndUpdateDoc(MONGOOSE_MODELS.INVENTORY, { _id: inventoryData._id }, inventoryPayload, {
+        new: true,
+      });
+
+      /** Log the history of Inventory */
+      await findOneAndUpdateDoc(MONGOOSE_MODELS.INVENTORY_LOG, payload, payload, {
+        upsert: true,
+        new: true,
+      });
+
       console.log('🚀 ~ updateStockInInventory ~ inventoryData:', inventoryData);
     }
     return;
