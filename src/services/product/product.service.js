@@ -26,6 +26,11 @@ const getAllProducts = (filter, options = {}) => {
   const pagination = paginationQuery(options);
   return Product.aggregate([
     {
+      $match: {
+        ...(filter?._id && { _id: filter._id }),
+      },
+    },
+    {
       $lookup: {
         from: 'categories',
         localField: 'category',

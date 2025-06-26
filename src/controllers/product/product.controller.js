@@ -9,7 +9,7 @@ const { generateSKU } = require('../../helpers/function.helper');
 
 const getAllProducts = catchAsync(async (req, res) => {
   try {
-    let { categories, colors, prices, ...options } = req.query;
+    let { categories, colors, prices, productId, ...options } = req.query;
 
     categories = JSON.parse(categories || '[]');
     colors = JSON.parse(colors || '[]');
@@ -38,6 +38,11 @@ const getAllProducts = catchAsync(async (req, res) => {
       filter.prices = {
         price: { $gte: prices?.min || 0, $lte: prices?.max || 1000000 },
       };
+    }
+
+    // For Single Product
+    if (productId) {
+      filter._id = new mongoose.Types.ObjectId(productId);
     }
 
     if (!filter.$or.length) delete filter.$or;
