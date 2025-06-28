@@ -90,6 +90,10 @@ const SHIPPING_CARRIERS = {
   SHIPPO: 'shippo',
 };
 
+const FILES_FOLDER = {
+  PUBLIC: 'public',
+  TEMP: 'temp',
+};
 module.exports = {
   ACCOUNT_STATUS,
   USER_ROLE,
@@ -107,4 +111,5 @@ module.exports = {
   PRODUCT_SKU_STATUS,
   PAYMENT_PROVIDERS,
   SHIPPING_CARRIERS,
+  FILES_FOLDER,
 };

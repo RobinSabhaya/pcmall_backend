@@ -12,6 +12,7 @@ const path = require('path');
 
 /** Upload image on AWS S3 bucket */
 const localUpload = async (fileKeyPath, fileBuffer, fileType) => {
+  console.log(`../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`);
   // Check if the directory exists, and if not, create it
   if (!fs.existsSync(path.resolve(__dirname, `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`))) {
     fs.mkdirSync(path.resolve(__dirname, `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`), {

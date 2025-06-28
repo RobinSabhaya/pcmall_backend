@@ -1,10 +1,14 @@
 const fs = require('fs');
-const { FILES_FOLDER } = require('../helper/constant.helper');
+const { FILES_FOLDER } = require('../../helpers/constant.helper');
 const httpStatus = require('http-status');
 const path = require('path');
-const ApiError = require('../utils/ApiError');
+const ApiError = require('../../utils/ApiError');
 const { localUpload } = require('./aws.service');
+const { handleStorage } = require('../storage/storageStrategy');
 const sharp = require('sharp');
+const {
+  minIO: { fileStorageProvider },
+} = require('../../config/config');
 
 const createFilePath = (filePath) => {
   let file_path = `${filePath.mainFolderName}`;
@@ -22,7 +26,7 @@ const createFilePath = (filePath) => {
  * @returns {Promise<String>} - Folder path.
  */
 const createFolder = (folder) => {
-  const publicDir = `./${FILES_FOLDER.public}`;
+  const publicDir = `./${FILES_FOLDER.PUBLIC}`;
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir); // If public folder doesn't exist, create it.
   }
@@ -373,6 +377,7 @@ const compressFile = async (fromFile, qualities, toFile, fileName, buffer) => {
  * @param {string} [filesDtl.fileMimeType]
  * @param {Array<string>} [filesDtl.fileQualities]
  * @param {Boolean} [filesDtl.needCompress]
+ * @param {number} [filesDtl.fileSize]
  * @returns {Boolean}
  */
 exports.saveFiles = async (filesDtl) => {
@@ -395,9 +400,11 @@ exports.saveFiles = async (filesDtl) => {
         /** save original file */
         // fs.copyFileSync(fromFile, `${writeFilePath}/${filesDtl[j].fileName}`);
 
-        await localUpload(`${writeFilePath}/${fileName}`, buffer, {
-          filePathForMimeType: fromFile,
-        });
+        // await localUpload(`${writeFilePath}/${fileName}`, buffer, {
+        //   filePathForMimeType: fromFile,
+        // });
+
+        await handleStorage(fileStorageProvider).uploadFileToMinio(filesDtl);
 
         if (filesDtl[j].needCompress) {
           await compressFile(fromFile, filesDtl[j]?.fileQualities, writeFilePath, filesDtl[j].fileName, buffer);
@@ -554,7 +561,7 @@ exports.uploadWithoutCompress = async (file, uploadFolder, fileFor) => {
       break;
   }
 
-  const dir = `./${FILES_FOLDER.public}/${uploadFolder}`;
+  const dir = `./${FILES_FOLDER.PUBLIC}/${uploadFolder}`;
   let tempFileName;
 
   // Check that if directory is present or not.

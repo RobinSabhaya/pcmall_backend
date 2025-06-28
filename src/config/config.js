@@ -65,6 +65,15 @@ const envVarsSchema = Joi.object()
     TWILIO_ACCOUNT_SID: Joi.string().description('Twilio Account SID'),
     TWILIO_AUTH_TOKEN: Joi.string().description('Twilio auth token'),
     TWILIO_PHONE_NUMBER: Joi.string().description('Twilio phone number'),
+
+    /** File storage Provider */
+    FILE_STORAGE_PROVIDER: Joi.string().description('File storage provider'),
+    // minIO
+    MINIO_ENDPOINT: Joi.string().description('minIO endpoint'),
+    MINIO_PORT: Joi.string().description('minIO port'),
+    MINIO_ACCESS_KEY: Joi.string().description('minIO access key'),
+    MINIO_SECRET_KEY: Joi.string().description('minIO secret key'),
+    MINIO_BUCKET: Joi.string().description('minIO bucket'),
   })
   .unknown();
 
@@ -132,5 +141,13 @@ module.exports = {
     accountSid: envVars.TWILIO_ACCOUNT_SID,
     accountAuthToken: envVars.TWILIO_AUTH_TOKEN,
     accountPhoneNumber: envVars.TWILIO_PHONE_NUMBER,
+  },
+  minIO: {
+    fileStorageProvider: envVars.FILE_STORAGE_PROVIDER,
+    minIOEndpoint: envVars.MINIO_ENDPOINT,
+    minIOPort: envVars.MINIO_PORT,
+    minIOAccessKey: envVars.MINIO_ACCESS_KEY,
+    minIOSecretKey: envVars.MINIO_SECRET_KEY,
+    minIOBucket: envVars.MINIO_BUCKET,
   },
 };
