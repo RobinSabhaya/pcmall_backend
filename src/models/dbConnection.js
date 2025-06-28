@@ -1,6 +1,6 @@
 const logger = require('../config/logger');
 const config = require('../config/config');
-const mongoose  = require('mongoose');
+const mongoose = require('mongoose');
 
 const dbConnection = () => {
   mongoose
@@ -9,11 +9,10 @@ const dbConnection = () => {
       logger.info('Database connected ✅');
     })
     .catch((err) => {
-      console.log("🚀 ~ dbConnection ~ err:", err)
       logger.error('Database not connected ❌');
     });
 };
 
 module.exports = {
-  dbConnection
-}
+  dbConnection,
+};

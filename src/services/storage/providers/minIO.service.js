@@ -1,12 +1,11 @@
 const { Client } = require('minio');
 const {
-  minIO: { minIOEndpoint, minIOBucket, minIOSecretKey, minIOAccessKey, minIOPort, fileStorageProvider },
+  minIO: { minIOEndpoint, minIOBucket, minIOSecretKey, minIOAccessKey, minIOPort },
 } = require('../../../config/config');
 
 const minioClient = new Client({
   endPoint: minIOEndpoint,
-  port: minIOPort,
-  useSSL: false,
+  useSSL: true,
   accessKey: minIOAccessKey,
   secretKey: minIOSecretKey,
 });
@@ -17,13 +16,8 @@ const minioClient = new Client({
  * @returns {{url}} url
  */
 const getFileLink = async ({ fileName, expirySeconds = 60 * 60 }) => {
-  minioClient.presignedUrl('GET', minIOBucket, fileName, (err, url) => {
-    if (err) return;
-    console.error('Error generate file link', err);
-    return {
-      url,
-    };
-  });
+  const fileUrl = await minioClient.presignedUrl('GET', minIOBucket, fileName);
+  return fileUrl;
 };
 
 /**
@@ -45,8 +39,7 @@ const uploadFileToMinio = async (files) => {
     'Content-Type': fileMimeType,
   });
 
-  fileUrl = `${minIOEndpoint}:${minIOPort}/${bucketName}/${fileName}`;
-  fileUrl = getFileLink({ fileName });
+  const fileUrl = getFileLink({ fileName });
   return { fileName, fileUrl };
 };
 
