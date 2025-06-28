@@ -8,4 +8,4 @@ if [ ! -f ./minio ]; then
 fi
 
 # Start MinIO in background
-./minio server /data --console-address ":9001" &
+./minio server /tmp/minio-data --console-address ":9001" &
