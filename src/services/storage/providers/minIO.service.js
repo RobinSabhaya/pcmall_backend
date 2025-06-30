@@ -39,7 +39,7 @@ const uploadFileToMinio = async (files) => {
     'Content-Type': fileMimeType,
   });
 
-  const fileUrl = getFileLink({ fileName });
+  const fileUrl = await getFileLink({ fileName });
   return { fileName, fileUrl };
 };
 

@@ -1,4 +1,5 @@
 const { User, Address } = require('../../models/user');
+const { getFileLink } = require('../storage/providers/minIO.service');
 
 /**
  * Create user
@@ -78,8 +79,8 @@ const getFilterUser = (filter, options = {}) => {
  * @param {object} options
  * @returns {Promise<User>}
  */
-const getUser = (filter, options = {}) => {
-  return User.aggregate([
+const getUser = async (filter, options = {}) => {
+  const userData = await User.aggregate([
     {
       $match: {
         ...filter,
@@ -129,6 +130,18 @@ const getUser = (filter, options = {}) => {
       },
     },
   ]);
+
+  return await Promise.all(
+    userData.map(async (user) => {
+      if (user.user_profile?.profile_picture && user.user_profile.profile_picture !== '') {
+        user.user_profile.profile_picture = await getFileLink({ fileName: user.user_profile.profile_picture });
+      } else {
+        user.user_profile.profile_picture = null;
+      }
+
+      return user;
+    })
+  );
 };
 
 /**
