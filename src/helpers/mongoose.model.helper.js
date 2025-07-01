@@ -14,6 +14,7 @@ const MONGOOSE_MODELS = {
   INVENTORY_LOG: 'Inventory_Log',
   CART: 'Cart',
   ORDER: 'Order',
+  RATING: 'Rating',
 };
 
 module.exports = {

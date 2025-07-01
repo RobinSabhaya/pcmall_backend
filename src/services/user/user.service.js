@@ -1,5 +1,6 @@
 const { User, Address } = require('../../models/user');
-const { getFileLink } = require('../storage/providers/minIO.service');
+const { handleStorage } = require('../storage/storageStrategy');
+const { minIO: { fileStorageProvider} } = require('../../config/config')
 
 /**
  * Create user
@@ -134,7 +135,7 @@ const getUser = async (filter, options = {}) => {
   return await Promise.all(
     userData.map(async (user) => {
       if (user.user_profile?.profile_picture && user.user_profile.profile_picture !== '') {
-        user.user_profile.profile_picture = await getFileLink({ fileName: user.user_profile.profile_picture });
+        user.user_profile.profile_picture = await handleStorage(fileStorageProvider).getFileLink({ fileName: user.user_profile.profile_picture });
       } else {
         user.user_profile.profile_picture = null;
       }

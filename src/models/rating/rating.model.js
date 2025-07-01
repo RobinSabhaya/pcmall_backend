@@ -13,7 +13,7 @@ const ratingSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Types.ObjectId,
-      ref: "register",
+      ref: "User",
       default: null,
     },
     ip: {
@@ -29,6 +29,7 @@ const ratingSchema = new mongoose.Schema(
     },
   },
   {
+    versionKey:false,
     timestamps: true,
   }
 );

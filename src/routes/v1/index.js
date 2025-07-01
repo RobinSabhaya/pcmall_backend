@@ -10,6 +10,7 @@ const productRoute = require('./product');
 const shippingRoute = require('./shipping');
 const inventoryRoute = require('./inventory');
 const warehouseRoute = require('./warehouse');
+const ratingRoute = require('./rating');
 const docsRoute = require('../v1/docs/docs.route');
 const config = require('../../config/config');
 
@@ -59,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/',
     route: warehouseRoute,
+  },
+  {
+    path: '/',
+    route: ratingRoute,
   },
 ];
 
