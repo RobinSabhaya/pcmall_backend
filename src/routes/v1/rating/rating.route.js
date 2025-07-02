@@ -8,5 +8,6 @@ const router = express.Router();
 
 router.post('/create', authorizeV3(USER_ROLE.BUYER), upload.array('file', 5), ratingController.createRating);
 router.get('/all', authorizeV3(USER_ROLE.BUYER), ratingController.getRatingList);
+router.get('/count', authorizeV3(USER_ROLE.BUYER), ratingController.getRatingCount);
 
 module.exports = router;

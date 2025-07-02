@@ -7,6 +7,10 @@ const ApiError = require('../../utils/ApiError');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const { FILES_FOLDER } = require('../../helpers/constant.helper');
+const { handleStorage } = require('../../services/storage/storageStrategy');
+const {
+  minIO: { fileStorageProvider },
+} = require('../../config/config');
 
 /**
  * Create Rating
@@ -51,6 +55,7 @@ const createRating = catchAsync(async (req, res) => {
 
   return res.status(httpStatus.OK).json({
     success: true,
+    message: 'Rating added successfully',
     data: ratingData,
   });
 });
@@ -59,28 +64,70 @@ const createRating = catchAsync(async (req, res) => {
  * Get rating list
  */
 const getRatingList = catchAsync(async (req, res) => {
-  const { productId, ...options } = req.query;
+  const { productId, rating, ...options } = req.query;
 
-  /** Get rating count */
-  const ratingCount = await ratingService.getRatingCount(
-    {
-      product: new mongoose.Types.ObjectId(productId),
-    },
-    options
-  );
+  const filter = {};
 
-  const ratingData = await ratingService.getRatingList(
-    {
-      product: new mongoose.Types.ObjectId(productId),
-    },
-    options
-  );
+  if (productId) filter.product = new mongoose.Types.ObjectId(productId);
+
+  if (rating) filter.rating = +rating;
+
+  const ratingData = await ratingService.getRatingList(filter, options);
+
+  if (ratingData[0]?.results?.length)
+    await Promise.all(
+      ratingData[0]?.results.map(async (rating) => {
+        // For rating images
+        if (!rating.images.includes(null) && !rating.images.includes('')) {
+          rating.images = await Promise.all(
+            rating.images.map((img) => handleStorage(fileStorageProvider).getFileLink({ fileName: img }))
+          );
+        } else {
+          rating.images = [];
+        }
+
+        // For user profile picture
+        if (rating.user_profile?.profile_picture && rating.user_profile.profile_picture !== '') {
+          rating.user_profile.profile_picture = await handleStorage(fileStorageProvider).getFileLink({
+            fileName: rating.user_profile.profile_picture,
+          });
+        } else {
+          rating.user_profile.profile_picture = null;
+        }
+
+        return rating;
+      })
+    );
 
   return res.status(httpStatus.OK).json({
     success: true,
     data: {
-      ratingCount,
-      ratingList: ratingData,
+      results: ratingData[0]?.results,
+      totalResults: ratingData[0].totalResults,
+      page: ratingData[0].page,
+      limit: ratingData[0].limit,
+      totalPages: ratingData[0].totalPages,
+    },
+  });
+});
+
+/** Get rating count */
+const getRatingCount = catchAsync(async (req, res) => {
+  const { productId, rating, ...options } = req.query;
+
+  const filter = {};
+
+  if (productId) filter.product = new mongoose.Types.ObjectId(productId);
+
+  if (rating) filter.rating = +rating;
+
+  /** Get rating count */
+  const ratingCount = await ratingService.getRatingCount(filter, options);
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    data: {
+      ratingCount: ratingCount[0],
     },
   });
 });
@@ -88,4 +135,5 @@ const getRatingList = catchAsync(async (req, res) => {
 module.exports = {
   createRating,
   getRatingList,
+  getRatingCount,
 };

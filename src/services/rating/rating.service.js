@@ -1,9 +1,5 @@
 const { Rating } = require('../../models/rating');
 const { paginationQuery } = require('../../helpers/mongoose.helper');
-const { handleStorage } = require('../../services/storage/storageStrategy');
-const {
-  minIO: { fileStorageProvider },
-} = require('../../config/config');
 
 /**
  * Get Rating List
@@ -11,13 +7,12 @@ const {
  * @param {object} options
  * @returns {Promise<[Rating]>}
  */
-const getRatingList = async (filter, options) => {
-  const { product } = filter;
+const getRatingList = (filter, options) => {
   const pagination = paginationQuery(options);
-  const ratingData = await Rating.aggregate([
+  return Rating.aggregate([
     {
       $match: {
-        product,
+        ...filter,
       },
     },
     {
@@ -36,31 +31,6 @@ const getRatingList = async (filter, options) => {
     },
     ...pagination,
   ]);
-
-  if (ratingData[0]?.results?.length)
-    return await Promise.all(
-      ratingData[0]?.results.map(async (rating) => {
-        // For rating images
-        if (!rating.images.includes(null) && !rating.images.includes('')) {
-          rating.images = await Promise.all(
-            rating.images.map((img) => handleStorage(fileStorageProvider).getFileLink({ fileName: img }))
-          );
-        } else {
-          rating.images = [];
-        }
-
-        // For user profile picture
-        if (rating.user_profile?.profile_picture && rating.user_profile.profile_picture !== '') {
-          rating.user_profile.profile_picture = await handleStorage(fileStorageProvider).getFileLink({
-            fileName: rating.user_profile.profile_picture,
-          });
-        } else {
-          rating.user_profile.profile_picture = null;
-        }
-
-        return rating;
-      })
-    );
 };
 
 /**
@@ -70,11 +40,10 @@ const getRatingList = async (filter, options) => {
  * @returns {Promise<[Rating]>}
  */
 const getRatingCount = (filter, options) => {
-  const { product } = filter;
   return Rating.aggregate([
     {
       $match: {
-        product,
+        ...filter,
       },
     },
     {
