@@ -27,7 +27,9 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    SMTP_SERVICE: Joi.string().description('smtp service'),
     SMTP_MAIL: Joi.string().description('Nodemailer mail'),
+    EMAIL_PROVIDER: Joi.string().description('Email provider'),
 
     // session
     SECRET_KEY: Joi.string().description('secret key'),
@@ -74,6 +76,12 @@ const envVarsSchema = Joi.object()
     MINIO_ACCESS_KEY: Joi.string().description('minIO access key'),
     MINIO_SECRET_KEY: Joi.string().description('minIO secret key'),
     MINIO_BUCKET: Joi.string().description('minIO bucket'),
+
+    /** Redis */
+    REDIS_DATABASE_USER_NAME: Joi.string().description('Redis database user name'),
+    REDIS_DATABASE_PASSWORD: Joi.string().description('Redis database password'),
+    REDIS_DATABASE_URL: Joi.string().description('Redis database url'),
+    REDIS_DATABASE_PORT: Joi.string().description('Redis database port`'),
   })
   .unknown();
 
@@ -105,11 +113,13 @@ module.exports = {
     smtp: {
       host: envVars.SMTP_HOST,
       port: envVars.SMTP_PORT,
+      service: envVars.SMTP_SERVICE,
       auth: {
         user: envVars.SMTP_USERNAME,
         pass: envVars.SMTP_PASSWORD,
       },
     },
+    emailProvider: envVars.EMAIL_PROVIDER,
     from: envVars.EMAIL_FROM,
   },
   paymentGateway: {
@@ -149,5 +159,11 @@ module.exports = {
     minIOAccessKey: envVars.MINIO_ACCESS_KEY,
     minIOSecretKey: envVars.MINIO_SECRET_KEY,
     minIOBucket: envVars.MINIO_BUCKET,
+  },
+  redis: {
+    redisDatabaseUserName: envVars.REDIS_DATABASE_USER_NAME,
+    redisDatabasePassword: envVars.REDIS_DATABASE_PASSWORD,
+    redisDatabaseUrl: envVars.REDIS_DATABASE_URL,
+    redisDatabasePort: envVars.REDIS_DATABASE_PORT,
   },
 };

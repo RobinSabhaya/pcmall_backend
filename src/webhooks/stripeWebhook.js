@@ -15,6 +15,7 @@ const { MONGOOSE_MODELS } = require('../helpers/mongoose.model.helper');
 const { handleSMS } = require('../services/sms/smsStrategy');
 const { ORDER_PAYMENT_SHIPPING_SUCCESS_SMS } = require('../helpers/template.helper');
 const moment = require('moment');
+const { notificationQueue } = require('../workers/notification');
 
 async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
@@ -51,7 +52,7 @@ async function handleStripeWebhook(req, res) {
           const userData = await findOneDoc(MONGOOSE_MODELS.USER, {
             _id: metadata.userId,
           });
-          const userProfileData = await findOneDoc(MONGOOSE_MODELS.USER, {
+          const userProfileData = await findOneDoc(MONGOOSE_MODELS.USER_PROFILE, {
             user: metadata.userId,
           });
 
@@ -80,12 +81,36 @@ async function handleStripeWebhook(req, res) {
 
           if (!shipment || !label) console.error('Shipment and Label has been fail');
 
-          // TODO: Make Async with Queue (Background Jobs)
           /** Send SMS */
-          if (userData?.phone_number) await paymentService.orderConfirmationSMS({ userData, userProfileData, order });
+          if (userData?.phone_number) {
+            notificationQueue.add(
+              `order_${order?._id}`,
+              {
+                type: 'sms',
+                userData,
+                userProfileData,
+                order,
+              },
+              {
+                delay: 100000,
+              }
+            );
+          }
 
-          /** Send Email */
-          if (userData?.email) await paymentService.orderConfirmationEmail({ userData, userProfileData, order });
+          if (userData?.email) {
+            notificationQueue.add(
+              `order_${order?._id}`,
+              {
+                type: 'email',
+                userData,
+                userProfileData,
+                order,
+              },
+              {
+                delay: 100000,
+              }
+            );
+          }
 
           /** Remove from Cart */
           if (JSON.parse(metadata?.cartIds || [])?.length <= 10) {

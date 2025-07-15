@@ -94,6 +94,10 @@ const FILES_FOLDER = {
   PUBLIC: 'public',
   TEMP: 'temp',
 };
+
+const QUEUES = {
+  NOTIFICATION_QUEUE: 'notification_queue',
+};
 module.exports = {
   ACCOUNT_STATUS,
   USER_ROLE,
@@ -112,4 +116,5 @@ module.exports = {
   PAYMENT_PROVIDERS,
   SHIPPING_CARRIERS,
   FILES_FOLDER,
+  QUEUES,
 };

@@ -1,13 +1,21 @@
 const { Payment } = require('../../models/payment/index');
 const {
   sms: { smsCarrier },
+  email: { emailProvider },
 } = require('../../config/config');
-const { ORDER_PAYMENT_SHIPPING_SUCCESS_SMS } = require('../../helpers/template.helper');
+const logger = require('../../config/logger');
+const {
+  ORDER_PAYMENT_SHIPPING_SUCCESS_SMS,
+  ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL,
+} = require('../../helpers/template.helper');
 const { MONGOOSE_MODELS } = require('../../helpers/mongoose.model.helper');
 const { findOneDoc, findOneAndUpdateDoc, findDoc, updateManyDoc } = require('../../helpers/mongoose.helper');
 const { handleSMS } = require('../sms/smsStrategy');
+const { handleEmail } = require('../email/emailStrategy');
 const moment = require('moment');
 const { PAYMENT_STATUS, INVENTORY_TYPE } = require('../../helpers/constant.helper');
+const path = require('path');
+const { formatAddress } = require('../../helpers/function.helper');
 /**
  * Create payment
  * @param {object} filter
@@ -82,16 +90,35 @@ const orderConfirmationSMS = async (payload) => {
  * @returns
  */
 const orderConfirmationEmail = async (payload) => {
-  const { userProfileData } = payload;
-  // await handleEmail(smsCarrier).sendEmail({
-  //   to: userData?.phone_number,
-  //   body: ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL({
-  //     customerName: userProfileData?.first_name + ' ' + (userProfileData?.last_name && userProfileData?.last_name) || 'User',
-  //     orderDate: moment(order?.updatedAt).format('DD-MM-YYYY') || moment().format('DD-MM-YYYY'),
-  //     orderId: String(order?._id),
-  //     storeName: 'PCMall',
-  //   }),
-  // });
+  try {
+    const { userData, userProfileData, order } = payload;
+
+    const userAddressData = await findOneDoc(MONGOOSE_MODELS.ADDRESS, {
+      _id: order?.shippingAddress,
+    });
+
+    if (!userAddressData) console.log('Error: User Address not available!');
+
+    const isEmailSend = await handleEmail(emailProvider).sendEmail(
+      userData.email,
+      ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL({
+        orderId: order?._id || '',
+      }),
+      {
+        user_name: userProfileData?.first_name || 'User',
+        order_number: order._id,
+        tracking_number: order._id,
+        delivery_address_line1: formatAddress(userAddressData)[0],
+        delivery_address_line2: formatAddress(userAddressData)[2],
+        delivery_address_line3: formatAddress(userAddressData)[3],
+      },
+      path.join(__dirname, '../../../views/order_success.ejs')
+    );
+
+    if (isEmailSend) logger.info('Email is send successfully');
+  } catch (error) {
+    logger.error(error);
+  }
 };
 
 /**
@@ -171,3 +198,22 @@ module.exports = {
   orderConfirmationEmail,
   updateStockInInventory,
 };
+
+// (async () => {
+//   /** Get User data */
+//   const userData = await findOneDoc(MONGOOSE_MODELS.USER, {
+//     _id: '6831df657b12972b30c15188',
+//   });
+//   const userProfileData = await findOneDoc(MONGOOSE_MODELS.USER_PROFILE, {
+//     user: '6831df657b12972b30c15188',
+//   });
+//   const order = await findOneDoc(MONGOOSE_MODELS.ORDER, {
+//     _id: '6873533b0e4d3db68769ac6a',
+//   });
+
+//   orderConfirmationEmail({
+//     userData,
+//     userProfileData,
+//     order,
+//   });
+// })();

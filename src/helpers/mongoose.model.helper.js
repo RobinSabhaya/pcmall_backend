@@ -15,6 +15,7 @@ const MONGOOSE_MODELS = {
   CART: 'Cart',
   ORDER: 'Order',
   RATING: 'Rating',
+  ADDRESS: 'Address',
 };
 
 module.exports = {

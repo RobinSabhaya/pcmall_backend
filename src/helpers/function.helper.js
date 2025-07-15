@@ -209,10 +209,45 @@ function buildParcelObject(cart) {
   };
 }
 
+/**
+ * Formats an address object into a clean, readable string.
+ *
+ * @param {Object} address - The address fields.
+ * @param {string} address.line1 - Required address line 1.
+ * @param {string} [address.line2] - Optional address line 2.
+ * @param {string} address.city - Required city.
+ * @param {string} address.state - Required state.
+ * @param {string} address.country - Required country.
+ * @returns {string} Formatted address string.
+ * @throws Will throw an error if any required field is missing or empty.
+ */
+function formatAddress(address) {
+  const requiredFields = ['line1', 'city', 'state', 'country'];
+
+  // Validate required fields
+  for (const field of requiredFields) {
+    if (!address[field] || typeof address[field] !== 'string' || !address[field].trim()) {
+      return 'Invalid address';
+    }
+  }
+
+  const { line1, line2, city, state, country } = address;
+
+  const parts = [
+    line1.trim(),
+    line2?.trim(), // optional
+    `\n${city.trim()}, ${state.trim()}`,
+    country.trim(),
+  ];
+
+  return parts;
+}
+
 module.exports = {
   parseDeviceInfo,
   generateAddressForShipping,
   generateSKU,
   selectBestBox,
   buildParcelObject,
+  formatAddress,
 };

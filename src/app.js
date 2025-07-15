@@ -14,7 +14,9 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const { dbConnection } = require('./models/dbConnection');
+const { redisDBConnection } = require('./models/redisConnection');
 const webhookRoutes = require('./routes/v1/webhooks');
+const serverAdapter = require('./helpers/redisDashboard.helper');
 
 const app = express();
 
@@ -25,6 +27,9 @@ if (config.env !== 'test') {
 
 // database connection
 dbConnection();
+
+// Redis DB connection
+// redisDBConnection();
 
 // set security HTTP headers
 app.use(helmet());
@@ -60,6 +65,9 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/v1', routes);
+
+// Redis Bull Dashboard
+app.use('/admin/queues', serverAdapter.getRouter());
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
