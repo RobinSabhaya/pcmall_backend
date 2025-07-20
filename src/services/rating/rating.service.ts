@@ -1,0 +1,255 @@
+import { findOneAndUpdateDoc, findOneDoc, PaginationOptions, paginationQuery } from "@/helpers/mongoose.helper";
+import { MONGOOSE_MODELS } from "@/helpers/mongoose.model.helper";
+import { IProduct } from "@/models/product";
+import { IRating, Rating } from "@/models/rating";
+import { IUser } from "@/models/user";
+import ApiError from "@/utils/ApiError";
+import { CreateUpdateRatingSchema, GetRatingCountSchema, GetRatingListSchema } from "@/validations/rating.validation";
+import httpStatus from 'http-status'
+import { FilterQuery, Schema } from "mongoose";
+import { GetRatingListFilter } from "./rating.service.type";
+import { handleStorage } from "../storage/storageStrategy";
+
+export interface IOptions extends PaginationOptions {
+  user?: IUser
+}
+
+export const createUpdateRating = async (reqBody: CreateUpdateRatingSchema, options?: IOptions): Promise<{
+  message: string;
+  ratingData: IRating | null;
+}> => {
+  const { productId, ratingId } = reqBody;
+  const user = options?.user;
+  let ratingData, message;
+  /** Check product */
+  const productData = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {
+    _id: productId,
+  });
+
+  if (!productData) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+
+  const uploadFiles: Array<string> = [];
+  // TODO: files pending
+  // if (files?.length) {
+  //   await Promise.all(
+  //     files.map(async (file) => {
+  //       const fileName = await fileService.generateFileName(file);
+  //       await fileService.saveFiles([
+  //         {
+  //           fileName,
+  //           fileBuffer: file.buffer,
+  //           // fileMainFolder: FILES_FOLDER.PUBLIC,
+  //           fileUploadType: 'single',
+  //           // subFolderName: FILES_FOLDER.TEMP,
+  //           fileMimeType: file.mimetype,
+  //           fileSize: file.size,
+  //         },
+  //       ]);
+  //       uploadFiles.push(fileName);
+  //     })
+  //   );
+  // }
+
+  if (ratingId) {
+    ratingData = await findOneAndUpdateDoc<IRating>(MONGOOSE_MODELS.RATING, { _id: ratingId }, { ...reqBody, product: productData._id, ...(uploadFiles.length && { images: uploadFiles }) }, {
+      upsert: true,
+      new: true
+    }
+    );
+    message = "Rating created successfully";
+  } else {
+    const ratingPayload = { ...reqBody, product: productData._id, user: user?._id, ...(uploadFiles.length && { images: uploadFiles }) }
+    ratingData = await findOneAndUpdateDoc<IRating>(MONGOOSE_MODELS.RATING, ratingPayload, ratingPayload, {
+      upsert: true,
+      new: true
+    }
+    );
+    message = "Rating updated successfully";
+  }
+
+  return {
+    message,
+    ratingData
+  }
+}
+
+/**
+ * Get Rating List
+ * @param {object} reqQuery
+ * @param {object} options
+ * @returns {Promise<[Rating]>}
+ */
+export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOptions): Promise<{
+  ratingData:unknown
+}> => {
+  
+  const { productId, rating, } = reqQuery;
+  const user = options?.user;
+
+  const filter:GetRatingListFilter = {};
+
+  if (productId) filter.product = new Schema.Types.ObjectId(String(productId));
+
+  if (rating) filter.rating = +rating;
+  if (user) filter.user = new Schema.Types.ObjectId(String(user?._id));
+
+  const pagination = paginationQuery(options!);
+  const ratingData = await Rating.aggregate([
+    {
+      $match: {
+        ...filter,
+      },
+    },
+    {
+      $lookup: {
+        from: 'user_profiles',
+        localField: 'user',
+        foreignField: 'user',
+        as: 'user_profile',
+      },
+    },
+    {
+      $unwind: {
+        preserveNullAndEmptyArrays: true,
+        path: '$user_profile',
+      },
+    },
+    ...pagination,
+  ]);
+
+  if (ratingData[0]?.results?.length)
+    await Promise.all(
+      ratingData[0]?.results.map(async (rating:IRating) => {
+        // For rating images
+        if (!rating.images.includes('')) {
+          rating.images = await Promise.all(
+            rating.images.map((img) => handleStorage(fileStorageProvider).getFileLink({ fileName: img }))
+          );
+        } else {
+          rating.images = [];
+        }
+
+        // For user profile picture
+        if (rating?.user_profile?.profile_picture && rating?.user_profile?.profile_picture !== '') {
+          rating.user_profile.profile_picture = await handleStorage(fileStorageProvider).getFileLink({
+            fileName: rating.user_profile.profile_picture,
+          });
+        } else {
+          rating.user_profile.profile_picture = null;
+        }
+
+        return rating;
+      })
+    );
+  
+  return {
+    ratingData
+  }
+
+};
+
+/**
+ * Get Rating Count
+ * @param {object} reqQuery
+ * @param {object} options
+ * @returns {Promise<[Rating]>}
+ */
+export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions) => {
+
+   const { productId, rating, } = reqQuery;
+  const user = options?.user;
+
+  const filter:GetRatingListFilter = {};
+
+  if (productId) filter.product = new Schema.Types.ObjectId(String(productId));
+
+  if (rating) filter.rating = +rating;
+  if (user) filter.user = new Schema.Types.ObjectId(String(user?._id));
+
+  return Rating.aggregate([
+    {
+      $match: {
+        ...filter,
+      },
+    },
+    {
+      $group: {
+        _id: '$product',
+        avg_rating: {
+          $avg: '$rating',
+        },
+        user: {
+          $addToSet: '$user',
+        },
+        rating_count: {
+          $sum: 1,
+        },
+        one_star: {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: ['$rating', 1],
+              },
+              then: {
+                $sum: 1,
+              },
+              else: 0,
+            },
+          },
+        },
+        two_star: {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: ['$rating', 2],
+              },
+              then: {
+                $sum: 1,
+              },
+              else: 0,
+            },
+          },
+        },
+        three_star: {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: ['$rating', 3],
+              },
+              then: {
+                $sum: 1,
+              },
+              else: 0,
+            },
+          },
+        },
+        four_star: {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: ['$rating', 4],
+              },
+              then: {
+                $sum: 1,
+              },
+              else: 0,
+            },
+          },
+        },
+        five_star: {
+          $sum: {
+            $cond: {
+              if: {
+                $eq: ['$rating', 5],
+              },
+              then: {
+                $sum: 1,
+              },
+              else: 0,
+            },
+          },
+        },
+      },
+    },
+  ]);
+};
