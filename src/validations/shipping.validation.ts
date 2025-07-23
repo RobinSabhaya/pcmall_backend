@@ -1,10 +1,10 @@
 import z from 'zod'
 
-export type CreateAndUpdateShippingSchema = z.infer<typeof createAndUpdateShipping>
-export type GenerateBuyLabelSchema = z.infer<typeof generateBuyLabel>
-export type TrackSchema = z.infer<typeof track>
+export type CreateAndUpdateShippingSchema = z.infer<typeof createAndUpdateShipping.body>
+export type GenerateBuyLabelSchema = z.infer<typeof generateBuyLabel.body>
+export type TrackSchema = z.infer<typeof track.body>
 
-export const createAndUpdateShipping = z.object({
+export const createAndUpdateShipping = {body : z.object({
   parcel: z.object({
     weight: z.string(),
     massUnit: z.string(),
@@ -14,16 +14,18 @@ export const createAndUpdateShipping = z.object({
     distanceUnit: z.string()
   })
 })
-
-export const generateBuyLabel = z.object({
+}
+export const generateBuyLabel = {
+  body : z.object({
   shippoShipmentId: z.string(),
-  selectedRate: z.object(z.object({
-    objectId : z.string()
-  }))
+  rateObjectId: z.string()
 })
+}
 
-export const track = z.object({
+export const track = {
+  body : z.object({
   carrier: z.string(),
   trackingNumber: z.string(),
   tracking_number:z.string()
-});
+})
+};

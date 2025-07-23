@@ -1,24 +1,39 @@
-import { findOneAndUpdateDoc, findOneDoc, PaginationOptions, paginationQuery } from "@/helpers/mongoose.helper";
+import {
+  findOneAndUpdateDoc,
+  findOneDoc,
+  PaginationOptions,
+  paginationQuery,
+} from "@/helpers/mongoose.helper";
 import { MONGOOSE_MODELS } from "@/helpers/mongoose.model.helper";
 import { IProduct } from "@/models/product";
 import { IRating, Rating } from "@/models/rating";
 import { IUser } from "@/models/user";
 import ApiError from "@/utils/ApiError";
-import { CreateUpdateRatingSchema, GetRatingCountSchema, GetRatingListSchema } from "@/validations/rating.validation";
-import httpStatus from 'http-status'
-import { FilterQuery, Schema } from "mongoose";
+import {
+  CreateUpdateRatingSchema,
+  GetRatingCountSchema,
+  GetRatingListSchema,
+} from "@/validations/rating.validation";
+import httpStatus from "http-status";
+import { FilterQuery, Types,  } from "mongoose";
 import { GetRatingListFilter } from "./rating.service.type";
 import { handleStorage } from "../storage/storageStrategy";
+import {config} from '@/config/config'
+
+const { minIO:{fileStorageProvider}} = config
 
 export interface IOptions extends PaginationOptions {
-  user?: IUser
+  user?: IUser;
 }
 
-export const createUpdateRating = async (reqBody: CreateUpdateRatingSchema, options?: IOptions): Promise<{
+export const createUpdateRating = async (
+  reqBody: CreateUpdateRatingSchema,
+  options?: IOptions
+): Promise<{
   message: string;
   ratingData: IRating | null;
 }> => {
-  const { productId, ratingId } = reqBody;
+  const { productId, ratingId, ...rest } = reqBody;
   const user = options?.user;
   let ratingData, message;
   /** Check product */
@@ -26,7 +41,8 @@ export const createUpdateRating = async (reqBody: CreateUpdateRatingSchema, opti
     _id: productId,
   });
 
-  if (!productData) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  if (!productData)
+    throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
 
   const uploadFiles: Array<string> = [];
   // TODO: files pending
@@ -51,27 +67,44 @@ export const createUpdateRating = async (reqBody: CreateUpdateRatingSchema, opti
   // }
 
   if (ratingId) {
-    ratingData = await findOneAndUpdateDoc<IRating>(MONGOOSE_MODELS.RATING, { _id: ratingId }, { ...reqBody, product: productData._id, ...(uploadFiles.length && { images: uploadFiles }) }, {
-      upsert: true,
-      new: true
-    }
-    );
-    message = "Rating created successfully";
-  } else {
-    const ratingPayload = { ...reqBody, product: productData._id, user: user?._id, ...(uploadFiles.length && { images: uploadFiles }) }
-    ratingData = await findOneAndUpdateDoc<IRating>(MONGOOSE_MODELS.RATING, ratingPayload, ratingPayload, {
-      upsert: true,
-      new: true
-    }
+    ratingData = await findOneAndUpdateDoc<IRating>(
+      MONGOOSE_MODELS.RATING,
+      { _id: ratingId },
+      {
+        ...rest,
+        product: productData._id,
+        ...(uploadFiles.length && { images: uploadFiles }),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
     );
     message = "Rating updated successfully";
+  } else {
+    const ratingPayload = {
+      ...rest,
+      product: productData._id,
+      user: user?._id,
+      ...(uploadFiles.length && { images: uploadFiles }),
+    };
+    ratingData = await findOneAndUpdateDoc<IRating>(
+      MONGOOSE_MODELS.RATING,
+      ratingPayload,
+      ratingPayload,
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+    message = "Rating created successfully";
   }
 
   return {
     message,
-    ratingData
-  }
-}
+    ratingData,
+  };
+};
 
 /**
  * Get Rating List
@@ -79,19 +112,22 @@ export const createUpdateRating = async (reqBody: CreateUpdateRatingSchema, opti
  * @param {object} options
  * @returns {Promise<[Rating]>}
  */
-export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOptions): Promise<{
-  ratingData:unknown
+export const getRatingList = async (
+  reqQuery: GetRatingListSchema,
+  options?: IOptions
+): Promise<{
+  ratingData: unknown;
 }> => {
-  
-  const { productId, rating, } = reqQuery;
+  const { productId, rating } = reqQuery;
   const user = options?.user;
 
-  const filter:GetRatingListFilter = {};
+  const filter: GetRatingListFilter = {};
 
-  if (productId) filter.product = new Schema.Types.ObjectId(String(productId));
-
+  if (productId) filter.product = new Types.ObjectId(productId)
+    
   if (rating) filter.rating = +rating;
-  if (user) filter.user = new Schema.Types.ObjectId(String(user?._id));
+  if (user) filter.user = user?._id
+  console.log("🚀 ~ filter:", filter)
 
   const pagination = paginationQuery(options!);
   const ratingData = await Rating.aggregate([
@@ -102,16 +138,16 @@ export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOp
     },
     {
       $lookup: {
-        from: 'user_profiles',
-        localField: 'user',
-        foreignField: 'user',
-        as: 'user_profile',
+        from: "user_profiles",
+        localField: "user",
+        foreignField: "user",
+        as: "user_profile",
       },
     },
     {
       $unwind: {
         preserveNullAndEmptyArrays: true,
-        path: '$user_profile',
+        path: "$user_profile",
       },
     },
     ...pagination,
@@ -119,19 +155,26 @@ export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOp
 
   if (ratingData[0]?.results?.length)
     await Promise.all(
-      ratingData[0]?.results.map(async (rating:IRating) => {
+      ratingData[0]?.results.map(async (rating: IRating) => {
         // For rating images
-        if (!rating.images.includes('')) {
+        if (!rating.images.includes("")) {
           rating.images = await Promise.all(
-            rating.images.map((img) => handleStorage(fileStorageProvider).getFileLink({ fileName: img }))
+            rating.images.map((img) =>
+              handleStorage(fileStorageProvider!).getFileLink({ fileName: img })
+            )
           );
         } else {
           rating.images = [];
         }
 
         // For user profile picture
-        if (rating?.user_profile?.profile_picture && rating?.user_profile?.profile_picture !== '') {
-          rating.user_profile.profile_picture = await handleStorage(fileStorageProvider).getFileLink({
+        if (
+          rating?.user_profile?.profile_picture &&
+          rating?.user_profile?.profile_picture !== ""
+        ) {
+          rating.user_profile.profile_picture = await handleStorage(
+            fileStorageProvider!
+          ).getFileLink({
             fileName: rating.user_profile.profile_picture,
           });
         } else {
@@ -141,11 +184,10 @@ export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOp
         return rating;
       })
     );
-  
-  return {
-    ratingData
-  }
 
+  return {
+    ratingData,
+  };
 };
 
 /**
@@ -154,17 +196,19 @@ export const getRatingList = async (reqQuery:GetRatingListSchema , options?: IOp
  * @param {object} options
  * @returns {Promise<[Rating]>}
  */
-export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions) => {
-
-   const { productId, rating, } = reqQuery;
+export const getRatingCount = (
+  reqQuery: GetRatingCountSchema,
+  options?: IOptions
+) => {
+  const { productId, rating } = reqQuery;
   const user = options?.user;
 
-  const filter:GetRatingListFilter = {};
+  const filter: GetRatingListFilter = {};
 
-  if (productId) filter.product = new Schema.Types.ObjectId(String(productId));
+  if (productId) filter.product = new Types.ObjectId(String(productId));
 
   if (rating) filter.rating = +rating;
-  if (user) filter.user = new Schema.Types.ObjectId(String(user?._id));
+  if (user) filter.user = user?._id
 
   return Rating.aggregate([
     {
@@ -174,12 +218,12 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
     },
     {
       $group: {
-        _id: '$product',
+        _id: "$product",
         avg_rating: {
-          $avg: '$rating',
+          $avg: "$rating",
         },
         user: {
-          $addToSet: '$user',
+          $addToSet: "$user",
         },
         rating_count: {
           $sum: 1,
@@ -188,7 +232,7 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
           $sum: {
             $cond: {
               if: {
-                $eq: ['$rating', 1],
+                $eq: ["$rating", 1],
               },
               then: {
                 $sum: 1,
@@ -201,7 +245,7 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
           $sum: {
             $cond: {
               if: {
-                $eq: ['$rating', 2],
+                $eq: ["$rating", 2],
               },
               then: {
                 $sum: 1,
@@ -214,7 +258,7 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
           $sum: {
             $cond: {
               if: {
-                $eq: ['$rating', 3],
+                $eq: ["$rating", 3],
               },
               then: {
                 $sum: 1,
@@ -227,7 +271,7 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
           $sum: {
             $cond: {
               if: {
-                $eq: ['$rating', 4],
+                $eq: ["$rating", 4],
               },
               then: {
                 $sum: 1,
@@ -240,7 +284,7 @@ export const getRatingCount = (reqQuery:GetRatingCountSchema, options?:IOptions)
           $sum: {
             $cond: {
               if: {
-                $eq: ['$rating', 5],
+                $eq: ["$rating", 5],
               },
               then: {
                 $sum: 1,

@@ -32,7 +32,7 @@ export const getUser = async(request:FastifyRequest, reply:FastifyReply) => {
     /** get user */
     const userData = await userService.getUser(
       {
-        _id : new Schema.Types.ObjectId(String(user?._id))
+        _id : user?._id
       },
     );
 

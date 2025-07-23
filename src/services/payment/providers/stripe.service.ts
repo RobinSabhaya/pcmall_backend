@@ -71,7 +71,7 @@ export async function createCheckoutSession(payload: ICreateCheckoutSession):Pro
     const shippingCost = 10;
     const totalAmount = (tax + shippingCost) * 100;
 
-    const userData = await userService.getFilterUser({
+    const userData = await findOneDoc<IUser>(MONGOOSE_MODELS.USER,{
       _id: user._id,
     });
 
@@ -115,7 +115,7 @@ export async function createCheckoutSession(payload: ICreateCheckoutSession):Pro
         rateObjectId,
         cartIds: JSON.stringify(cartIds),
       },
-      customer_email: userData.email,
+      customer_email: userData?.email,
       shipping_address_collection: {
         allowed_countries: ['IN'],
       },
@@ -125,14 +125,14 @@ export async function createCheckoutSession(payload: ICreateCheckoutSession):Pro
       {
         orderId: order._id,
         provider: config.paymentGateway.paymentProvider,
-        sessionId: session.id,
+        sessionId: session?.id,
         amount: totalAmount,
         currency,
       },
       {
         orderId: order._id,
         provider: config.paymentGateway.paymentProvider,
-        sessionId: session.id,
+        sessionId: session?.id,
         amount: totalAmount,
         currency,
       },

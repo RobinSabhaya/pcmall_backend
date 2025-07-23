@@ -46,7 +46,7 @@ export const removeToCart = async (request: FastifyRequest, reply: FastifyReply)
     
     /** create cart */
     await cartService.removeCart({
-      _id: cartId,
+      cartId,
     });
 
     return reply.code(httpStatus.OK).send({

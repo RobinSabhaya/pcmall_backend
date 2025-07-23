@@ -41,10 +41,12 @@ export const createUpdateProduct = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
+  const user = request.user as IUser
   try {
     const { message, productData, productVariantData } =
       await productService.createUpdateProduct(
-        request.body as CreateUpdateProductSchema
+        request.body as CreateUpdateProductSchema,
+        {user}
       );
     return reply.code(httpStatus.OK).send({
       success: true,

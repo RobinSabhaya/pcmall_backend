@@ -69,7 +69,7 @@ export const updateToCart = async(reqBody:UpdateToCartSchema,options:IOptions): 
   }
   
    return findOneAndUpdateDoc<ICart>(MONGOOSE_MODELS.CART,     {
-      cart: cartExists._id,
+      _id: cartExists._id,
     },
     {
       quantity,

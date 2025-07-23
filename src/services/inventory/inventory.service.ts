@@ -82,7 +82,7 @@ export const saveInventory = async (
     const payload = {
       sku: skuId,
       warehouse: warehouseId,
-      ...reqBody,
+      ...rest,
       createdBy: user._id,
       updatedBy: user._id,
     };

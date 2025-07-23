@@ -52,7 +52,10 @@ export const createAndUpdateShipping = async (reqBody: CreateAndUpdateShippingSc
       isReturn: false,
     };
 
-  const shipment = await findOneAndUpdateDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT,payload,payload);
+  const shipment = await findOneAndUpdateDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, payload, payload, {
+    upsert: true,
+    new : true
+  });
   return {
     shipment,
     shippoShipment
@@ -63,7 +66,7 @@ export const generateBuyLabel = async (reqBody: GenerateBuyLabelSchema): Promise
   shipment: IShipment | null;
   label: unknown;
 }> => {
-  const { shippoShipmentId, selectedRate } = reqBody
+  const { shippoShipmentId, rateObjectId } = reqBody
   
       let shipment = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT,{
         shippoShipmentId,
@@ -72,7 +75,7 @@ export const generateBuyLabel = async (reqBody: GenerateBuyLabelSchema): Promise
       if (!shipment) throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not valid.');
   
       /** Create label */
-      const label = await handleShipping(shippingCarrier!).buyLabel(selectedRate?.objectId);
+      const label = await handleShipping(shippingCarrier!).buyLabel(rateObjectId);
   
       const payload = {
         label: {

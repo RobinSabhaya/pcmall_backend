@@ -71,7 +71,7 @@ export default fp(async (fastify: FastifyInstance) => {
                 }
 
                 if (!requireRights.includes(roleData.slug)) {
-                    throw new ApiError(httpStatus.FORBIDDEN, 'Role forbidden');
+                    throw new ApiError(httpStatus.FORBIDDEN, 'FORBIDDEN');
                 }
 
                 if (!user.is_active) {

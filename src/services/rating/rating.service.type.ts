@@ -1,7 +1,7 @@
-import { Schema } from "mongoose";
+import { Schema, Types } from "mongoose";
 
 export interface GetRatingListFilter { 
-    product?: Schema.Types.ObjectId;
+    product?: Types.ObjectId;
     rating?: number;
     user?: Schema.Types.ObjectId;
 }

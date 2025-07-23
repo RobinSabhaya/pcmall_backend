@@ -15,7 +15,7 @@ export const createUpdateSeller = async (reqBody: CreateUpdateSellerSchema, opti
     message: string;
     sellerData: ISeller | null;
 }> => { 
-    const { sellerId, password, confirm_password} = reqBody;
+    const { sellerId, password, confirm_password, ...rest} = reqBody;
 
     let sellerData, userData, message;
 
@@ -44,8 +44,8 @@ export const createUpdateSeller = async (reqBody: CreateUpdateSellerSchema, opti
 
       sellerData = await findOneAndUpdateDoc<ISeller>(
         MONGOOSE_MODELS.SELLER,
-        { ...reqBody, user: userData._id },
-        { ...reqBody, user: userData._id },
+        { ...rest, user: userData._id },
+        { ...rest, user: userData._id },
         {
           upsert: true,
           new: true,
@@ -65,6 +65,7 @@ export const deleteSeller = async (reqQuery: DeleteSellerSchema): Promise<{
     sellerData: ISeller | null;
 }> => {
      const { sellerId } = reqQuery;
+     console.log("🚀 ~ deleteSeller ~ sellerId:", sellerId)
 
     let sellerData, message;
 

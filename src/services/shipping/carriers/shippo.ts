@@ -29,9 +29,9 @@ export const createShipment = async (addressFrom:AddressCreateRequest, addressTo
   return shipment;
 };
 
-export const buyLabel = async (rate:Rate) => {
+export const buyLabel = async (rateObjectId:string) => {
   const transaction = await shippo.transactions.create({
-    rate: rate.objectId,
+    rate: rateObjectId,
     labelFileType: 'PDF',
     async: false,
   });

@@ -21,7 +21,7 @@ export interface IFile {
  * @param {string} fileName
  * @returns {{url}} url
  */
-const getFileLink = async ({ fileName, expirySeconds = 60 * 60 }: {fileName : string, expirySeconds?:number}) => {
+export const getFileLink = async ({ fileName, expirySeconds = 60 * 60 }: {fileName : string, expirySeconds?:number}) => {
   const fileUrl = await minioClient.presignedUrl('GET', minIOBucket!, fileName);
   return fileUrl;
 };

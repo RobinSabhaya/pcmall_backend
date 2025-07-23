@@ -4,7 +4,6 @@ import { IUser } from '@/models/user';
 import httpStatus from 'http-status';
 import { GetOrderListSchema } from '@/validations/order.validation';
 import ApiError from '@/utils/ApiError';
-import { Schema } from 'mongoose';
 
 /**
  * Get order list
@@ -15,7 +14,7 @@ export const getOrderList = async (request:FastifyRequest, reply:FastifyReply) =
 
   const orderData = await orderService.getOrderList(
     {
-      user : new Schema.Types.ObjectId(String(user._id))
+      user : user._id
     },
     request.query as GetOrderListSchema
   );

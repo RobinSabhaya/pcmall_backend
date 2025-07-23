@@ -6,14 +6,11 @@ import * as orderService from '../services/orders/order.service';
 import * as paymentService from '../services/payment/payment.service';
 import { PAYMENT_STATUS } from '../helpers/constant.helper';
 import httpStatus from 'http-status';
-import { handleShipping } from '../services/shipping/shippingStrategy';
 import { findOneDoc} from '../helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '../helpers/mongoose.model.helper';
 import { notificationQueue } from '@/workers/notification';
-
-const { paymentGateway: { paymentSecretKey, paymentWebhookSecret },
-  shipping: { shippingCarrier },
-  sms: { smsCarrier }, } = config;
+import * as shippingService from '@/services/shipping/shipping.service'
+const { paymentGateway: { paymentSecretKey, paymentWebhookSecret }} = config;
 import Stripe from 'stripe';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { IUser, IUserProfile } from '@/models/user';
@@ -34,14 +31,14 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
     });
   }
 
-  const session = event.data?.object;
+  const session = event.data?.object as Stripe.Checkout.Session;
 
   const { metadata } = session;
 
   switch (event.type) {
     case 'checkout.session.completed':
       try {
-        await runWithTransaction(async (dbSession) => {
+        await runWithTransaction(async (dbSession:unknown) => {
           // create payment
           const payment = await paymentService.createPayment(
             { sessionId: session?.id },
@@ -54,14 +51,14 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
 
           /** Get User data */
           const userData = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, {
-            _id: metadata.userId,
+            _id: metadata?.userId,
           });
           const userProfileData = await findOneDoc<IUserProfile>(MONGOOSE_MODELS.USER_PROFILE, {
-            user: metadata.userId,
+            user: metadata?.userId,
           });
 
           /** Get shipping */
-          const shippingData = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, { shippoShipmentId: metadata.shippoShipmentId });
+          const shippingData = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, { shippoShipmentId: metadata?.shippoShipmentId });
 
           // Update Order
           const order = await orderService.updateOrder(
@@ -79,9 +76,9 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
           await paymentService.updateStockInInventory({ order, eventType: event.type });
 
           /** Buy Label */
-          const { shipment, label } = await handleShipping(shippingCarrier!).generateBuyLabel({
-            rateObjectId: metadata.rateObjectId,
-            shippoShipmentId: metadata.shippoShipmentId,
+          const { shipment, label } = await shippingService.generateBuyLabel({
+            rateObjectId: metadata?.rateObjectId!,
+            shippoShipmentId: metadata?.shippoShipmentId!,
           });
 
           if (!shipment || !label) console.error('Shipment and Label has been fail');
@@ -154,17 +151,17 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
       console.log(`Unhandled event type: ${event.type}`);
   }
 
-  return res.status(httpStatus.OK).json({ received: true });
+  return reply.code(httpStatus.OK).send({ received: true });
 }
 
 interface PaymentPayload { 
   event: { type : Stripe.Event['type']}
 }
 
-async function handlePaymentFailure(payload:PaymentPayload, session:unknown) {
+async function handlePaymentFailure(payload:PaymentPayload, session:Stripe.Checkout.Session) {
   const { event } = payload;
   const payment = await paymentService.createPayment(
-    { sessionId: session.id },
+    { sessionId: session?.id },
     { status: PAYMENT_STATUS.FAILED }
     // { session }
   );
@@ -180,10 +177,10 @@ async function handlePaymentFailure(payload:PaymentPayload, session:unknown) {
   await paymentService.updateStockInInventory({ order, eventType: event.type });
 }
 
-async function handlePaymentExpired(payload:PaymentPayload, session:unknown) {
+async function handlePaymentExpired(payload:PaymentPayload, session:Stripe.Checkout.Session) {
    const { event } = payload;
   const payment = await paymentService.createPayment(
-    { sessionId: session.id },
+    { sessionId: session?.id },
     { status: PAYMENT_STATUS.EXPIRED }
     // { session }
   );

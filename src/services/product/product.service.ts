@@ -246,7 +246,7 @@ export const createUpdateProduct = async (
   productData: IProduct | null;
   productVariantData: IProductVariant | null;
 }> => {
-  const { productId, variantId, name, attributeCombination, images, ...res } =
+  const { productId, variantId, name, attributeCombination, images, ...rest } =
     reqBody;
   const user = options?.user;
 
@@ -265,7 +265,7 @@ export const createUpdateProduct = async (
     productData = await findOneAndUpdateDoc<IProduct>(
       MONGOOSE_MODELS.PRODUCT,
       { _id: productId },
-      { ...reqBody, updatedBy: user?._id },
+      { ...rest, updatedBy: user?._id },
       {
         upsert: true,
         new: true,
@@ -304,8 +304,8 @@ export const createUpdateProduct = async (
   } else {
     productData = await findOneAndUpdateDoc<IProduct>(
       MONGOOSE_MODELS.PRODUCT,
-      { ...reqBody, createdBy: user?._id, updatedBy: user?._id },
-      { ...reqBody, createdBy: user?._id, updatedBy: user?._id },
+      { ...rest, createdBy: user?._id, updatedBy: user?._id },
+      { ...rest, createdBy: user?._id, updatedBy: user?._id },
       {
         upsert: true,
         new: true,

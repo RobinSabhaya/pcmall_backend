@@ -12,6 +12,7 @@ import { IUser } from "@/models/user";
  * @returns {Promise<[Order]>}
  */
 export const getOrderList = (filter:FilterQuery<IOrder>, options?:PaginationOptions):Promise<IOrder[]> => {
+  console.log("🚀 ~ filter:", filter)
   const pagination = paginationQuery(options!);
 
   return Order.aggregate([

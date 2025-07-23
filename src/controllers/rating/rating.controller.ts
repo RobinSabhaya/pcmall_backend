@@ -2,24 +2,42 @@ import { IUser } from "@/models/user";
 import * as ratingService from "@/services/rating/rating.service";
 import ApiError from "@/utils/ApiError";
 import {
-  CreateUpdateRatingSchema,
   GetRatingCountSchema,
   GetRatingListSchema,
 } from "@/validations/rating.validation";
+import * as ratingValidation from "@/validations/rating.validation";
 import { FastifyReply, FastifyRequest } from "fastify";
 import httpStatus from "http-status";
 /**
  * Create Rating
  */
-export const createRating = async (
+export const createUpdateRating = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
   const user = request.user as IUser;
   const options = { user };
+
+  const parts = request.parts();
+
+  const fields: Record<string, string> = {};
+
+  for await (const part of parts) {
+    if (part.type === "file") {
+
+    } else {
+      fields[part.fieldname] = part.value;
+    }
+  }
+
+  const parsed = ratingValidation.createUpdateRating.safeParse(fields)
+  if (!parsed.success) {
+    // return reply.code(400).send({ error: parsed.error.errors });
+  }
+
   try {
     const { message, ratingData } = await ratingService.createUpdateRating(
-      request.body as CreateUpdateRatingSchema,
+      fields,
       options
     );
 

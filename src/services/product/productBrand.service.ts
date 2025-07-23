@@ -34,6 +34,7 @@ export const createUpdateBrand = async (
   brandData: IProductBrand | null;
 }> => {
   const { brandId, ...rest } = reqBody;
+  const user = options?.user
 
   let brandData, message;
 
@@ -50,7 +51,7 @@ export const createUpdateBrand = async (
     brandData = await findOneAndUpdateDoc<IProductBrand>(
       MONGOOSE_MODELS.PRODUCT_BRAND,
       { _id: brandId },
-      { ...rest },
+      { ...rest, updatedBy: user?._id },
       {
         upsert: true,
         new: true,
@@ -61,7 +62,7 @@ export const createUpdateBrand = async (
     brandData = await findOneAndUpdateDoc<IProductBrand>(
       MONGOOSE_MODELS.PRODUCT_BRAND,
       { ...rest },
-      { ...rest },
+      { ...rest,createdBy:user?._id,updatedBy: user?._id },
       {
         upsert: true,
         new: true,

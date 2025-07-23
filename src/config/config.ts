@@ -1,168 +1,161 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from 'dotenv';
+import path from 'path';
+import { z } from 'zod';
 
-// dotenv.config({ path: path.join(__dirname, '../../.env') })
+// Load environment variables
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
-// const envVarsSchema = Joi.object()
-//   .keys({
-//     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
-//     PORT: Joi.number().default(3000),
-//     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+/**
+ * Zod schema for environment variables
+ */
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().default(3000),
+  MONGODB_URL: z.string(),
 
-//     // JWT Authentication
-//     JWT_SECRET: Joi.string().required().description('JWT secret key'),
-//     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
-//     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
-//     JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number()
-//       .default(10)
-//       .description('minutes after which reset password token expires'),
-//     JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number()
-//       .default(10)
-//       .description('minutes after which verify email token expires'),
+  // JWT Authentication
+  JWT_SECRET: z.string(),
+  JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
+  JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
+  JWT_RESET_PASSWORD_EXPIRATION_MINUTES: z.coerce.number().default(10),
+  JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: z.coerce.number().default(10),
 
-//     // SMTP
-//     SMTP_HOST: Joi.string().description('server that will send the emails'),
-//     SMTP_PORT: Joi.number().description('port to connect to the email server'),
-//     SMTP_USERNAME: Joi.string().description('username for email server'),
-//     SMTP_PASSWORD: Joi.string().description('password for email server'),
-//     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
-//     SMTP_SERVICE: Joi.string().description('smtp service'),
-//     SMTP_MAIL: Joi.string().description('Nodemailer mail'),
-//     EMAIL_PROVIDER: Joi.string().description('Email provider'),
+  // SMTP
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USERNAME: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
+  SMTP_SERVICE: z.string().optional(),
+  SMTP_MAIL: z.string().optional(),
+  EMAIL_PROVIDER: z.string().optional(),
 
-//     // session
-//     SECRET_KEY: Joi.string().description('secret key'),
-//     SESSION_SECRET: Joi.string().description('session secret'),
+  // Session
+  SECRET_KEY: z.string().optional(),
+  SESSION_SECRET: z.string().optional(),
 
-//     /** Payment gateway */
-//     PAYMENT_PROVIDER: Joi.string().description('payment provider').required(),
-//     // stripe
-//     PAYMENT_SECRET_KEY: Joi.string().description('payment secret'),
-//     PAYMENT_WEBHOOK_SECRET: Joi.string().description('payment webhook secret'),
-//     PAYMENT_SUCCESS_URL: Joi.string().description('payment success url'),
-//     PAYMENT_CANCEL_URL: Joi.string().description('payment cancel url'),
+  /** Payment Gateway */
+  PAYMENT_PROVIDER: z.string(),
+  PAYMENT_SECRET_KEY: z.string().optional(),
+  PAYMENT_WEBHOOK_SECRET: z.string().optional(),
+  PAYMENT_SUCCESS_URL: z.string().optional(),
+  PAYMENT_CANCEL_URL: z.string().optional(),
 
-//     // google sign-in
-//     CLIENT_ID: Joi.string().description('client id from google sign in'),
-//     CLIENT_SECRET: Joi.string().description('client secret from google sign in'),
-//     CALLBACK_URI: Joi.string().description('callback urk from google sign in'),
+  // Google Sign-in
+  CLIENT_ID: z.string().optional(),
+  CLIENT_SECRET: z.string().optional(),
+  CALLBACK_URI: z.string().optional(),
 
-//     // common
-//     BASE_URL: Joi.string().description('base url').required(),
-//     IMAGE_URL: Joi.string().description('image url').required(),
+  // Common
+  BASE_URL: z.string(),
+  IMAGE_URL: z.string(),
 
-//     // cipher
-//     CIPHER_SECRET: Joi.string().description('cipher secret'),
+  // Cipher
+  CIPHER_SECRET: z.string().optional(),
 
-//     /** shipping carrier */
-//     SHIPPING_CARRIER: Joi.string().description('shipping carrier').required(),
-//     // shippo
-//     SHIPPING_API_KEY: Joi.string().description('shipping API key'),
-//     SHIPPING_WEBHOOK: Joi.string().description('shipping webhook'),
+  /** Shipping Carrier */
+  SHIPPING_CARRIER: z.string(),
+  SHIPPING_API_KEY: z.string().optional(),
+  SHIPPING_WEBHOOK: z.string().optional(),
 
-//     /** sms provider */
-//     SMS_PROVIDER: Joi.string().description('shipping carrier').required(),
-//     // twilio
-//     TWILIO_ACCOUNT_SID: Joi.string().description('Twilio Account SID'),
-//     TWILIO_AUTH_TOKEN: Joi.string().description('Twilio auth token'),
-//     TWILIO_PHONE_NUMBER: Joi.string().description('Twilio phone number'),
+  /** SMS Provider */
+  SMS_PROVIDER: z.string(),
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_PHONE_NUMBER: z.string().optional(),
 
-//     /** File storage Provider */
-//     FILE_STORAGE_PROVIDER: Joi.string().description('File storage provider'),
-//     // minIO
-//     MINIO_ENDPOINT: Joi.string().description('minIO endpoint'),
-//     MINIO_PORT: Joi.string().description('minIO port'),
-//     MINIO_ACCESS_KEY: Joi.string().description('minIO access key'),
-//     MINIO_SECRET_KEY: Joi.string().description('minIO secret key'),
-//     MINIO_BUCKET: Joi.string().description('minIO bucket'),
+  /** File Storage Provider */
+  FILE_STORAGE_PROVIDER: z.string().optional(),
+  MINIO_ENDPOINT: z.string().optional(),
+  MINIO_PORT: z.string().optional(),
+  MINIO_ACCESS_KEY: z.string().optional(),
+  MINIO_SECRET_KEY: z.string().optional(),
+  MINIO_BUCKET: z.string().optional(),
 
-//     /** Redis */
-//     REDIS_DATABASE_USER_NAME: Joi.string().description('Redis database user name'),
-//     REDIS_DATABASE_PASSWORD: Joi.string().description('Redis database password'),
-//     REDIS_DATABASE_URL: Joi.string().description('Redis database url'),
-//     REDIS_DATABASE_PORT: Joi.string().description('Redis database port`'),
-//   })
-//   .unknown();
+  /** Redis */
+  REDIS_DATABASE_USER_NAME: z.string().optional(),
+  REDIS_DATABASE_PASSWORD: z.string().optional(),
+  REDIS_DATABASE_URL: z.string().optional(),
+  REDIS_DATABASE_PORT: z.string().optional(),
+});
 
-// const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
+// Validate environment variables
+const env = envSchema.parse(process.env);
 
-// if (error) {
-//   throw new Error(`Config validation error: ${error.message}`);
-// }
-
+/**
+ * Config object with types inferred from Zod schema
+ */
 export const config = {
-  env: process.env.NODE_ENV,
-  port: process.env.PORT,
+  env: env.NODE_ENV,
+  port: env.PORT,
   mongoose: {
-    url: process.env.MONGODB_URL + (process.env.NODE_ENV === 'test' ? '-test' : ''),
-    options: {
-      // useCreateIndex: true,
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
-    },
+    url: env.MONGODB_URL + (env.NODE_ENV === 'test' ? '-test' : ''),
+    options: {},
   },
   jwt: {
-    secret: process.env.JWT_SECRET,
-    accessExpirationMinutes: process.env.JWT_ACCESS_EXPIRATION_MINUTES,
-    refreshExpirationDays: process.env.JWT_REFRESH_EXPIRATION_DAYS,
-    resetPasswordExpirationMinutes: process.env.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
-    verifyEmailExpirationMinutes: process.env.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
+    secret: env.JWT_SECRET,
+    accessExpirationMinutes: env.JWT_ACCESS_EXPIRATION_MINUTES,
+    refreshExpirationDays: env.JWT_REFRESH_EXPIRATION_DAYS,
+    resetPasswordExpirationMinutes: env.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
+    verifyEmailExpirationMinutes: env.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
   },
   email: {
     smtp: {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      service: process.env.SMTP_SERVICE,
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      service: env.SMTP_SERVICE,
       auth: {
-        user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD,
+        user: env.SMTP_USERNAME,
+        pass: env.SMTP_PASSWORD,
       },
     },
-    emailProvider: process.env.EMAIL_PROVIDER,
-    from: process.env.EMAIL_FROM,
+    emailProvider: env.EMAIL_PROVIDER,
+    from: env.EMAIL_FROM,
   },
   paymentGateway: {
-    paymentProvider: process.env.PAYMENT_PROVIDER,
-    paymentSecretKey: process.env.PAYMENT_SECRET_KEY,
-    paymentWebhookSecret: process.env.PAYMENT_WEBHOOK_SECRET,
-    paymentSuccessUrl: process.env.PAYMENT_SUCCESS_URL,
-    paymentCancelUrl: process.env.PAYMENT_CANCEL_URL,
+    paymentProvider: env.PAYMENT_PROVIDER,
+    paymentSecretKey: env.PAYMENT_SECRET_KEY,
+    paymentWebhookSecret: env.PAYMENT_WEBHOOK_SECRET,
+    paymentSuccessUrl: env.PAYMENT_SUCCESS_URL,
+    paymentCancelUrl: env.PAYMENT_CANCEL_URL,
   },
   googleSignIn: {
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    callBackUrl: process.env.CALLBACK_URI,
+    clientId: env.CLIENT_ID,
+    clientSecret: env.CLIENT_SECRET,
+    callBackUrl: env.CALLBACK_URI,
   },
   common: {
-    baseUrl: process.env.BASE_URL,
-    imageUrl: process.env.IMAGE_URL,
+    baseUrl: env.BASE_URL,
+    imageUrl: env.IMAGE_URL,
   },
   crypto: {
-    cipherSecret: process.env.CIPHER_SECRET,
+    cipherSecret: env.CIPHER_SECRET,
   },
   shipping: {
-    shippingCarrier: process.env.SHIPPING_CARRIER,
-    shippingApiKey: process.env.SHIPPING_API_KEY,
-    shippingWebhook: process.env.SHIPPING_WEBHOOK,
+    shippingCarrier: env.SHIPPING_CARRIER,
+    shippingApiKey: env.SHIPPING_API_KEY,
+    shippingWebhook: env.SHIPPING_WEBHOOK,
   },
   sms: {
-    smsCarrier: process.env.SMS_PROVIDER,
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    accountAuthToken: process.env.TWILIO_AUTH_TOKEN,
-    accountPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
+    smsCarrier: env.SMS_PROVIDER,
+    accountSid: env.TWILIO_ACCOUNT_SID,
+    accountAuthToken: env.TWILIO_AUTH_TOKEN,
+    accountPhoneNumber: env.TWILIO_PHONE_NUMBER,
   },
   minIO: {
-    fileStorageProvider: process.env.FILE_STORAGE_PROVIDER,
-    minIOEndpoint: process.env.MINIO_ENDPOINT,
-    minIOPort: process.env.MINIO_PORT,
-    minIOAccessKey: process.env.MINIO_ACCESS_KEY,
-    minIOSecretKey: process.env.MINIO_SECRET_KEY,
-    minIOBucket: process.env.MINIO_BUCKET,
+    fileStorageProvider: env.FILE_STORAGE_PROVIDER,
+    minIOEndpoint: env.MINIO_ENDPOINT,
+    minIOPort: env.MINIO_PORT,
+    minIOAccessKey: env.MINIO_ACCESS_KEY,
+    minIOSecretKey: env.MINIO_SECRET_KEY,
+    minIOBucket: env.MINIO_BUCKET,
   },
   redis: {
-    redisDatabaseUserName: process.env.REDIS_DATABASE_USER_NAME,
-    redisDatabasePassword: process.env.REDIS_DATABASE_PASSWORD,
-    redisDatabaseUrl: process.env.REDIS_DATABASE_URL,
-    redisDatabasePort: process.env.REDIS_DATABASE_PORT,
+    redisDatabaseUserName: env.REDIS_DATABASE_USER_NAME,
+    redisDatabasePassword: env.REDIS_DATABASE_PASSWORD,
+    redisDatabaseUrl: env.REDIS_DATABASE_URL,
+    redisDatabasePort: env.REDIS_DATABASE_PORT,
   },
-};
+} as const;
+
+export type Config = typeof config;

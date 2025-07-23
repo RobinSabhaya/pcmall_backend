@@ -1,10 +1,10 @@
 import z from 'zod'
 
-export type CreateUpdateInventorySchema = z.infer<typeof createUpdateInventory>
-export type DeleteInventorySchema = z.infer<typeof deleteInventory>
-export type GetAllInventorySchema = z.infer<typeof getAllInventory>
+export type CreateUpdateInventorySchema = z.infer<typeof createUpdateInventory.body>
+export type DeleteInventorySchema = z.infer<typeof deleteInventory.query>
+export type GetAllInventorySchema = z.infer<typeof getAllInventory.query>
 
-export const createUpdateInventory = z.object({
+export const createUpdateInventory = {body : z.object({
     inventoryId : z.string().optional(),
     skuId:z.string().optional(),
     warehouseId: z.string().optional(),
@@ -12,14 +12,14 @@ export const createUpdateInventory = z.object({
     reserved: z.number().optional(),
     inbound: z.number().optional(),
     outbound: z.number().optional(),
-})
+})}
 
-export const deleteInventory = z.object({
-    inventoryId : z.string(),
-    skuId:z.string(),
-    warehouseId:z.string(),
-})
+export const deleteInventory = {
+    query: z.object({
+        inventoryId: z.string(),
+    })
+}
 
-export const getAllInventory = z.object({
+export const getAllInventory = {query:z.object({
     
-})
+})}

@@ -7,52 +7,60 @@ import { parseDeviceInfo } from '../../helpers/function.helper';
 import { createDoc, findOneAndUpdateDoc, findOneDoc } from '../../helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '../../helpers/mongoose.model.helper';
 import ApiError from '../../utils/ApiError';
-import { ForgotPasswordSchema, LoginSchema, RefreshTokensSchema, RegisterSchema, Re, ResetPasswordSchema, VerifyEmailSchema } from "@/validations/auth.validation";
-import { IUser} from "@/models/user";
+import { ForgotPasswordSchema, LoginSchema, RefreshTokensSchema, RegisterSchema, ResetPasswordSchema, VerifyEmailSchema } from "@/validations/auth.validation";
+import { IUser } from "@/models/user";
 import '@/models/user/user.model'
 
-const register = async (req: FastifyRequest, reply: FastifyReply) => {
-  const { first_name, email, password, confirm_password } = req.body as RegisterSchema;
+export const register = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const { first_name, email, password, confirm_password } = req.body as RegisterSchema;
 
-  // Match password and confirm password
-  if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+    // Match password and confirm password
+    if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
-  let user: Partial<IUser | null> = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, { email });
+    let user: Partial<IUser | null> = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, { email });
 
-  if (user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
-  }
-
-  if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
-
-  // Create User
-  user = await createDoc<RegisterSchema>(MONGOOSE_MODELS.USER, req.body as RegisterSchema);
-
-  // set profile details
-  await findOneAndUpdateDoc(
-    MONGOOSE_MODELS.USER_PROFILE,
-    {
-      user: user._id,
-      first_name,
-    },
-    {
-      user: user._id,
-      first_name,
-    },
-    {
-      upsert: true,
-      new: true,
+    if (user) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
     }
-  );
 
-  return reply.code(httpStatus.CREATED).send({
-    success: true,
-    message: 'User register successfully',
-    data: { user },
-  });
+    if (password != confirm_password) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+
+    // Create User
+    user = await createDoc<RegisterSchema>(MONGOOSE_MODELS.USER, req.body as RegisterSchema);
+
+    // set profile details
+    await findOneAndUpdateDoc(
+      MONGOOSE_MODELS.USER_PROFILE,
+      {
+        user: user._id,
+        first_name,
+      },
+      {
+        user: user._id,
+        first_name,
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    return reply.code(httpStatus.CREATED).send({
+      success: true,
+      message: 'User register successfully',
+      data: { user },
+    });
+  } catch (error) {
+    if (error instanceof Error)
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        error.message || "Something went wrong"
+      );
+  }
 }
 
-const login = async (req: FastifyRequest, reply: FastifyReply) => {
+export const login = async (req: FastifyRequest, reply: FastifyReply) => {
   const { email, password } = req.body as LoginSchema;
   try {
     const user = await authService.loginUserWithEmailAndPassword(email, password);
@@ -84,7 +92,7 @@ const login = async (req: FastifyRequest, reply: FastifyReply) => {
   }
 }
 
-const logout = async (req: FastifyRequest, reply: FastifyReply) => {
+export const logout = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const { refreshToken } = req.body as RefreshTokensSchema
     await authService.logout(refreshToken);
@@ -99,7 +107,7 @@ const logout = async (req: FastifyRequest, reply: FastifyReply) => {
   }
 }
 
-const refreshTokens = async (request: FastifyRequest, reply: FastifyReply) => {
+export const refreshTokens = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const { refreshToken } = request.body as RefreshTokensSchema;
     const tokens = await authService.refreshAuth(refreshToken);
@@ -110,40 +118,29 @@ const refreshTokens = async (request: FastifyRequest, reply: FastifyReply) => {
   }
 }
 
-const forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+export const forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
   const { email } = request.body as ForgotPasswordSchema;
   const resetPasswordToken = await generateResetPasswordToken(email);
   // await sendResetPasswordEmail(email, resetPasswordToken);
   return reply.code(httpStatus.NO_CONTENT).send();
 }
 
-const resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+export const resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
   const { token } = request.query as ResetPasswordSchema;
   const { password } = request.body as ResetPasswordSchema;
   await authService.resetPassword(token, password);
   return reply.code(httpStatus.NO_CONTENT).send();
 };
 
-const sendVerificationEmail = async (request: FastifyRequest, reply: FastifyReply) => {
-  const { user } = request as unknown;
+export const sendVerificationEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+  const user = request.user as IUser;
   const verifyEmailToken = await generateVerifyEmailToken(user);
-  await sendVerificationEmail(user.email, verifyEmailToken);
+  await sendVerificationEmail(user?.email!, verifyEmailToken);
   return reply.code(httpStatus.NO_CONTENT).send();
 };
 
-const verifyEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+export const verifyEmail = async (request: FastifyRequest, reply: FastifyReply) => {
   const { token } = request.query as VerifyEmailSchema
   await authService.verifyEmail(token);
   return reply.code(httpStatus.NO_CONTENT).send();
-};
-
-export {
-  register,
-  login,
-  logout,
-  refreshTokens,
-  forgotPassword,
-  resetPassword,
-  sendVerificationEmail,
-  verifyEmail,
 };
