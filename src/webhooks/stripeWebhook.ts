@@ -1,44 +1,47 @@
-import {
-config
-} from '../config/config';
+import { config } from '../config/config';
 import { runWithTransaction } from '../models/transaction/transaction';
 import * as orderService from '../services/orders/order.service';
 import * as paymentService from '../services/payment/payment.service';
 import { PAYMENT_STATUS } from '../helpers/constant.helper';
 import httpStatus from 'http-status';
-import { findOneDoc} from '../helpers/mongoose.helper';
+import { findOneDoc } from '../helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '../helpers/mongoose.model.helper';
 import { notificationQueue } from '@/workers/notification';
-import * as shippingService from '@/services/shipping/shipping.service'
-const { paymentGateway: { paymentSecretKey, paymentWebhookSecret }} = config;
+import * as shippingService from '@/services/shipping/shipping.service';
+const {
+  paymentGateway: { paymentSecretKey, paymentWebhookSecret },
+} = config;
 import Stripe from 'stripe';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { IUser, IUserProfile } from '@/models/user';
 import { IShipment } from '@/models/shipment';
 
-const stripe = new Stripe(paymentSecretKey!)
+const stripe = new Stripe(paymentSecretKey!, {
+  apiVersion: '2025-06-30.basil',
+});
 
-export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyReply) {
+export async function handleStripeWebhook(request: FastifyRequest, reply: FastifyReply) {
   const sig = request.headers['stripe-signature'];
-  let event;
+  let event: Stripe.Event | null = null;
 
   try {
-    event = stripe.webhooks.constructEvent(request.body, sig, paymentWebhookSecret);
+    event = stripe.webhooks.constructEvent((request as any).rawBody, sig!, paymentWebhookSecret!);
   } catch (err) {
-    return reply.code(httpStatus.BAD_REQUEST).send({
-      success: false,
-      message: `Webhook Error: ${err?.message}`,
-    });
+    if (err instanceof Error)
+      return reply.code(httpStatus.BAD_REQUEST).send({
+        success: false,
+        message: `Webhook Error: ${err?.message}`,
+      });
   }
 
-  const session = event.data?.object as Stripe.Checkout.Session;
+  const session = event?.data?.object as Stripe.Checkout.Session;
 
   const { metadata } = session;
 
-  switch (event.type) {
+  switch (event?.type) {
     case 'checkout.session.completed':
       try {
-        await runWithTransaction(async (dbSession:unknown) => {
+        await runWithTransaction(async (dbSession: unknown) => {
           // create payment
           const payment = await paymentService.createPayment(
             { sessionId: session?.id },
@@ -46,7 +49,7 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
               transactionId: session?.payment_intent,
               status: PAYMENT_STATUS.PAID,
               rawResponse: session,
-            }
+            },
           );
 
           /** Get User data */
@@ -58,7 +61,9 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
           });
 
           /** Get shipping */
-          const shippingData = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, { shippoShipmentId: metadata?.shippoShipmentId });
+          const shippingData = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, {
+            shippoShipmentId: metadata?.shippoShipmentId,
+          });
 
           // Update Order
           const order = await orderService.updateOrder(
@@ -67,13 +72,12 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
               status: PAYMENT_STATUS.PAID,
               paymentId: payment?._id,
               shipping: shippingData?._id,
-            }
+            },
             // { session: dbSession }
           );
 
           /** Update Stock and Inventory  */
-          if(order)
-          await paymentService.updateStockInInventory({ order, eventType: event.type });
+          if (order) await paymentService.updateStockInInventory({ order, eventType: event?.type });
 
           /** Buy Label */
           const { shipment, label } = await shippingService.generateBuyLabel({
@@ -95,7 +99,7 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
               },
               {
                 delay: 100000,
-              }
+              },
             );
           }
 
@@ -110,15 +114,15 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
               },
               {
                 delay: 100000,
-              }
+              },
             );
           }
 
           /** Remove from Cart */
-          if (JSON.parse(metadata?.cartIds || [])?.length <= 10) {
+          if (JSON.parse(metadata?.cartIds || '[]')?.length <= 10) {
             await paymentService.updateAllCartStatus(
-              { cartIds: JSON.parse(metadata?.cartIds || []) },
-              { status: PAYMENT_STATUS.PAID }
+              { cartIds: JSON.parse(metadata?.cartIds || '[]') },
+              { status: PAYMENT_STATUS.PAID },
             );
           }
         });
@@ -148,50 +152,48 @@ export async function handleStripeWebhook(request:FastifyRequest, reply:FastifyR
       break;
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      console.log(`Unhandled event type: ${event?.type}`);
   }
 
   return reply.code(httpStatus.OK).send({ received: true });
 }
 
-interface PaymentPayload { 
-  event: { type : Stripe.Event['type']}
+interface PaymentPayload {
+  event: { type: Stripe.Event['type'] };
 }
 
-async function handlePaymentFailure(payload:PaymentPayload, session:Stripe.Checkout.Session) {
+async function handlePaymentFailure(payload: PaymentPayload, session: Stripe.Checkout.Session) {
   const { event } = payload;
   const payment = await paymentService.createPayment(
     { sessionId: session?.id },
-    { status: PAYMENT_STATUS.FAILED }
+    { status: PAYMENT_STATUS.FAILED },
     // { session }
   );
 
   const order = await orderService.updateOrder(
     { _id: payment?.orderId },
-    { status: PAYMENT_STATUS.FAILED }
+    { status: PAYMENT_STATUS.FAILED },
     // { session }
   );
 
   /** If order fail then update stock and reserved */
-  if(order)
-  await paymentService.updateStockInInventory({ order, eventType: event.type });
+  if (order) await paymentService.updateStockInInventory({ order, eventType: event.type });
 }
 
-async function handlePaymentExpired(payload:PaymentPayload, session:Stripe.Checkout.Session) {
-   const { event } = payload;
+async function handlePaymentExpired(payload: PaymentPayload, session: Stripe.Checkout.Session) {
+  const { event } = payload;
   const payment = await paymentService.createPayment(
     { sessionId: session?.id },
-    { status: PAYMENT_STATUS.EXPIRED }
+    { status: PAYMENT_STATUS.EXPIRED },
     // { session }
   );
 
   const order = await orderService.updateOrder(
     { _id: payment?.orderId },
-    { status: PAYMENT_STATUS.EXPIRED }
+    { status: PAYMENT_STATUS.EXPIRED },
     // { session }
   );
 
   /** If order fail then update stock and reserved */
-  if(order)
-  await paymentService.updateStockInInventory({ order, eventType: event?.type });
+  if (order) await paymentService.updateStockInInventory({ order, eventType: event?.type });
 }

@@ -1,8 +1,8 @@
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Schema } from 'mongoose';
 import { INVENTORY_TYPE } from '../../helpers/constant.helper';
-import { IBaseDocumentModel } from "@/types/mongoose.types";
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IInventoryLog extends Document,IBaseDocumentModel {
+export interface IInventoryLog extends Document, IBaseDocumentModel {
   inventory: Schema.Types.ObjectId;
   type: string;
   quantity: number;
@@ -19,7 +19,7 @@ const inventoryLogSchema = new Schema<IInventoryLog>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const InventoryLog = model<IInventoryLog>('Inventory_Log', inventoryLogSchema);

@@ -1,8 +1,6 @@
-import z from "zod";
+import z from 'zod';
 
-export type CreateUpdateProductSchema = z.infer<
-  typeof createUpdateProduct.body
->;
+export type CreateUpdateProductSchema = z.infer<typeof createUpdateProduct.body>;
 export type DeleteProductSchema = z.infer<typeof deleteProduct.query>;
 export type GetAllProductsSchema = z.infer<typeof getAllProducts.query>;
 export type GenerateProductSkuSchema = z.infer<typeof generateProductSku.body>;

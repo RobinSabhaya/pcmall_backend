@@ -1,3 +1,3 @@
-export interface DeleteSellerFilter { 
-    sellerId: string;
-} 
+export interface DeleteSellerFilter {
+  sellerId: string;
+}

@@ -9,7 +9,10 @@
   "scripts": {
     "test": "node --test test/**/*.test.js",
     "start": "fastify start -w -l info dist/server.js",
-    "dev": "npx tsx watch src/server.ts"
+    "build": "npx tsc",
+    "dev": "npx tsx watch src/server.ts",
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -42,7 +45,18 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@types/ejs": "^3.1.5",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.0.14"
+    "@types/node": "^24.0.14",
+    "@types/nodemailer": "^6.4.17",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0"
   }
 }

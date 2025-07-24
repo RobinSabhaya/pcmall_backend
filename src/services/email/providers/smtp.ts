@@ -1,11 +1,11 @@
 import ejs from 'ejs';
 import nodemailer from 'nodemailer';
-import {
-  config
-} from '../../../config/config';
+import { config } from '../../../config/config';
 
-const { env,
-  email: { smtp, from }, } = config;
+const {
+  env,
+  email: { smtp, from },
+} = config;
 
 const transport = nodemailer.createTransport(smtp);
 /* istanbul ignore next */
@@ -13,7 +13,11 @@ if (env !== 'test') {
   transport
     .verify()
     .then(() => console.log('📧 Connected to email server 📧'))
-    .catch(() => console.warn('Unable to connect to email server. Make sure you have configured the SMTP options in .env'));
+    .catch(() =>
+      console.warn(
+        'Unable to connect to email server. Make sure you have configured the SMTP options in .env',
+      ),
+    );
 }
 
 /**
@@ -23,24 +27,26 @@ if (env !== 'test') {
  * @param {object} mailData
  * @param {string} filePath
  */
-export const sendEmail = async (to:string, subject:string, mailData:object, filePath:unknown) => {
-  const sendMail = await new Promise((resolve, reject) => {
-    ejs.renderFile(filePath, mailData, async (err:unknown, data:unknown) => (err ? reject(err) : resolve(data)));
-  }) // Render the filePath of ejs.
-    .then(async (data) => {
-      const mailSend = await transport
-        .sendMail({
-          from,
-          to,
-          subject,
-          html: data,
-          replyTo: from,
-        })
-        .then(() => true)
-        .catch(() => false);
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  mailData: object,
+  filePath: string,
+): Promise<boolean> => {
+  try {
+    const html = await ejs.renderFile(filePath, mailData);
+    // Send the email
+    await transport.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      replyTo: from,
+    });
 
-      return !mailSend ? false : true;
-    })
-    .catch(async () => false);
-  return sendMail;
+    return true;
+  } catch (error) {
+    console.error('Email send failed:', error);
+    return false;
+  }
 };

@@ -1,28 +1,22 @@
-import httpStatus from "http-status";
-import ApiError from "../../utils/ApiError";
-import * as productService from "../../services/product/product.service";
-import { FastifyReply, FastifyRequest } from "fastify";
+import httpStatus from 'http-status';
+import ApiError from '../../utils/ApiError';
+import * as productService from '../../services/product/product.service';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import {
   CreateUpdateProductSchema,
   DeleteProductSchema,
   GenerateProductSkuSchema,
   GetAllProductsSchema,
-} from "@/validations/product.validation";
-import { IUser } from "@/models/user";
+} from '@/validations/product.validation';
+import { IUser } from '@/models/user';
 
-export const getAllProducts = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
+export const getAllProducts = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const user = request.user as IUser;
     // Get all cart data
-    const productData = await productService.getAllProducts(
-      request.query as GetAllProductsSchema,
-      {
-        user,
-      }
-    );
+    const productData = await productService.getAllProducts(request.query as GetAllProductsSchema, {
+      user,
+    });
 
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -30,24 +24,17 @@ export const getAllProducts = async (
     });
   } catch (error) {
     if (error instanceof Error)
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        error.message || "Something went wrong"
-      );
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
 };
 
-export const createUpdateProduct = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
-  const user = request.user as IUser
+export const createUpdateProduct = async (request: FastifyRequest, reply: FastifyReply) => {
+  const user = request.user as IUser;
   try {
-    const { message, productData, productVariantData } =
-      await productService.createUpdateProduct(
-        request.body as CreateUpdateProductSchema,
-        {user}
-      );
+    const { message, productData, productVariantData } = await productService.createUpdateProduct(
+      request.body as CreateUpdateProductSchema,
+      { user },
+    );
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
@@ -55,20 +42,14 @@ export const createUpdateProduct = async (
     });
   } catch (error) {
     if (error instanceof Error)
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        error.message || "Something went wrong"
-      );
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
 };
 
-export const deleteProduct = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
+export const deleteProduct = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const { message, productData } = await productService.deleteProduct(
-      request.query as DeleteProductSchema
+      request.query as DeleteProductSchema,
     );
 
     return reply.code(httpStatus.OK).send({
@@ -78,24 +59,17 @@ export const deleteProduct = async (
     });
   } catch (error) {
     if (error instanceof Error)
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        error.message || "Something went wrong"
-      );
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
 };
 
-export const generateProductSku = async (
-  request: FastifyRequest,
-  reply: FastifyReply
-) => {
+export const generateProductSku = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const user = request.user as IUser;
-    const { message, productData, productSkuData } =
-      await productService.generateProductSku(
-        request.body as GenerateProductSkuSchema,
-        { user }
-      );
+    const { message, productData, productSkuData } = await productService.generateProductSku(
+      request.body as GenerateProductSkuSchema,
+      { user },
+    );
 
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -104,9 +78,6 @@ export const generateProductSku = async (
     });
   } catch (error) {
     if (error instanceof Error)
-      throw new ApiError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        error.message || "Something went wrong"
-      );
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
 };

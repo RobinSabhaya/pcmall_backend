@@ -1,14 +1,12 @@
 import { SHIPPING_STATUS, SHIPMENT_TYPE, SHIPPING_CARRIERS } from '../../helpers/constant.helper';
-import {
-  config
-} from '../../config/config';
+import { config } from '../../config/config';
 import { Document, model, Schema } from 'mongoose';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IShippingTracking extends Document {
   status: string;
   statusDetails: string;
-  statusDate: Date
+  statusDate: Date;
 }
 
 export interface IAddress extends Document {
@@ -23,7 +21,7 @@ export interface IAddress extends Document {
   email: string;
 }
 export interface IShippingParcel extends Document {
-  length: number
+  length: number;
   width: number;
   height: number;
   distanceUnit: string;
@@ -40,12 +38,12 @@ export interface IShippingRate extends Document {
 }
 export interface IShippingLabel extends Document {
   labelUrl: string;
-  labelType: string,
-  trackingNumber: string,
-  carrier: string,
-  transactionId: string,
+  labelType: string;
+  trackingNumber: string;
+  carrier: string;
+  transactionId: string;
 }
-export interface IShipment extends Document,IBaseDocumentModel {
+export interface IShipment extends Document, IBaseDocumentModel {
   shippoShipmentId: string;
   status: string;
   fromAddress: IAddress;
@@ -60,12 +58,11 @@ export interface IShipment extends Document,IBaseDocumentModel {
     orderId: string;
     userId: string;
     customTags: Array<string>;
-  },
+  };
   isReturn: boolean;
   shipmentType: string;
   shippingCarrier: string;
 }
-
 
 const trackingStatusSchema = new Schema<IShippingTracking>(
   {
@@ -73,7 +70,7 @@ const trackingStatusSchema = new Schema<IShippingTracking>(
     statusDetails: String,
     statusDate: Date,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const addressSchema = new Schema<IAddress>(
@@ -88,7 +85,7 @@ const addressSchema = new Schema<IAddress>(
     phone: String,
     email: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const parcelSchema = new Schema<IShippingParcel>(
@@ -100,7 +97,7 @@ const parcelSchema = new Schema<IShippingParcel>(
     weight: Number,
     massUnit: { type: String, default: 'lb' },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const rateSchema = new Schema<IShippingRate>(
@@ -112,7 +109,7 @@ const rateSchema = new Schema<IShippingRate>(
     estimatedDays: Number,
     objectId: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const labelSchema = new Schema<IShippingLabel>(
@@ -123,7 +120,7 @@ const labelSchema = new Schema<IShippingLabel>(
     carrier: String,
     transactionId: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const shipmentSchema = new Schema<IShipment>(
@@ -158,7 +155,7 @@ const shipmentSchema = new Schema<IShipment>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 // Optional TTL (e.g., auto-delete after 60 days if unneeded)

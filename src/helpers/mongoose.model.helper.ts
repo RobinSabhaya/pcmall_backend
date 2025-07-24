@@ -18,12 +18,10 @@ const MONGOOSE_MODELS = {
   ADDRESS: 'Address',
   TOKEN: 'Token',
   ROLE: 'Role',
-  ACCESS_PERMISSION : 'accessPermission',
-  PERMISSION : 'Permission',
+  ACCESS_PERMISSION: 'accessPermission',
+  PERMISSION: 'Permission',
   PAYMENT: 'Payment',
-  WISHLIST:'wishlist'
+  WISHLIST: 'wishlist',
 };
 
-export {
-  MONGOOSE_MODELS,
-};
+export { MONGOOSE_MODELS };

@@ -1,7 +1,7 @@
-import { IBaseDocumentModel } from "@/types/mongoose.types";
-import { Document, model, Schema } from "mongoose";
+import { IBaseDocumentModel } from '@/types/mongoose.types';
+import { Document, model, Schema } from 'mongoose';
 
-export interface ISeller extends Document,IBaseDocumentModel {
+export interface ISeller extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
   name: string;
   businessEmail: string;
@@ -20,7 +20,7 @@ const SellerSchema = new Schema<ISeller>(
     businessName: { type: String },
     gstNumber: { type: String },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export const Seller = model<ISeller>('Seller', SellerSchema);

@@ -1,4 +1,4 @@
-import { IAddress } from "../models/user";
+import { IAddress } from '../models/user';
 
 interface IParseDeviceInfo {
   device_id: string;
@@ -6,11 +6,11 @@ interface IParseDeviceInfo {
   os: {
     name: string;
     version: string;
-  },
+  };
   browser: {
     name: string;
     version: string;
-  },
+  };
   brand: string;
   model: string;
   user_agent: string;
@@ -21,7 +21,7 @@ interface IParseDeviceInfo {
  * @param {object} payload
  * @returns {object} deviceInfo
  */
-const parseDeviceInfo = (payload: IParseDeviceInfo): IParseDeviceInfo => {
+export const parseDeviceInfo = (payload: IParseDeviceInfo): IParseDeviceInfo => {
   return {
     device_id: payload.device_id,
     device_type: payload.device_type || 'Desktop',
@@ -43,7 +43,7 @@ interface IgenerateAddressForShipping extends IAddress {
   phone: string;
   email: string;
 }
-const generateAddressForShipping = (address: IgenerateAddressForShipping) => {
+export const generateAddressForShipping = (address: IgenerateAddressForShipping) => {
   return {
     name: address.line1,
     street1: address.line1,
@@ -56,24 +56,43 @@ const generateAddressForShipping = (address: IgenerateAddressForShipping) => {
   };
 };
 
-const sanitize = (str: string = ''): string => str.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+export const sanitize = (str: string = ''): string =>
+  str.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 
-const abbreviate = (str: string, length: number = 3): string => sanitize(str).slice(0, length);
+export const abbreviate = (str: string, length: number = 3): string =>
+  sanitize(str).slice(0, length);
 
-const generateVariantCode = (variants: object = {}, length: number = 2) =>
+export const generateVariantCode = (variants: object = {}, length: number = 2) =>
   Object.entries(variants)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, value]) => abbreviate(value as string, length))
     .join('');
 
-const generateRandomCode = (length: number = 4): string =>
+export const generateRandomCode = (length: number = 4): string =>
   Array.from({ length }, () => Math.floor(Math.random() * 36).toString(36))
     .join('')
     .toUpperCase();
 
+export interface GenerateSKU {
+  name: string;
+  category: string;
+  brand: string;
+  variants?: object;
+  randomLength?: number;
+  abbrevLength?: number;
+  variantAbbrevLength?: number;
+}
 
-function generateSKU(payload) {
-  const { name, category, brand = '', variants = {}, randomLength = 4, abbrevLength = 3, variantAbbrevLength = 2 } = payload;
+export function generateSKU(payload: GenerateSKU): string {
+  const {
+    name,
+    category,
+    brand = '',
+    variants = {},
+    randomLength = 4,
+    abbrevLength = 3,
+    variantAbbrevLength = 2,
+  } = payload;
   if (!name || !category) throw new Error('Product name and category are required.');
 
   const parts = [
@@ -93,31 +112,31 @@ type Iitem = {
   height: number;
   quantity: number;
   weightOz: number;
-}
+};
 
 type Ibox = {
   length: number;
   width: number;
   height: number;
-}
+};
 
-function getItemVolume(item: Iitem): number {
+export function getItemVolume(item: Iitem): number {
   return item.length * item.width * item.height * item.quantity;
 }
 
-function getBoxVolume(box: Ibox): number {
+export function getBoxVolume(box: Ibox): number {
   return box.length * box.width * box.height;
 }
 
-function getTotalWeight(cart: Iitem[]): number {
+export function getTotalWeight(cart: Iitem[]): number {
   return cart.reduce((sum: number, item: Iitem) => sum + item.weightOz * item.quantity, 0);
 }
 
-function getTotalVolume(cart: Iitem[]) {
+export function getTotalVolume(cart: Iitem[]) {
   return cart.reduce((sum: number, item: Iitem) => sum + getItemVolume(item), 0);
 }
 
-function selectBestBox(cart: Iitem[]) {
+export function selectBestBox(cart: Iitem[]) {
   const boxes = [
     { name: 'Small Box', length: 8, width: 6, height: 2 },
 
@@ -175,10 +194,14 @@ function selectBestBox(cart: Iitem[]) {
 
         return acc;
       },
-      { length: 0, width: 0, height: 0 }
+      { length: 0, width: 0, height: 0 },
     );
 
-    if (box.length >= maxItem.length && box.width >= maxItem.width && box.height >= maxItem.height) {
+    if (
+      box.length >= maxItem.length &&
+      box.width >= maxItem.width &&
+      box.height >= maxItem.height
+    ) {
       return box;
     }
   }
@@ -186,7 +209,7 @@ function selectBestBox(cart: Iitem[]) {
   return null;
 }
 
-function buildParcelObject(cart: Iitem[]) {
+export function buildParcelObject(cart: Iitem[]) {
   const totalWeightOz = getTotalWeight(cart);
 
   const selectedBox = selectBestBox(cart);
@@ -205,8 +228,8 @@ function buildParcelObject(cart: Iitem[]) {
   };
 }
 
-function formatAddress(address: IAddress): Array<string> | string {
-  const requiredFields = ['line1', 'city', 'state', 'country'];
+export function formatAddress(address: IAddress): Array<string> | string {
+  const requiredFields = ['line1', 'city', 'state', 'country'] as const;
 
   // Validate required fields
   for (const field of requiredFields) {
@@ -226,12 +249,3 @@ function formatAddress(address: IAddress): Array<string> | string {
 
   return parts;
 }
-
-export {
-  parseDeviceInfo,
-  generateAddressForShipping,
-  generateSKU,
-  selectBestBox,
-  buildParcelObject,
-  formatAddress,
-};

@@ -1,11 +1,11 @@
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 import mongoose, { Document, model, Schema } from 'mongoose';
 
-export interface ICategory extends Document,IBaseDocumentModel {
+export interface ICategory extends Document, IBaseDocumentModel {
   categoryName: string;
   subCategory: Schema.Types.ObjectId;
   tags: Array<string>;
-  deletedAt: Date | null
+  deletedAt: Date | null;
 }
 
 const categorySchema = new Schema<ICategory>(
@@ -26,8 +26,7 @@ const categorySchema = new Schema<ICategory>(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Category = model<ICategory>('Category', categorySchema);
-

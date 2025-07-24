@@ -2,7 +2,7 @@ import { Document, model, Schema } from 'mongoose';
 import { PAYMENT_STATUS } from '../../helpers/constant.helper';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface ICart extends Document,IBaseDocumentModel {
+export interface ICart extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
   variant: Schema.Types.ObjectId;
   quantity: number;
@@ -32,7 +32,7 @@ const cartSchema = new Schema<ICart>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Cart = model<ICart>('Cart', cartSchema);

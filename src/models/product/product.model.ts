@@ -1,8 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { CONFIRMATION_TYPE } from '../../helpers/constant.helper'
+import { CONFIRMATION_TYPE } from '../../helpers/constant.helper';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IProduct extends Document,IBaseDocumentModel {
+export interface IProduct extends Document, IBaseDocumentModel {
   title: string;
   description: string;
   slug: string;
@@ -29,7 +29,11 @@ const productSchema = new Schema<IProduct>(
     modelNumber: { type: String },
     tags: [String],
     isPublished: { type: Boolean, default: false },
-    approvalStatus: { type: String, enum: Object.values(CONFIRMATION_TYPE), default: CONFIRMATION_TYPE.PENDING },
+    approvalStatus: {
+      type: String,
+      enum: Object.values(CONFIRMATION_TYPE),
+      default: CONFIRMATION_TYPE.PENDING,
+    },
     category: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
@@ -37,7 +41,7 @@ const productSchema = new Schema<IProduct>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export const Product = model<IProduct>('Product', productSchema);

@@ -8,23 +8,23 @@ import ApiError from '@/utils/ApiError';
 /**
  * Get order list
  */
-export const getOrderList = async (request:FastifyRequest, reply:FastifyReply) => {
+export const getOrderList = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const user = request.user as IUser;
 
-  const orderData = await orderService.getOrderList(
-    {
-      user : user._id
-    },
-    request.query as GetOrderListSchema
-  );
+    const orderData = await orderService.getOrderList(
+      {
+        user: user._id,
+      },
+      request.query as GetOrderListSchema,
+    );
 
-  return reply.code(httpStatus.OK).send({
-    success: true,
-    data: orderData[0],
-  });
+    return reply.code(httpStatus.OK).send({
+      success: true,
+      data: orderData[0],
+    });
   } catch (error) {
     if (error instanceof Error)
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
   }
 };

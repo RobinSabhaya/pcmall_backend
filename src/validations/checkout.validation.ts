@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export type CheckoutSchema = z.infer<typeof checkout.body>;
 
@@ -10,7 +10,7 @@ export const checkout = {
         product_name: z.string(),
         unit_amount: z.number(),
         productVariantId: z.string(),
-      })
+      }),
     ),
     currency: z.string(),
     shippingAddress: z.string(),

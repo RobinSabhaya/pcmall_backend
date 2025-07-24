@@ -1,7 +1,5 @@
-import { IPayment, Payment } from '@/models/payment'
-import {
-config
-} from '@/config/config';
+import { IPayment, Payment } from '@/models/payment';
+import { config } from '@/config/config';
 import {
   ORDER_PAYMENT_SHIPPING_SUCCESS_SMS,
   ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL,
@@ -16,13 +14,21 @@ import path from 'path';
 import { formatAddress } from '../../helpers/function.helper';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 import { ICart } from '@/models/cart';
-import { OrderConfirmationNotification, UpdateAllCartStatusBody, UpdateAllCartStatusFilter, UpdateStockInInventoryBody, UpdateStockInInventoryFilter } from './payment.service.type';
+import {
+  OrderConfirmationNotification,
+  UpdateAllCartStatusBody,
+  UpdateAllCartStatusFilter,
+  UpdateStockInInventoryBody,
+  UpdateStockInInventoryFilter,
+} from './payment.service.type';
 import { IAddress } from '@/models/user';
 import { IProductSKU } from '@/models/product';
 import { IInventory, IInventoryLog } from '@/models/inventory';
 
-const { sms: { smsCarrier },
-  email: { emailProvider } } = config;
+const {
+  sms: { smsCarrier },
+  email: { emailProvider },
+} = config;
 
 /**
  * Create payment
@@ -31,8 +37,12 @@ const { sms: { smsCarrier },
  * @param {object} options
  * @returns {Promise<Payment>}
  */
-export const createPayment = (filter:FilterQuery<IPayment>, reqBody:UpdateQuery<IPayment>, options = {}):Promise<IPayment | null> => {
-  return findOneAndUpdateDoc<IPayment>(MONGOOSE_MODELS.PAYMENT,filter, reqBody, options);
+export const createPayment = (
+  filter: FilterQuery<IPayment>,
+  reqBody: UpdateQuery<IPayment>,
+  options = {},
+): Promise<IPayment | null> => {
+  return findOneAndUpdateDoc<IPayment>(MONGOOSE_MODELS.PAYMENT, filter, reqBody, options);
 };
 
 /**
@@ -42,14 +52,18 @@ export const createPayment = (filter:FilterQuery<IPayment>, reqBody:UpdateQuery<
  * @param {object} options
  * @returns
  */
-export const updateAllCartStatus = async (filter:UpdateAllCartStatusFilter, reqBody:UpdateAllCartStatusBody, options:object={}) => {
+export const updateAllCartStatus = async (
+  filter: UpdateAllCartStatusFilter,
+  reqBody: UpdateAllCartStatusBody,
+  options: object = {},
+) => {
   try {
     const { cartIds } = filter;
 
-    const cartIdsData = await findDoc<ICart>(MONGOOSE_MODELS.CART, {
+    const cartIdsData = (await findDoc<ICart>(MONGOOSE_MODELS.CART, {
       _id: { $in: cartIds?.map((i) => i) },
       status: PAYMENT_STATUS.PENDING,
-    }) as ICart[];
+    })) as ICart[];
 
     if (!cartIdsData?.length || cartIds?.length !== cartIdsData.length) {
       console.error('Remove Cart : Mismatch between cart products');
@@ -62,7 +76,7 @@ export const updateAllCartStatus = async (filter:UpdateAllCartStatusFilter, reqB
         _id: { $in: cartIds?.map((i) => i) },
         status: PAYMENT_STATUS.PENDING,
       },
-      reqBody
+      reqBody,
     );
     return;
   } catch (error) {
@@ -74,14 +88,16 @@ export const updateAllCartStatus = async (filter:UpdateAllCartStatusFilter, reqB
  * Order confirmation SMS
  * @param {object} payload
  */
-export const orderConfirmationSMS = async (payload:OrderConfirmationNotification) => {
+export const orderConfirmationSMS = async (payload: OrderConfirmationNotification) => {
   try {
     const { userData, userProfileData, order } = payload;
     await handleSMS(smsCarrier).sendSMS({
       to: userData?.phone_number,
       body: ORDER_PAYMENT_SHIPPING_SUCCESS_SMS({
         customerName:
-          userProfileData?.first_name + ' ' + (userProfileData?.last_name && userProfileData?.last_name) || 'User',
+          userProfileData?.first_name +
+            ' ' +
+            (userProfileData?.last_name && userProfileData?.last_name) || 'User',
         orderDate: moment(order?.updatedAt).format('DD-MM-YYYY') || moment().format('DD-MM-YYYY'),
         orderId: String(order?._id),
         storeName: 'PCMall',
@@ -97,7 +113,7 @@ export const orderConfirmationSMS = async (payload:OrderConfirmationNotification
  * @param {object} payload
  * @returns
  */
-export const orderConfirmationEmail = async (payload:OrderConfirmationNotification) => {
+export const orderConfirmationEmail = async (payload: OrderConfirmationNotification) => {
   try {
     const { userData, userProfileData, order } = payload;
 
@@ -107,27 +123,26 @@ export const orderConfirmationEmail = async (payload:OrderConfirmationNotificati
 
     if (!userAddressData) console.log('Error: User Address not available!');
 
-    if (userAddressData) { 
-      const isEmailSend = await handleEmail(emailProvider).sendEmail(
+    if (userAddressData) {
+      const isEmailSend = await handleEmail(emailProvider!).sendEmail(
         userData.email,
         ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL({
-        orderId: String(order._id),
-      }),
-      {
-        user_name: userProfileData?.first_name || 'User',
-        order_number: order._id,
-        tracking_number: order._id,
-        delivery_address_line1: formatAddress(userAddressData)[0],
-        delivery_address_line2: formatAddress(userAddressData)[2],
-        delivery_address_line3: formatAddress(userAddressData)[3],
-      },
-      path.join(__dirname, '../../../views/order_success.ejs')
-    );
-    if (isEmailSend) console.log('Email is send successfully');
+          orderId: String(order._id),
+        }),
+        {
+          user_name: userProfileData?.first_name || 'User',
+          order_number: order._id,
+          tracking_number: order._id,
+          delivery_address_line1: formatAddress(userAddressData)[0],
+          delivery_address_line2: formatAddress(userAddressData)[2],
+          delivery_address_line3: formatAddress(userAddressData)[3],
+        },
+        path.join(__dirname, '../../../views/order_success.ejs'),
+      );
+      if (isEmailSend) console.log('Email is send successfully');
     }
-
-  } catch (error:unknown) {
-    console.log("🚀 ~ orderConfirmationEmail ~ error:", error)
+  } catch (error: unknown) {
+    console.log('🚀 ~ orderConfirmationEmail ~ error:', error);
   }
 };
 
@@ -138,14 +153,22 @@ export const orderConfirmationEmail = async (payload:OrderConfirmationNotificati
  * @param {object} options
  * @returns
  */
-export const updateStockInInventory = async (payload: UpdateStockInInventoryFilter, reqBody?: UpdateStockInInventoryBody, options: object = {}) => {
+export const updateStockInInventory = async (
+  payload: UpdateStockInInventoryFilter,
+  reqBody?: UpdateStockInInventoryBody,
+  options: object = {},
+) => {
   try {
     const { order, eventType } = payload;
     /** Inventory Management */
     for (const orderItem of order?.items) {
-      let productSkuData = await findOneDoc<IProductSKU>(MONGOOSE_MODELS.PRODUCT_SKU, { variant: orderItem.variant });
+      let productSkuData = await findOneDoc<IProductSKU>(MONGOOSE_MODELS.PRODUCT_SKU, {
+        variant: orderItem.variant,
+      });
 
-      let inventoryData = await findOneDoc<IInventory>(MONGOOSE_MODELS.INVENTORY, { sku: productSkuData?._id });
+      let inventoryData = await findOneDoc<IInventory>(MONGOOSE_MODELS.INVENTORY, {
+        sku: productSkuData?._id,
+      });
 
       if (!inventoryData) {
         console.error('updateStockInInventory: Inventory not found');
@@ -184,15 +207,20 @@ export const updateStockInInventory = async (payload: UpdateStockInInventoryFilt
       }
 
       /** If order success then update stock and reserved */
-      await findOneAndUpdateDoc<IInventory>(MONGOOSE_MODELS.INVENTORY, { _id: inventoryData._id }, inventoryPayload, {
-        new: true,
-      }) as IInventory;
+      (await findOneAndUpdateDoc<IInventory>(
+        MONGOOSE_MODELS.INVENTORY,
+        { _id: inventoryData._id },
+        inventoryPayload,
+        {
+          new: true,
+        },
+      )) as IInventory;
 
       /** Log the history of Inventory */
-      await findOneAndUpdateDoc<IInventoryLog>(MONGOOSE_MODELS.INVENTORY_LOG, payload, payload, {
+      (await findOneAndUpdateDoc<IInventoryLog>(MONGOOSE_MODELS.INVENTORY_LOG, payload, payload, {
         upsert: true,
         new: true,
-      }) as IInventoryLog;
+      })) as IInventoryLog;
 
       console.log('🚀 ~ updateStockInInventory ~ inventoryData:', inventoryData);
     }

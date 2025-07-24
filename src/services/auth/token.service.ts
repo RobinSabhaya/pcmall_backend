@@ -1,16 +1,21 @@
-import jwt from 'jsonwebtoken'
-import moment, { Moment } from 'moment'
-import httpStatus from 'http-status'
-import { IToken, Token } from '../../models/auth/index'
-import ApiError from '../../utils/ApiError'
-import { TOKEN_TYPES } from '../../helpers/constant.helper'
-import { Schema } from 'mongoose'
-import { IUser } from '@/models/user'
-import { findOneAndUpdateDoc, findOneDoc, findOneAndDeleteDoc } from '@/helpers/mongoose.helper'
-import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper'
-import { config } from '@/config/config'
+import jwt from 'jsonwebtoken';
+import moment, { Moment } from 'moment';
+import httpStatus from 'http-status';
+import { IToken, Token } from '../../models/auth/index';
+import ApiError from '../../utils/ApiError';
+import { TOKEN_TYPES } from '../../helpers/constant.helper';
+import { Schema } from 'mongoose';
+import { IUser } from '@/models/user';
+import { findOneAndUpdateDoc, findOneDoc, findOneAndDeleteDoc } from '@/helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { config } from '@/config/config';
 
-const generateToken = (userId: Schema.Types.ObjectId, expires: Moment, type: TOKEN_TYPES, secret = config.jwt.secret): string => {
+const generateToken = (
+  userId: Schema.Types.ObjectId,
+  expires: Moment,
+  type: TOKEN_TYPES,
+  secret = config.jwt.secret,
+): string => {
   const payload = {
     sub: userId,
     iat: moment().unix(),
@@ -20,8 +25,15 @@ const generateToken = (userId: Schema.Types.ObjectId, expires: Moment, type: TOK
   return jwt.sign(payload, config.jwt.secret!);
 };
 
-const saveToken = async (token: string, userId: Schema.Types.ObjectId, expires: Moment, type: TOKEN_TYPES, options: object): Promise<IToken | null> => {
-  const tokenDoc = await findOneAndUpdateDoc<IToken>(MONGOOSE_MODELS.TOKEN,
+const saveToken = async (
+  token: string,
+  userId: Schema.Types.ObjectId,
+  expires: Moment,
+  type: TOKEN_TYPES,
+  options: object,
+): Promise<IToken | null> => {
+  const tokenDoc = await findOneAndUpdateDoc<IToken>(
+    MONGOOSE_MODELS.TOKEN,
     {
       type,
       user: userId,
@@ -33,15 +45,19 @@ const saveToken = async (token: string, userId: Schema.Types.ObjectId, expires: 
       expires: expires.toDate(),
       blacklisted: false,
     },
-    options
+    options,
   );
   return tokenDoc;
 };
 
-
 const verifyToken = async (token: string, type: TOKEN_TYPES): Promise<IToken> => {
   const payload = jwt.verify(token, config.jwt.secret!);
-  const tokenDoc = await findOneDoc<IToken>(MONGOOSE_MODELS.TOKEN, { token, type, user: payload.sub, blacklisted: false });
+  const tokenDoc = await findOneDoc<IToken>(MONGOOSE_MODELS.TOKEN, {
+    token,
+    type,
+    user: payload.sub,
+    blacklisted: false,
+  });
   if (!tokenDoc) {
     throw new Error('Token not found');
   }
@@ -53,25 +69,33 @@ const verifyToken = async (token: string, type: TOKEN_TYPES): Promise<IToken> =>
  * @param {User} user
  * @returns {Promise<Object>}
  */
-const generateAuthTokens = async (user: IUser): Promise<{
+const generateAuthTokens = async (
+  user: IUser,
+): Promise<{
   access: {
     token: string;
     expires: Date;
-  },
+  };
   refresh: {
     token: string;
     expires: Date;
-  }
+  };
 }> => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user._id, accessTokenExpires, TOKEN_TYPES.ACCESS);
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
   const refreshToken = generateToken(user.id, refreshTokenExpires, TOKEN_TYPES.REFRESH);
-  const refreshTokenData = await saveToken(refreshToken, user.id, refreshTokenExpires, TOKEN_TYPES.REFRESH, {
-    upsert: true,
-    new: true,
-  });
+  const refreshTokenData = await saveToken(
+    refreshToken,
+    user.id,
+    refreshTokenExpires,
+    TOKEN_TYPES.REFRESH,
+    {
+      upsert: true,
+      new: true,
+    },
+  );
 
   return {
     access: {
@@ -119,10 +143,13 @@ const generateVerifyEmailToken = async (user: IUser): Promise<string> => {
   return verifyEmailToken;
 };
 
-const saveDeviceInfo = async (filter: object, payload: object, options = {}): Promise<IToken | null> => {
+const saveDeviceInfo = async (
+  filter: object,
+  payload: object,
+  options = {},
+): Promise<IToken | null> => {
   return findOneAndUpdateDoc<IToken>(MONGOOSE_MODELS.TOKEN, filter, payload, options);
 };
-
 
 const deleteToken = async (filter: object): Promise<IToken | null> => {
   return findOneAndDeleteDoc<IToken>(MONGOOSE_MODELS.TOKEN, filter);

@@ -1,9 +1,16 @@
+import { config } from '../../../config/config';
 import {
-  config
-} from '../../../config/config';
-import { AddressCreateRequest, ParcelCreateFromTemplateRequest, Rate, Shippo } from 'shippo';
+  AddressCreateRequest,
+  ParcelCreateFromTemplateRequest,
+  ParcelCreateRequest,
+  Rate,
+  Shipment,
+  Shippo,
+} from 'shippo';
 
-const { shipping: { shippingApiKey }, } = config;
+const {
+  shipping: { shippingApiKey },
+} = config;
 const shippo = new Shippo({
   apiKeyHeader: shippingApiKey,
 });
@@ -13,7 +20,11 @@ const shippo = new Shippo({
  * @param {string} payload
  * @returns
  */
-export const createShipment = async (addressFrom:AddressCreateRequest, addressTo:AddressCreateRequest, parcel:ParcelCreateFromTemplateRequest) => {
+export const createShipment = async (
+  addressFrom: AddressCreateRequest,
+  addressTo: AddressCreateRequest,
+  parcel: ParcelCreateRequest,
+): Promise<Shipment> => {
   const shipment = await shippo.shipments.create({
     addressFrom,
     addressTo,
@@ -29,7 +40,7 @@ export const createShipment = async (addressFrom:AddressCreateRequest, addressTo
   return shipment;
 };
 
-export const buyLabel = async (rateObjectId:string) => {
+export const buyLabel = async (rateObjectId: string) => {
   const transaction = await shippo.transactions.create({
     rate: rateObjectId,
     labelFileType: 'PDF',
@@ -43,7 +54,7 @@ export const buyLabel = async (rateObjectId:string) => {
   return transaction;
 };
 
-export const trackShipment = async (carrier:string, trackingNumber:string) => {
+export const trackShipment = async (carrier: string, trackingNumber: string) => {
   const tracking = await shippo.trackingStatus.get(trackingNumber, carrier);
   return tracking;
 };

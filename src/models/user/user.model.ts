@@ -3,7 +3,7 @@ import { ACCOUNT_STATUS, AUTH_PROVIDER, USER_ROLE } from '../../helpers/constant
 import { Document, Model, model, Schema } from 'mongoose';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IUser extends Document,IBaseDocumentModel {
+export interface IUser extends Document, IBaseDocumentModel {
   _id: Schema.Types.ObjectId;
   email: string;
   phone_number: string;
@@ -61,9 +61,8 @@ const userSchema = new Schema<IUser>(
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
 
 /**
  * Check if password matches the user's password

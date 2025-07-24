@@ -1,21 +1,21 @@
 import { Document, model, Schema } from 'mongoose';
-import { TOKEN_TYPES } from '../../helpers/constant.helper'
+import { TOKEN_TYPES } from '../../helpers/constant.helper';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IDeviceInfo{
-  device_id: string
-  device_type: string
+export interface IDeviceInfo {
+  device_id: string;
+  device_type: string;
   os: {
-    name: string
-    version: string
-  }
+    name: string;
+    version: string;
+  };
   browser: {
-    name: string
-    version: string
-  }
-  brand: string
-  model: string
-  user_agent: string
+    name: string;
+    version: string;
+  };
+  brand: string;
+  model: string;
+  user_agent: string;
 }
 
 const deviceInfoSchema = new Schema<IDeviceInfo>(
@@ -39,16 +39,16 @@ const deviceInfoSchema = new Schema<IDeviceInfo>(
     model: { type: String }, // e.g., "iPhone 14"
     user_agent: { type: String }, // full UA string
   },
-  { _id: false }
+  { _id: false },
 );
 
-export interface IToken extends Document,IBaseDocumentModel {
-  token: string
-  user: Schema.Types.ObjectId
-  device_info: IDeviceInfo
-  type: string
-  expires: Date
-  blacklisted: boolean
+export interface IToken extends Document, IBaseDocumentModel {
+  token: string;
+  user: Schema.Types.ObjectId;
+  device_info: IDeviceInfo;
+  type: string;
+  expires: Date;
+  blacklisted: boolean;
 }
 
 const tokenSchema = new Schema<IToken>(
@@ -80,7 +80,7 @@ const tokenSchema = new Schema<IToken>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 tokenSchema.index({ user: 1 });

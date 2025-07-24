@@ -1,18 +1,18 @@
 import { Worker, Queue } from 'bullmq';
-import {
-} from '../config/config';
+import {} from '../config/config';
 import * as paymentService from '../services/payment/payment.service';
 import { QUEUES } from '@/helpers/constant.helper';
+import { config } from '@/config/config';
 
 const {
   redis: { redisDatabaseUserName, redisDatabasePassword, redisDatabaseUrl, redisDatabasePort },
-} = config
+} = config;
 
 const connection = {
-  username: redisDatabaseUserName,
-  password: redisDatabasePassword,
-  host: redisDatabaseUrl,
-  port: redisDatabasePort,
+  username: redisDatabaseUserName!,
+  password: redisDatabasePassword!,
+  host: redisDatabaseUrl!,
+  port: +redisDatabasePort!,
 };
 
 // Worker
@@ -38,7 +38,7 @@ new Worker(
   },
   {
     connection,
-  }
+  },
 );
 
 // Queue

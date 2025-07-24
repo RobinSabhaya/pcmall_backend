@@ -1,9 +1,9 @@
-import z from 'zod'
+import z from 'zod';
 
-export type CreateUpdateWishlistSchema = z.infer<typeof createUpdateWishlist>
+export type CreateUpdateWishlistSchema = z.infer<typeof createUpdateWishlist.body>;
 
 export const createUpdateWishlist = {
-    body: z.object({
-        productId: z.string()
-    })
-}
+  body: z.object({
+    productId: z.string(),
+  }),
+};

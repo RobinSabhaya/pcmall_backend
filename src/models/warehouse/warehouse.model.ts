@@ -1,14 +1,13 @@
-import { IBaseDocumentModel } from "@/types/mongoose.types";
-import { Document, model, Schema } from "mongoose";
+import { IBaseDocumentModel } from '@/types/mongoose.types';
+import { Document, model, Schema } from 'mongoose';
 
-export interface IWarehouse extends Document,IBaseDocumentModel {
+export interface IWarehouse extends Document, IBaseDocumentModel {
   name: string;
   seller: Schema.Types.ObjectId;
   address: Schema.Types.ObjectId;
   isActive: boolean;
   createdBy: Schema.Types.ObjectId;
   updatedBy: Schema.Types.ObjectId;
-
 }
 const WarehouseSchema = new Schema<IWarehouse>(
   {
@@ -22,7 +21,7 @@ const WarehouseSchema = new Schema<IWarehouse>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Warehouse = model<IWarehouse>('Warehouse', WarehouseSchema);

@@ -1,33 +1,47 @@
-import { findOneAndUpdateDoc } from "@/helpers/mongoose.helper";
-import { MONGOOSE_MODELS } from "@/helpers/mongoose.model.helper";
-import { IShipment } from "@/models/shipment";
-import { FastifyReply, FastifyRequest } from "fastify";
-import httpStatus from 'http-status'
+import { findOneAndUpdateDoc } from '@/helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IShipment } from '@/models/shipment';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import httpStatus from 'http-status';
 
-export const shippingWebhook = async (request:FastifyRequest, reply:FastifyReply) => {
+export interface WebhookRequestBody {
+  event: string;
+  data: {
+    tracking_number: string;
+    tracking_status: {
+      status: string;
+      [key: string]: any;
+    };
+  };
+}
+
+export const shippingWebhook = async (
+  request: FastifyRequest<{ Body: WebhookRequestBody }>,
+  reply: FastifyReply,
+) => {
   try {
     const { event, data } = request.body;
 
-    if (!event || !data) return reply.code(httpStatus.BAD_GATEWAY).send("Invalid webhook");
+    if (!event || !data) return reply.code(httpStatus.BAD_GATEWAY).send('Invalid webhook');
 
     switch (event) {
-      case "track_updated":
+      case 'track_updated':
         const { tracking_number, tracking_status } = data;
 
         const updated = await findOneAndUpdateDoc<IShipment>(
-        MONGOOSE_MODELS.SHIPMENT,
-          { "label.tracking_number": tracking_number },
+          MONGOOSE_MODELS.SHIPMENT,
+          { 'label.tracking_number': tracking_number },
           {
             tracking_status,
             $push: { tracking_history: tracking_status },
-            status: tracking_status?.status || "UNKNOWN",
+            status: tracking_status?.status || 'UNKNOWN',
           },
-          { new: true }
+          { new: true },
         );
 
         if (updated) {
           console.log(
-            `Webhook: Tracking updated for ${tracking_number} to ${tracking_status.status}`
+            `Webhook: Tracking updated for ${tracking_number} to ${tracking_status.status}`,
           );
         } else {
           console.warn(`Webhook: No shipment found for ${tracking_number}`);
@@ -40,9 +54,9 @@ export const shippingWebhook = async (request:FastifyRequest, reply:FastifyReply
         break;
     }
 
-    reply.code(httpStatus.OK).send("Webhook received");
+    return reply.code(httpStatus.OK).send('Webhook received');
   } catch (error) {
-    console.error("Webhook error:", error?.message);
-    reply.code(500).send("Server error");
+    if (error instanceof Error) console.error('Webhook error:', error?.message);
+    reply.code(httpStatus.INTERNAL_SERVER_ERROR).send('Shipping webhook Server error');
   }
 };

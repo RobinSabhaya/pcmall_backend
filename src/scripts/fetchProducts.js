@@ -21,20 +21,30 @@ async function fetchProducts() {
         slug: product?.brand,
       };
 
-      const brandData = await findOneAndUpdateDoc(MONGOOSE_MODELS.PRODUCT_BRAND, brandPayload, brandPayload, {
-        new: true,
-        upsert: true,
-      });
+      const brandData = await findOneAndUpdateDoc(
+        MONGOOSE_MODELS.PRODUCT_BRAND,
+        brandPayload,
+        brandPayload,
+        {
+          new: true,
+          upsert: true,
+        },
+      );
 
       const categoryPayload = {
         categoryName: product?.category,
         tags: product?.tags,
       };
 
-      const productCategoryData = await findOneAndUpdateDoc(MONGOOSE_MODELS.CATEGORY, categoryPayload, categoryPayload, {
-        new: true,
-        upsert: true,
-      });
+      const productCategoryData = await findOneAndUpdateDoc(
+        MONGOOSE_MODELS.CATEGORY,
+        categoryPayload,
+        categoryPayload,
+        {
+          new: true,
+          upsert: true,
+        },
+      );
 
       const payload = {
         title: product?.title,
@@ -45,10 +55,15 @@ async function fetchProducts() {
         tags: product?.tags,
       };
 
-      const productDetailsData = await findOneAndUpdateDoc(MONGOOSE_MODELS.PRODUCT, payload, payload, {
-        new: true,
-        upsert: true,
-      });
+      const productDetailsData = await findOneAndUpdateDoc(
+        MONGOOSE_MODELS.PRODUCT,
+        payload,
+        payload,
+        {
+          new: true,
+          upsert: true,
+        },
+      );
 
       const productVariantPayload = {
         product: productDetailsData?._id,
@@ -67,7 +82,7 @@ async function fetchProducts() {
         {
           new: true,
           upsert: true,
-        }
+        },
       );
 
       const productSkuPayload = {
@@ -88,10 +103,15 @@ async function fetchProducts() {
         discount: product?.discountPercentage || 0,
       };
 
-      const productSkuData = await findOneAndUpdateDoc(MONGOOSE_MODELS.PRODUCT_SKU, productSkuPayload, productSkuPayload, {
-        new: true,
-        upsert: true,
-      });
+      const productSkuData = await findOneAndUpdateDoc(
+        MONGOOSE_MODELS.PRODUCT_SKU,
+        productSkuPayload,
+        productSkuPayload,
+        {
+          new: true,
+          upsert: true,
+        },
+      );
 
       const productInventoryPayload = {
         sku: productSkuData?._id,
@@ -109,7 +129,7 @@ async function fetchProducts() {
         {
           new: true,
           upsert: true,
-        }
+        },
       );
       console.log(successColor, '✅ All Products saved successfully...', product?.id);
     } catch (error) {

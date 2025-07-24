@@ -1,6 +1,6 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
-async function runWithTransaction(workflowFn : Function) {
+async function runWithTransaction(workflowFn: Function) {
   const session = await mongoose.startSession();
   session.startTransaction();
 

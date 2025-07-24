@@ -1,17 +1,17 @@
 import twilio from 'twilio';
-import {
-  config
-} from '../../../config/config';
-const { sms: { accountAuthToken, accountPhoneNumber, accountSid }, } = config;
+import { config } from '../../../config/config';
+const {
+  sms: { accountAuthToken, accountPhoneNumber, accountSid },
+} = config;
 
 const client = twilio(accountSid, accountAuthToken);
 
-interface sendSMS { 
+interface sendSMS {
   to: string;
   body: string;
 }
 
-export const sendSMS = async (payload:sendSMS) => {
+export const sendSMS = async (payload: sendSMS) => {
   const { to, body } = payload;
   try {
     const message = await client.messages.create({

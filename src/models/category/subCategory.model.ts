@@ -1,7 +1,7 @@
-import { IBaseDocumentModel } from "@/types/mongoose.types";
-import { Document, model, Schema } from "mongoose";
+import { IBaseDocumentModel } from '@/types/mongoose.types';
+import { Document, model, Schema } from 'mongoose';
 
-export interface ISubCategory extends Document,IBaseDocumentModel {
+export interface ISubCategory extends Document, IBaseDocumentModel {
   subCategoryName: string;
   tags: Array<string>;
   deletedAt: Date | null;
@@ -19,8 +19,7 @@ const subCategorySchema = new Schema<ISubCategory>(
       default: null,
     },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export const Sub_Category = model<ISubCategory>('SubCategory', subCategorySchema);
-

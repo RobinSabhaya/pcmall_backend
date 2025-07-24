@@ -1,4 +1,4 @@
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Schema } from 'mongoose';
 
 export interface IWishlist extends Document {
   user: Schema.Types.ObjectId;
@@ -18,7 +18,7 @@ const wishlistSchema = new Schema<IWishlist>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const wishlistModel = model<IWishlist>('wishlist', wishlistSchema);

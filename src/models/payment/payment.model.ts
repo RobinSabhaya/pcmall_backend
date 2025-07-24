@@ -1,9 +1,9 @@
 import { PAYMENT_STATUS, USER_CURRENCY, PAYMENT_PROVIDERS } from '../../helpers/constant.helper';
-import { config } from '../../config/config'
+import { config } from '../../config/config';
 import { Document, model, Schema } from 'mongoose';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IPayment extends Document,IBaseDocumentModel {
+export interface IPayment extends Document, IBaseDocumentModel {
   orderId: Schema.Types.ObjectId;
   provider: string;
   sessionId: string;
@@ -39,7 +39,7 @@ const PaymentSchema = new Schema<IPayment>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Payment = model<IPayment>('Payment', PaymentSchema);

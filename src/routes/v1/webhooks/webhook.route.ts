@@ -1,13 +1,19 @@
 import { handleStripeWebhook } from '../../../webhooks/stripeWebhook';
-import {config} from '../../../config/config'
+import { config } from '../../../config/config';
 
-import { FastifyInstance } from "fastify";
-import { USER_ROLE } from '../../../helpers/constant.helper'
+import { FastifyInstance } from 'fastify';
+const {
+  paymentGateway: { paymentProvider },
+} = config;
 
-export default async function webhookRoute(fastify: FastifyInstance) {
+export default function webhookRoute(fastify: FastifyInstance) {
+  // For Raw Body
+  fastify.addContentTypeParser('*', { parseAs: 'buffer' }, (req, body, done) => {
+    req.rawBody = body as Buffer;
+    done(null, body);
+  });
 
-  // TODO: Stripe webhook
-  // fastify.post(`/${paymentProvider}/webhook`, express.raw({ type: 'application/json' }), handleStripeWebhook);
+  fastify.post(`/${paymentProvider}/webhook`, handleStripeWebhook);
 
   fastify.get('/success', (req, reply) => {
     return reply.send({

@@ -1,7 +1,7 @@
-import { IBaseDocumentModel } from "@/types/mongoose.types";
-import { Document, model, Schema } from "mongoose";
+import { IBaseDocumentModel } from '@/types/mongoose.types';
+import { Document, model, Schema } from 'mongoose';
 
-export interface IProductVariant extends Document,IBaseDocumentModel {
+export interface IProductVariant extends Document, IBaseDocumentModel {
   product: Schema.Types.ObjectId;
   name: string;
   attributeCombination: object;
@@ -23,7 +23,7 @@ const VariantSchema = new Schema<IProductVariant>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export const Product_Variant = model<IProductVariant>('Product_Variant', VariantSchema);

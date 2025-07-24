@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod';
 
 export type RegisterSchema = z.infer<typeof register.body>;
 export type LoginSchema = z.infer<typeof login.body>;
@@ -10,7 +10,7 @@ export type VerifyEmailSchema = z.infer<typeof verifyEmail>;
 
 export const register = {
   body: z.object({
-    email: z.string().nonempty("Email is required"),
+    email: z.string().nonempty('Email is required'),
     password: z.string(),
     confirm_password: z.string(),
     first_name: z.string(),
@@ -19,25 +19,27 @@ export const register = {
 
 export const login = {
   body: z.object({
-    email: z.string().nonempty("Email is required"),
+    email: z.string().nonempty('Email is required'),
     password: z.string(),
   }),
 };
 
-export const logout = {body : z.object({
-  refreshToken: z.string(),
-})}
+export const logout = {
+  body: z.object({
+    refreshToken: z.string(),
+  }),
+};
 
 export const refreshTokens = {
-  body : z.object({
-  refreshToken: z.string(),
-})
-}
+  body: z.object({
+    refreshToken: z.string(),
+  }),
+};
 
 export const forgotPassword = {
   query: z.object({
-  email: z.string(),
-})
+    email: z.string(),
+  }),
 };
 
 export const resetPassword = z.object({

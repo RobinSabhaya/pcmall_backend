@@ -2,7 +2,7 @@ import { Document, model, Schema } from 'mongoose';
 import { ACCOUNT_STATUS } from '../../helpers/constant.helper';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IProductBrand extends Document,IBaseDocumentModel {
+export interface IProductBrand extends Document, IBaseDocumentModel {
   name: string;
   slug: string;
   description: string;
@@ -26,7 +26,7 @@ export interface IProductBrand extends Document,IBaseDocumentModel {
     instagram: string;
     linkedin: string;
     youtube: string;
-  }
+  };
   isVerified: boolean;
   certifications: Array<string>;
   status: string;
@@ -89,7 +89,7 @@ const BrandSchema = new Schema<IProductBrand>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false },
 );
 
 export const Product_Brand = model<IProductBrand>('Product_Brand', BrandSchema);

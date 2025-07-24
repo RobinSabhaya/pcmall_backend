@@ -1,5 +1,16 @@
+export interface IApiError {
+  statusCode: number;
+  message: string;
+  isOperational: boolean;
+  stack: string;
+}
 class ApiError extends Error {
-  constructor(public statusCode, public message, public isOperational = true, public stack = '') {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperational = true,
+    public stack = '',
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;

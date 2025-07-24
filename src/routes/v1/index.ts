@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance } from 'fastify';
 import authRoute from './auth';
 import cartRoute from './cart';
 import categoryRoute from './category';

@@ -1,8 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { PAYMENT_STATUS } from '../../helpers/constant.helper'
+import { PAYMENT_STATUS } from '../../helpers/constant.helper';
 import { IBaseDocumentModel } from '@/types/mongoose.types';
 
-export interface IOrderItem extends Document,IBaseDocumentModel {
+export interface IOrderItem extends Document, IBaseDocumentModel {
   variant: Schema.Types.ObjectId;
   quantity: number;
   unitPrice: number;
@@ -67,7 +67,7 @@ const OrderSchema = new Schema<IOrder>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Order = model<IOrder>('Order', OrderSchema);

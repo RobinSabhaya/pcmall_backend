@@ -1,14 +1,14 @@
-import { findOneAndDeleteDoc, findOneAndUpdateDoc, findOneDoc } from "@/helpers/mongoose.helper";
-import { MONGOOSE_MODELS } from "@/helpers/mongoose.model.helper";
-import { IProduct } from "@/models/product";
-import { IUser } from "@/models/user";
-import { IWishlist } from "@/models/wishlist";
-import ApiError from "@/utils/ApiError";
-import { CreateUpdateWishlistSchema } from "@/validations/wishlist.validation";
-import httpStatus from 'http-status'
+import { findOneAndDeleteDoc, findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IProduct } from '@/models/product';
+import { IUser } from '@/models/user';
+import { IWishlist } from '@/models/wishlist';
+import ApiError from '@/utils/ApiError';
+import { CreateUpdateWishlistSchema } from '@/validations/wishlist.validation';
+import httpStatus from 'http-status';
 
 interface IOptions {
-  user ?: IUser 
+  user?: IUser;
 }
 
 /**
@@ -18,52 +18,57 @@ interface IOptions {
  * @param {object} options
  * @returns {Promise<Wishlist>}
  */
-export const createUpdateWishlist = async (reqBody: CreateUpdateWishlistSchema, options?: IOptions): Promise<{
+export const createUpdateWishlist = async (
+  reqBody: CreateUpdateWishlistSchema,
+  options?: IOptions,
+): Promise<{
   message: string;
   wishlistData: IWishlist | null;
 }> => {
-
   const { productId } = reqBody;
-  const user = options?.user
-    let message;
+  const user = options?.user;
+  let message;
 
-    /** Check product exists or not */
-    const productExists = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT,{
-      _id: productId,
+  /** Check product exists or not */
+  const productExists = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {
+    _id: productId,
+  });
+
+  if (!productExists) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  }
+
+  let wishlistData = await findOneDoc<IWishlist>(MONGOOSE_MODELS.WISHLIST, {
+    product: productId,
+    user: user?._id,
+  });
+  if (wishlistData) {
+    await findOneAndDeleteDoc<IWishlist>(MONGOOSE_MODELS.WISHLIST, {
+      product: productExists._id,
+      user: user?._id,
     });
-
-    if (!productExists) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
-    }
-
-    let wishlistData = await findOneDoc<IWishlist>(MONGOOSE_MODELS.WISHLIST,{ product: productId, user: user?._id });
-    if (wishlistData) {
-      await findOneAndDeleteDoc<IWishlist>(MONGOOSE_MODELS.WISHLIST,{
-        product: productExists._id,
+    message = 'Wishlist removed successfully!!';
+  } else {
+    wishlistData = await findOneAndUpdateDoc<IWishlist>(
+      MONGOOSE_MODELS.WISHLIST,
+      {
         user: user?._id,
-      });
-      message = 'Wishlist removed successfully!!';
-    } else {
-      wishlistData = await findOneAndUpdateDoc<IWishlist>(MONGOOSE_MODELS.WISHLIST,
-        {
-          user: user?._id,
-          product: productExists._id,
-        },
-        {
-          user: user?._id,
-          product: productExists._id,
-        },
-        {
-          new: true,
-          upsert: true,
-        }
-      );
+        product: productExists._id,
+      },
+      {
+        user: user?._id,
+        product: productExists._id,
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
 
-      message = 'Wishlist added successfully!!';
-    }
+    message = 'Wishlist added successfully!!';
+  }
   return {
     message,
-    wishlistData
-  }
+    wishlistData,
+  };
 };
-

@@ -1,9 +1,9 @@
 import { Client } from 'minio';
-import {
-  config
-} from '../../../config/config';
+import { config } from '../../../config/config';
 
-const {minIO: { minIOEndpoint, minIOSecretKey, minIOAccessKey, minIOBucket}} = config;
+const {
+  minIO: { minIOEndpoint, minIOSecretKey, minIOAccessKey, minIOBucket },
+} = config;
 
 const minioClient = new Client({
   endPoint: minIOEndpoint!,
@@ -12,8 +12,11 @@ const minioClient = new Client({
   secretKey: minIOSecretKey!,
 });
 
-export interface IFile { 
-  fileName: string; fileBuffer: Buffer; fileSize: number; fileMimeType:string
+export interface IFile {
+  fileName: string;
+  fileBuffer: Buffer;
+  fileSize: number;
+  fileMimeType: string;
 }
 
 /**
@@ -21,7 +24,13 @@ export interface IFile {
  * @param {string} fileName
  * @returns {{url}} url
  */
-export const getFileLink = async ({ fileName, expirySeconds = 60 * 60 }: {fileName : string, expirySeconds?:number}) => {
+export const getFileLink = async ({
+  fileName,
+  expirySeconds = 60 * 60,
+}: {
+  fileName: string;
+  expirySeconds?: number;
+}) => {
   const fileUrl = await minioClient.presignedUrl('GET', minIOBucket!, fileName);
   return fileUrl;
 };
@@ -32,7 +41,7 @@ export const getFileLink = async ({ fileName, expirySeconds = 60 * 60 }: {fileNa
  * @returns {[fileName.fileName]} fileName
  * @returns {[fileName.fileUrl]} fileUrl
  */
-export const uploadFileToMinio = async (files : Array<IFile>) => {
+export const uploadFileToMinio = async (files: Array<IFile>) => {
   const { fileName, fileBuffer, fileSize, fileMimeType } = files[0];
   const bucketName = minIOBucket;
 
@@ -48,4 +57,3 @@ export const uploadFileToMinio = async (files : Array<IFile>) => {
   const fileUrl = await getFileLink({ fileName });
   return { fileName, fileUrl };
 };
-

@@ -1,9 +1,9 @@
-import { IOrder } from "@/models/orders";
-import { FilterQuery, UpdateQuery } from "mongoose";
-import {Order} from '../../models/orders';
+import { IOrder } from '@/models/orders';
+import { FilterQuery, UpdateQuery } from 'mongoose';
+import { Order } from '../../models/orders';
 import { findOneAndUpdateDoc, PaginationOptions, paginationQuery } from '@/helpers/mongoose.helper';
-import { MONGOOSE_MODELS } from "@/helpers/mongoose.model.helper";
-import { IUser } from "@/models/user";
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IUser } from '@/models/user';
 
 /**
  * Get order list
@@ -11,8 +11,11 @@ import { IUser } from "@/models/user";
  * @param {object} options
  * @returns {Promise<[Order]>}
  */
-export const getOrderList = (filter:FilterQuery<IOrder>, options?:PaginationOptions):Promise<IOrder[]> => {
-  console.log("🚀 ~ filter:", filter)
+export const getOrderList = (
+  filter: FilterQuery<IOrder>,
+  options?: PaginationOptions,
+): Promise<IOrder[]> => {
+  console.log('🚀 ~ filter:', filter);
   const pagination = paginationQuery(options!);
 
   return Order.aggregate([
@@ -32,7 +35,10 @@ export const getOrderList = (filter:FilterQuery<IOrder>, options?:PaginationOpti
  * @param {object} options
  * @returns {Promise<Order>}
  */
-export const updateOrder = (filter:FilterQuery<IOrder>, reqBody:UpdateQuery<IOrder>, options = {}):Promise<IOrder | null> => {
-  return findOneAndUpdateDoc(MONGOOSE_MODELS.ORDER,filter, reqBody, options);
+export const updateOrder = (
+  filter: FilterQuery<IOrder>,
+  reqBody: UpdateQuery<IOrder>,
+  options = {},
+): Promise<IOrder | null> => {
+  return findOneAndUpdateDoc(MONGOOSE_MODELS.ORDER, filter, reqBody, options);
 };
-

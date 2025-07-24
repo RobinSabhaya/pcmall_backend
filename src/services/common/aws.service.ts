@@ -1,8 +1,8 @@
-// const config = require('../config/config');
-// const S3 = require('aws-sdk/clients/s3');
-const mime = require('mime-types');
-const fs = require('fs');
-const path = require('path');
+// import config from '@/config/config';
+// import S3 from 'aws-sdk/clients/s3';
+// import mime from 'mime-types';
+import fs, { NoParamCallback } from 'fs';
+import path from 'path';
 
 // const s3 = new S3({
 //     region: config.aws.region,
@@ -11,16 +11,23 @@ const path = require('path');
 // });
 
 /** Upload image on AWS S3 bucket */
-const localUpload = async (fileKeyPath, fileBuffer, fileType) => {
+export const localUpload = async (fileKeyPath: string, fileBuffer: Buffer, fileType?: string) => {
   console.log(`../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`);
   // Check if the directory exists, and if not, create it
-  if (!fs.existsSync(path.resolve(__dirname, `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`))) {
-    fs.mkdirSync(path.resolve(__dirname, `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`), {
-      recursive: true,
-    });
+  if (
+    !fs.existsSync(
+      path.resolve(process.cwd(), `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`),
+    )
+  ) {
+    fs.mkdirSync(
+      path.resolve(process.cwd(), `../${fileKeyPath.split('/')[0]}/${fileKeyPath.split('/')[1]}`),
+      {
+        recursive: true,
+      },
+    );
   }
 
-  await fs.writeFile(path.resolve(__dirname, `../${fileKeyPath}`), fileBuffer, (err, data) => {
+  fs.writeFile(path.resolve(process.cwd(), `../${fileKeyPath}`), fileBuffer, (err) => {
     if (err) return false;
     return true;
   });
@@ -82,7 +89,6 @@ const localUpload = async (fileKeyPath, fileBuffer, fileType) => {
 //   });
 // };
 
-module.exports = {
-  localUpload,
-  // s3Delete, s3Update
-};
+// module.exports = {
+// s3Delete, s3Update
+// };
