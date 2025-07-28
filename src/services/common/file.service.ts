@@ -386,17 +386,18 @@ export const createFolder = (folder: Folder): string => {
 export const saveFiles = async (filesDtl: FileDetails[]) => {
   try {
     for (let j = 0; j < filesDtl.length; j++) {
-      const writeFilePath = createFilePath({
-        mainFolderName: filesDtl[j].fileMainFolder,
-        subFolderName: filesDtl[j].subFolderName || null,
-        idFolder: filesDtl[j].idFolder || null,
-      });
+      // const writeFilePath = createFilePath({
+      //   mainFolderName: filesDtl[j].fileMainFolder,
+      //   subFolderName: filesDtl[j].subFolderName || null,
+      //   idFolder: filesDtl[j].idFolder || null,
+      // });
 
       if (filesDtl[j].fileUploadType === 'single') {
         let fileName = Buffer.from(
           filesDtl[j].fileName.split('/').at(-1) as string,
           'latin1',
         ).toString('utf-8'); //! For support non-latin language
+        console.log("🚀 ~ saveFiles ~ fileName:", fileName)
         const fromFile = filesDtl[j].fileMimeType;
         let buffer = filesDtl[j].fileBuffer;
         // if (fromFile.split('/').includes('image')) {
@@ -592,7 +593,7 @@ export const saveFiles = async (filesDtl: FileDetails[]) => {
 //   return tempFileName;
 // };
 
-// exports.generateFileName = (file) => {
-//   const ext = path.extname(file.originalname);
-//   return `file_${Date.now()}${Math.random().toString(16).slice(2, 7)}${ext}`;
-// };
+export const generateFileName = (file:Partial<FileDetails>):string => {
+  const ext = path.extname(file.originalname!);
+  return `file_${Date.now()}${Math.random().toString(16).slice(2, 7)}${ext}`;
+};

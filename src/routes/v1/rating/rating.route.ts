@@ -6,11 +6,11 @@ import { createBaseRoute } from '@/utils/baseRoute';
 
 export default function ratingRoute(fastify: FastifyInstance) {
   const route = createBaseRoute(fastify);
-
+  fastify.register(import('@/plugins/upload'));
   route({
     method: 'POST',
     url: '/create-update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    // preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     handler: ratingController.createUpdateRating,
   });
 

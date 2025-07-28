@@ -34,7 +34,7 @@ export default [
       '@typescript-eslint': tseslint.plugin,
       import: importPlugin,
       promise: promisePlugin,
-      unusedImports: unusedImportsPlugin,
+      'unused-imports': unusedImportsPlugin,
       node: nodePlugin,
     },
     rules: {

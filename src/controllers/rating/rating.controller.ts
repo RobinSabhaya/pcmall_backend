@@ -1,5 +1,6 @@
 import { IUser } from '@/models/user';
 import * as ratingService from '@/services/rating/rating.service';
+import * as fileService from '@/services/common/file.service';
 import ApiError from '@/utils/ApiError';
 import { GetRatingCountSchema, GetRatingListSchema } from '@/validations/rating.validation';
 import * as ratingValidation from '@/validations/rating.validation';
@@ -14,18 +15,35 @@ export const createUpdateRating = async (request: FastifyRequest, reply: Fastify
 
   const parts = request.parts();
 
-  const fields: Record<string, string> = {};
-
+  const fields: Record<string, unknown> = {};
+  
   for await (const part of parts) {
-    if (part.type === 'file') {
-    } else {
-      // fields[part.fieldname] = part.value;
-    }
-  }
+      if (part.type === 'file') {
+        const fileName = fileService.generateFileName({
+          originalname : part.filename 
+        })
+        
+        const isPromise = await fileService.saveFiles([
+          {
+            fileUploadType: 'single',
+            fileBuffer: await part.toBuffer(),
+            fileMimeType: part.mimetype as string,
+            fileName,
+            fileSize:1111
+          }
+        ])
 
+        if(isPromise) fields['images'] = [fileName]
+      } else {
+        fields[part.fieldname] = part.value;
+      }
+  }
+  
   const parsed = ratingValidation.createUpdateRating.safeParse(fields);
   if (!parsed.success) {
-    // return reply.code(400).send({ error: parsed.error.errors });
+    // Remove if anything fails
+    delete fields['images']
+    throw new ApiError(httpStatus.BAD_REQUEST,String(parsed.error.message))
   }
 
   try {

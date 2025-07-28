@@ -34,7 +34,7 @@ export const FILE_SIZE: FileSize = {
 
 export interface File {
   fileName: string;
-  originalname: string;
+  originalname?: string;
   fileMimeType: string;
   fileBuffer: Buffer;
   fileQualities?: FileQualities;

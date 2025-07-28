@@ -20,7 +20,7 @@ const stripe = new Stripe(paymentSecretKey!, {
   apiVersion: '2025-06-30.basil',
 });
 
-export async function handleStripeWebhook(request: FastifyRequest, reply: FastifyReply) {
+export async function handleStripeWebhook(request: FastifyRequest, reply: FastifyReply) {  
   const sig = request.headers['stripe-signature'];
   let event: Stripe.Event | null = null;
 

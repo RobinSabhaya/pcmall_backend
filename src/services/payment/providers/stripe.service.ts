@@ -39,11 +39,11 @@ export const createPaymentIntent = async ({
  */
 export async function createCheckoutSession(
   payload: ICreateCheckoutSession,
-): Promise<string | null> {
+): Promise<string | null | undefined> {
   const { user, shippingAddress, items, currency, shippoShipmentId, rateObjectId, cartIds } =
     payload;
 
-  await runWithTransaction(async (dbSession: unknown) => {
+  // await runWithTransaction(async (dbSession: unknown) => {
     let session;
     let line_items = [];
     let itemsData = [];
@@ -154,7 +154,7 @@ export async function createCheckoutSession(
       );
     }
     return session?.url;
-  });
+  // });
 
-  return null;
+  // return null;
 }

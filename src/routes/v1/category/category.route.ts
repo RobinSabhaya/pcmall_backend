@@ -10,7 +10,7 @@ export default async function categoryRoute(fastify: FastifyInstance) {
     method: 'GET',
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
-    schema: categoryValidation.allCategory,
+    // schema: categoryValidation.allCategory,
     handler: categoryController.getAllCategories,
   });
 }

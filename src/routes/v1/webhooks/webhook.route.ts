@@ -8,10 +8,10 @@ const {
 
 export default function webhookRoute(fastify: FastifyInstance) {
   // For Raw Body
-  fastify.addContentTypeParser('*', { parseAs: 'buffer' }, (req, body, done) => {
+  fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
     req.rawBody = body as Buffer;
     done(null, body);
-  });
+  }); // Must application/json otherwise not work
 
   fastify.post(`/${paymentProvider}/webhook`, handleStripeWebhook);
 

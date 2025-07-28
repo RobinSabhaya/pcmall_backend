@@ -1,5 +1,4 @@
 import { Worker, Queue } from 'bullmq';
-import {} from '../config/config';
 import * as paymentService from '../services/payment/payment.service';
 import { QUEUES } from '@/helpers/constant.helper';
 import { config } from '@/config/config';
