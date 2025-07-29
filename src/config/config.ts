@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
+  HOST : z.string(),
   MONGODB_URL: z.string(),
 
   // JWT Authentication
@@ -88,6 +89,7 @@ const env = envSchema.parse(process.env);
 export const config = {
   env: env.NODE_ENV,
   port: env.PORT,
+  host : env.HOST,
   mongoose: {
     url: env.MONGODB_URL + (env.NODE_ENV === 'test' ? '-test' : ''),
     options: {},

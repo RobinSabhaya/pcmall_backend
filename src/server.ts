@@ -11,7 +11,7 @@ server.setSerializerCompiler(serializerCompiler);
 
 app(server)
   .then(() => {
-    server.listen({ port: +config.port! || 3000 });
+    server.listen({ port: +config.port! || 3000, host:config.host || "0.0.0.0" });
   })
   .catch((err) => {
     server.log.error(err);
