@@ -11,6 +11,7 @@ import shippingRoute from './shipping';
 import inventoryRoute from './inventory';
 import warehouseRoute from './warehouse';
 import ratingRoute from './rating';
+import paymentRoute from './payment';
 
 export default function indexRoutes(fastify: FastifyInstance) {
   fastify.register(authRoute);
@@ -25,4 +26,5 @@ export default function indexRoutes(fastify: FastifyInstance) {
   fastify.register(inventoryRoute);
   fastify.register(warehouseRoute);
   fastify.register(ratingRoute);
+  fastify.register(paymentRoute);
 }

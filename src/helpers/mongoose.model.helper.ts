@@ -22,6 +22,7 @@ const MONGOOSE_MODELS = {
   PERMISSION: 'Permission',
   PAYMENT: 'Payment',
   WISHLIST: 'wishlist',
+  PAYMENT_REFUND: 'Payment_Refund',
 };
 
 export { MONGOOSE_MODELS };

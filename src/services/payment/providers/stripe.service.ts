@@ -9,9 +9,13 @@ import * as paymentService from '../payment.service';
 import * as orderService from '../../orders/order.service';
 import * as userService from '../../user/user.service';
 import { runWithTransaction } from '@/models/transaction/transaction';
-import { findOneDoc } from '@/helpers/mongoose.helper';
+import { findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import ApiError from '@/utils/ApiError';
+import { PAYMENT_STATUS } from '@/helpers/constant.helper';
+import { IPayment } from '@/models/payment';
+import { IPaymentRefund } from '@/models/payment/paymentRefund.model';
+import { CreatePaymentRefundSchema } from '@/validations/payment.validation';
 const stripe = new Stripe(config.paymentGateway.paymentSecretKey!);
 
 interface ICreateCheckoutSession extends CheckoutSchema {
@@ -157,4 +161,64 @@ export async function createCheckoutSession(
   // });
 
   // return null;
+}
+
+export async function createPaymentRefund(payload: CreatePaymentRefundSchema): Promise<{
+  paymentData: IPayment | null;
+  message: string;
+}> {
+  try {
+    const {transactionId,partial_amount,reason} = payload
+    let paymentData, paymentRefundData, message;
+
+    const paymentRefundPayload = {
+      payment_intent: transactionId,
+    } as Stripe.RefundCreateParams
+
+    if (partial_amount) paymentRefundPayload.amount = partial_amount;
+    if (reason) paymentRefundPayload.reason = "requested_by_customer";
+
+    const refund = await stripe.refunds.create(paymentRefundPayload);
+
+    paymentData = await findOneDoc<IPayment>(MONGOOSE_MODELS.PAYMENT, {
+      transactionId: transactionId,
+      status: PAYMENT_STATUS.PAID
+    })
+
+    if (!paymentData) throw new ApiError(httpStatus.NOT_FOUND, "Payment is not refundable")
+
+    let refundPayload = {
+      paymentId: paymentData?._id,
+      refundId: refund?.id,
+      chargeId: refund?.charge,
+      balance_transaction: refund?.balance_transaction,
+      amount: refund?.amount,
+      currency: refund?.currency,
+      reason,
+      status : PAYMENT_STATUS.FAILED
+    };
+
+    if (refund.status === 'succeeded') {
+      refundPayload.status = PAYMENT_STATUS.REFUND_SUCCESS;
+      message = "Payment refund successfully";
+    } else { 
+      refundPayload.status = PAYMENT_STATUS.REFUND_FAILED;
+      message = "Payment refund failed";
+    };
+
+    paymentRefundData = await findOneAndUpdateDoc<IPaymentRefund>(MONGOOSE_MODELS.PAYMENT_REFUND, refundPayload,
+      refundPayload
+    , {
+      new: true,
+      upsert : true
+    })
+        
+    return {
+      paymentData,
+      message
+    };
+
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST,"Payment refund failed")
+  }
 }
