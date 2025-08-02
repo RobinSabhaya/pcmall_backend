@@ -17,6 +17,7 @@ import {
   RefreshTokensSchema,
   RegisterSchema,
   ResetPasswordSchema,
+  SignupSchema,
   VerifyEmailSchema,
 } from '@/validations/auth.validation';
 import { IUser } from '@/models/user';
@@ -40,7 +41,7 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
     // Create User
-    user = await createDoc<RegisterSchema>(MONGOOSE_MODELS.USER, req.body as RegisterSchema);
+    user = await createDoc<IUser>(MONGOOSE_MODELS.USER, req.body as RegisterSchema);
 
     // set profile details
     await findOneAndUpdateDoc(
@@ -63,6 +64,21 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
       success: true,
       message: 'User register successfully',
       data: { user },
+    });
+  } catch (error) {
+    if (error instanceof Error)
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+  }
+};
+
+export const signup = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const { user,tokens} = await authService.signup(req.body as SignupSchema)
+
+    return reply.code(httpStatus.CREATED).send({
+      success: true,
+      message: 'User signup successfully',
+      data: { user, tokens },
     });
   } catch (error) {
     if (error instanceof Error)

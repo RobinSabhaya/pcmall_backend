@@ -2,9 +2,11 @@ import { deleteToken, generateAuthTokens, verifyToken } from './token.service';
 import { Token } from '@/models/auth';
 import ApiError from '@/utils/ApiError';
 import { TOKEN_TYPES } from '@/helpers/constant.helper';
-import { IUser } from '@/models/user';
-import { findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
+import { IUser, IUserProfile } from '@/models/user';
+import { createDoc, findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { SignupSchema } from '@/validations/auth.validation';
+import httpStatus from 'http-status'
 
 export const loginUserWithEmailAndPassword = async (
   email: string,
@@ -16,6 +18,48 @@ export const loginUserWithEmailAndPassword = async (
   // }
   return user;
 };
+
+export const signup = async (payload: SignupSchema) => { 
+    const { first_name, email, password, confirm_password } = payload as SignupSchema;
+
+      // Match password and confirm password
+    if (password != confirm_password)
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+
+    let user: Partial<IUser | null> = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, { email });
+
+    if (user) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
+    }
+
+    // Create User
+    user = await createDoc<IUser>(MONGOOSE_MODELS.USER, payload);
+
+    // set profile details
+    await findOneAndUpdateDoc<IUserProfile>(
+      MONGOOSE_MODELS.USER_PROFILE,
+      {
+        user: user._id,
+        first_name,
+      },
+      {
+        user: user._id,
+        first_name,
+      },
+      {
+        upsert: true,
+        new: true,
+      },
+    );
+
+  // generate tokens
+  const tokens = await generateAuthTokens(user as IUser);
+  
+  return {
+    user, 
+    tokens
+  }
+}
 
 /**
  * Logout

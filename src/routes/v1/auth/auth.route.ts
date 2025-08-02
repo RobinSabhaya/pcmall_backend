@@ -1,17 +1,12 @@
-// const validate = require('../../../middlewares/validate');
-// const authValidation = require('../../../validations/auth.validation');
 import { createBaseRoute } from '@/utils/baseRoute';
 import {
-  forgotPassword,
   login,
   logout,
   refreshTokens,
   register,
-  resetPassword,
-  sendVerificationEmail,
-  verifyEmail,
+  signup
 } from '../../../controllers/auth/auth.controller';
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyInstance} from 'fastify';
 import * as authValidation from '@/validations/auth.validation';
 
 export default async function authRoute(fastify: FastifyInstance) {
@@ -21,6 +16,12 @@ export default async function authRoute(fastify: FastifyInstance) {
     url: '/register',
     schema: authValidation.register,
     handler: register,
+  });
+  route({
+    method: 'POST',
+    url: '/signup',
+    schema: authValidation.signup,
+    handler: signup,
   });
   route({
     method: 'POST',
