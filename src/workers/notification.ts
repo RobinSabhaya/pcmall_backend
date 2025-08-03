@@ -2,6 +2,9 @@ import { Worker, Queue } from 'bullmq';
 import * as paymentService from '../services/payment/payment.service';
 import { QUEUES } from '@/helpers/constant.helper';
 import { config } from '@/config/config';
+import { findOneDoc } from '@/helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IUser, IUserProfile } from '@/models/user';
 
 const {
   redis: { redisDatabaseUserName, redisDatabasePassword, redisDatabaseUrl, redisDatabasePort },

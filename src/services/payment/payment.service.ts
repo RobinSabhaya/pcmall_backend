@@ -22,8 +22,10 @@ import {
   UpdateStockInInventoryFilter,
 } from './payment.service.type';
 import { IAddress } from '@/models/user';
-import { IProductSKU } from '@/models/product';
+import { IProduct, IProductSKU, IProductVariant } from '@/models/product';
 import { IInventory, IInventoryLog } from '@/models/inventory';
+import httpStatus from 'http-status'
+import ApiError from '@/utils/ApiError';
 
 const {
   sms: { smsCarrier },
@@ -123,7 +125,25 @@ export const orderConfirmationEmail = async (payload: OrderConfirmationNotificat
 
     if (!userAddressData) console.log('Error: User Address not available!');
 
-    if (userAddressData) {
+    if (userAddressData) {    
+      const orderProductList = [];
+
+      for (const productVariant of order?.items) {
+        const productVariantData = await findOneDoc<IProductVariant>(MONGOOSE_MODELS.PRODUCT_VARIANT, {_id : productVariant.variant})
+
+        if(!productVariantData) throw new ApiError(httpStatus.NOT_FOUND,'Product variant not found')
+
+        const productData = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {_id : productVariantData?.product})
+
+        if(!productData) throw new ApiError(httpStatus.NOT_FOUND,'Product not found')
+
+        orderProductList.push({
+          image : productVariantData?.images[0] || '-',
+          name: productData?.title || "Product title",
+          quantity : productVariant?.quantity || 1
+        })
+      }
+
       const isEmailSend = await handleEmail(emailProvider!).sendEmail(
         userData.email,
         ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL({
@@ -136,6 +156,7 @@ export const orderConfirmationEmail = async (payload: OrderConfirmationNotificat
           delivery_address_line1: formatAddress(userAddressData)[0],
           delivery_address_line2: formatAddress(userAddressData)[2],
           delivery_address_line3: formatAddress(userAddressData)[3],
+          order_product_list:orderProductList
         },
         path.join(__dirname, '../../../views/order_success.ejs'),
       );
