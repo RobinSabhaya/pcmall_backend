@@ -4,7 +4,7 @@ import { config } from './config/config';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { errorHandler } from './utils/errorHandler';
 
-const server = Fastify({ logger: false });
+const server = Fastify({logger : true});
 
 server.setValidatorCompiler(validatorCompiler);
 server.setSerializerCompiler(serializerCompiler);
