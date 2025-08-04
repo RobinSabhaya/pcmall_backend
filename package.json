@@ -9,7 +9,7 @@
   "scripts": {
     "test": "bun --test test/**/*.test.js",
     "start": "bun dist/server.js",
-    "build": "tsup",
+    "build": "tsup src/server.ts --out-dir dist --clean",
     "dev": "npx tsx watch src/server.ts",
     "lint": "eslint . --ext .ts --fix",
     "format": "prettier --write ."
