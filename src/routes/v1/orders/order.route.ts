@@ -12,6 +12,8 @@ export default async function orderRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: orderValidation.getOrderList,
+    description: 'Get all orders',
+    tags: ['Order'],
     handler: orderController.getOrderList,
   });
 }

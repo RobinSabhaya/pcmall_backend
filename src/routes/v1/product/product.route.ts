@@ -12,6 +12,8 @@ export default async function productRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productValidation.getAllProducts,
+    description: 'Get all products',
+    tags: ['Product'],
     handler: productController.getAllProducts,
   });
   route({
@@ -19,6 +21,8 @@ export default async function productRoute(fastify: FastifyInstance) {
     url: '/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productValidation.deleteProduct,
+    description: 'Delete products',
+    tags: ['Product'],
     handler: productController.deleteProduct,
   });
   route({
@@ -26,6 +30,8 @@ export default async function productRoute(fastify: FastifyInstance) {
     url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productValidation.createUpdateProduct,
+    description: 'Create & Update product',
+    tags: ['Product'],
     handler: productController.createUpdateProduct,
   });
   route({
@@ -33,6 +39,8 @@ export default async function productRoute(fastify: FastifyInstance) {
     url: '/generate-sku',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productValidation.generateProductSku,
+    description: 'Generate product SKU',
+    tags: ['Product'],
     handler: productController.generateProductSku,
   });
 }

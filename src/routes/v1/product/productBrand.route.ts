@@ -12,6 +12,8 @@ export default async function productBrandRoute(fastify: FastifyInstance) {
     url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productBrandValidation.createUpdateBrand,
+    description: 'Create & Update product brand',
+    tags: ['Product Brand'],
     handler: productBrandController.createUpdateBrand,
   });
 
@@ -20,6 +22,8 @@ export default async function productBrandRoute(fastify: FastifyInstance) {
     url: '/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productBrandValidation.deleteBrand,
+    description: 'Delete product brand',
+    tags: ['Product Brand'],
     handler: productBrandController.deleteBrand,
   });
 
@@ -28,6 +32,8 @@ export default async function productBrandRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: productBrandValidation.getAllBrands,
+    description: 'Get product brands',
+    tags: ['Product Brand'],
     handler: productBrandController.getAllBrands,
   });
 }

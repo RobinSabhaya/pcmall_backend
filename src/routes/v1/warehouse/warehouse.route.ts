@@ -12,6 +12,8 @@ export default function warehouseRoute(fastify: FastifyInstance) {
     url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: warehouseValidation.createUpdateWarehouse,
+    description: 'Create & Update warehouse',
+    tags: ['Warehouse'],
     handler: warehouseController.createUpdateWarehouse,
   });
   route({
@@ -19,6 +21,8 @@ export default function warehouseRoute(fastify: FastifyInstance) {
     url: '/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: warehouseValidation.deleteWarehouse,
+    description: 'Delete warehouse',
+    tags: ['Warehouse'],
     handler: warehouseController.deleteWarehouse,
   });
   route({
@@ -26,6 +30,8 @@ export default function warehouseRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: warehouseValidation.getAllWarehouse,
+    description: 'Get all warehouses',
+    tags: ['Warehouse'],
     handler: warehouseController.getAllWarehouse,
   });
 }

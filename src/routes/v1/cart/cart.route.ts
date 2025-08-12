@@ -12,6 +12,8 @@ export default function cartRoute(fastify: FastifyInstance) {
     url: '/add',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: cartValidation.addToCart,
+    description: 'Add a product to cart',
+    tags: ['Cart'],
     handler: cartController.addToCart,
   });
 
@@ -20,6 +22,8 @@ export default function cartRoute(fastify: FastifyInstance) {
     url: '/remove/:cartId',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: cartValidation.removeToCart,
+    description: 'Remove a product from cart',
+    tags: ['Cart'],
     handler: cartController.removeToCart,
   });
 
@@ -28,6 +32,8 @@ export default function cartRoute(fastify: FastifyInstance) {
     url: '/update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: cartValidation.updateToCart,
+    description: 'Update cart item quantity',
+    tags: ['Cart'],
     handler: cartController.updateToCart,
   });
 
@@ -36,6 +42,8 @@ export default function cartRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: cartValidation.getAllCart,
+    description: 'Get all cart items',
+    tags: ['Cart'],
     handler: cartController.getAllCart,
   });
 }

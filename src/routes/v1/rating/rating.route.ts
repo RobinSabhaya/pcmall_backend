@@ -10,7 +10,9 @@ export default function ratingRoute(fastify: FastifyInstance) {
   route({
     method: 'POST',
     url: '/create-update',
-    // preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    description: 'Create & Update product rating',
+    tags: ['Product Rating'],
     handler: ratingController.createUpdateRating,
   });
 
@@ -19,6 +21,8 @@ export default function ratingRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: ratingValidation.getRatingList,
+    description: 'Get all product rating',
+    tags: ['Product Rating'],
     handler: ratingController.getRatingList,
   });
 
@@ -27,6 +31,8 @@ export default function ratingRoute(fastify: FastifyInstance) {
     url: '/count',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: ratingValidation.getRatingCount,
+    description: 'Get product rating count',
+    tags: ['Product Rating'],
     handler: ratingController.getRatingCount,
   });
 }

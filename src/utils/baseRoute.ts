@@ -6,6 +6,9 @@ export type RouteSchemas = {
   body?: z.ZodTypeAny;
   query?: z.ZodTypeAny;
   params?: z.ZodTypeAny;
+  response?: {
+    [statusCode: number]: z.ZodTypeAny;
+  };
 };
 
 export type RequestType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -20,6 +23,8 @@ interface RouteConfig<T extends RouteSchemas> {
   method: RequestType;
   url: string;
   schema?: T;
+  description?: string;
+  tags?: string[];
   preHandlerHookHandler?: preHandlerHookHandler | preHandlerHookHandler[];
   handler: (
     request: FastifyRequest<ExtractRequest<T>>,
@@ -34,13 +39,14 @@ export function createBaseRoute(app: FastifyInstance) {
     fastify.route({
       method: config.method,
       url: config.url,
-      ...(config?.schema && {
-        schema: {
-          ...(config?.schema?.body && { body: config.schema.body }),
-          ...(config?.schema?.query && { querystring: config.schema.query }),
-          ...(config?.schema?.query && { params: config.schema.params }),
-        },
-      }),
+      schema: {
+        description: config.description || '',
+        tags: config.tags || [],
+        ...(config?.schema?.body && { body: config.schema.body }),
+        ...(config?.schema?.query && { querystring: config.schema.query }),
+        ...(config?.schema?.params && { params: config.schema.params }),
+        ...(config?.schema?.response && { response: config.schema.response }),
+      },
       ...(config?.preHandlerHookHandler && { preHandler: config?.preHandlerHookHandler }),
       handler: config.handler,
     });

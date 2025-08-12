@@ -11,6 +11,8 @@ export default function checkoutRoute(fastify: FastifyInstance) {
     url: '/create-refund',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: paymentValidation.createPaymentRefund,
+    description: 'Create Refund',
+    tags: ['Payment'],
     handler: paymentController.createPaymentRefund,
   });
 }

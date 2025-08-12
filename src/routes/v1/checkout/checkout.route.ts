@@ -11,6 +11,8 @@ export default function checkoutRoute(fastify: FastifyInstance) {
     url: '/',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: checkoutValidation.checkout,
+    description: 'Checkout the products',
+    tags: ['Checkout'],
     handler: checkoutController.checkout,
   });
 }

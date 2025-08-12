@@ -12,6 +12,8 @@ export default async function wishlistRoute(fastify: FastifyInstance) {
     url: '/',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: wishlistValidation.createUpdateWishlist,
+    description: 'Create & Update wishlist',
+    tags: ['Wishlist'],
     handler: wishlistController.addRemoveWishlist,
   });
 }

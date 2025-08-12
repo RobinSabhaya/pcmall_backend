@@ -12,6 +12,8 @@ export default async function cartRoute(fastify: FastifyInstance) {
     url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: sellerValidation.createUpdateSeller,
+    description: 'Create & Update seller',
+    tags: ['Seller'],
     handler: sellerController.createUpdateSeller,
   });
   route({
@@ -19,6 +21,8 @@ export default async function cartRoute(fastify: FastifyInstance) {
     url: '/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: sellerValidation.deleteSeller,
+    description: 'Delete seller',
+    tags: ['Seller'],
     handler: sellerController.deleteSeller,
   });
   route({
@@ -26,6 +30,8 @@ export default async function cartRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: sellerValidation.getAllSellers,
+    description: 'Get all users',
+    tags: ['Seller'],
     handler: sellerController.getAllSellers,
   });
 }

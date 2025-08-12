@@ -15,34 +15,40 @@ export default async function authRoute(fastify: FastifyInstance) {
     method: 'POST',
     url: '/register',
     schema: authValidation.register,
+    description: 'Register a new user',
+    tags: ['Authentication'],
     handler: register,
   });
   route({
     method: 'POST',
     url: '/signup',
     schema: authValidation.signup,
+    description: 'Sign up a new user',
+    tags: ['Authentication'],
     handler: signup,
   });
   route({
     method: 'POST',
     url: '/login',
     schema: authValidation.login,
+    description: 'Login a user',
+    tags: ['Authentication'],
     handler: login,
   });
   route({
     method: 'POST',
     url: '/logout',
     schema: authValidation.logout,
+    description: 'Logout a user',
+    tags: ['Authentication'],
     handler: logout,
   });
   route({
     method: 'POST',
     url: '/refresh-tokens',
     schema: authValidation.refreshTokens,
+    description: 'Refresh authentication tokens',
+    tags: ['Authentication'],
     handler: refreshTokens,
   });
-  // route.post('/forgot-password', forgotPassword);
-  // route.post('/reset-password', resetPassword);
-  // route.post('/send-verification-email', sendVerificationEmail);
-  // route.post('/verify-email', verifyEmail);
 }

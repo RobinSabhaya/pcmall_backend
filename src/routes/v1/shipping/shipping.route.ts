@@ -12,6 +12,8 @@ export default function shippingRoute(fastify: FastifyInstance) {
     url: '/create',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: shipmentValidation.createAndUpdateShipping,
+    description: 'Create product shipping',
+    tags: ['Product Shipping'],
     handler: shipmentController.createShipping,
   });
 
@@ -20,6 +22,8 @@ export default function shippingRoute(fastify: FastifyInstance) {
     url: '/buy-label',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: shipmentValidation.generateBuyLabel,
+    description: 'Buy label product shipping',
+    tags: ['Product Shipping'],
     handler: shipmentController.generateBuyLabel,
   });
 
@@ -28,6 +32,8 @@ export default function shippingRoute(fastify: FastifyInstance) {
     url: '/track',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: shipmentValidation.track,
+    description: 'Track product shipping',
+    tags: ['Product Shipping'],
     handler: shipmentController.track,
   });
 }

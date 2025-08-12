@@ -12,6 +12,8 @@ export default async function inventoryRoute(fastify: FastifyInstance) {
     url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: inventoryValidation.createUpdateInventory,
+    description: 'Create & Update Inventory',
+    tags: ['Inventory'],
     handler: inventoryController.createUpdateInventory,
   });
   route({
@@ -19,6 +21,8 @@ export default async function inventoryRoute(fastify: FastifyInstance) {
     url: '/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: inventoryValidation.deleteInventory,
+    description: 'Delete Inventory',
+    tags: ['Inventory'],
     handler: inventoryController.deleteInventory,
   });
   route({
@@ -26,6 +30,8 @@ export default async function inventoryRoute(fastify: FastifyInstance) {
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
     schema: inventoryValidation.getAllInventory,
+    description: 'Get All Inventories',
+    tags: ['Inventory'],
     handler: inventoryController.getAllInventory,
   });
 }
