@@ -19,7 +19,7 @@ export const updateUser = {
     country: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
-    dob: z.date().optional(),
+    // dob: z.date().optional(),
     gender: z.string().optional(),
     language: z.string().optional(),
   }),
