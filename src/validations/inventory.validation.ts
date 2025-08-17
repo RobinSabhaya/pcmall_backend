@@ -1,6 +1,8 @@
 import z from 'zod';
 
-export type CreateUpdateInventorySchema = z.infer<typeof createUpdateInventory.body>;
+export type CreateUpdateInventorySchema = z.infer<
+  typeof createUpdateInventory.body
+>;
 export type DeleteInventorySchema = z.infer<typeof deleteInventory.query>;
 export type GetAllInventorySchema = z.infer<typeof getAllInventory.query>;
 

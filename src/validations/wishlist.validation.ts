@@ -1,6 +1,8 @@
 import z from 'zod';
 
-export type CreateUpdateWishlistSchema = z.infer<typeof createUpdateWishlist.body>;
+export type CreateUpdateWishlistSchema = z.infer<
+  typeof createUpdateWishlist.body
+>;
 
 export const createUpdateWishlist = {
   body: z.object({

@@ -1,6 +1,8 @@
 import z from 'zod';
 
-export type CreateAndUpdateShippingSchema = z.infer<typeof createAndUpdateShipping.body>;
+export type CreateAndUpdateShippingSchema = z.infer<
+  typeof createAndUpdateShipping.body
+>;
 export type GenerateBuyLabelSchema = z.infer<typeof generateBuyLabel.body>;
 export type TrackSchema = z.infer<typeof track.body>;
 

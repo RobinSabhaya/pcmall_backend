@@ -10,7 +10,7 @@ export const checkout = {
         product_name: z.string(),
         unit_amount: z.number(),
         productVariantId: z.string(),
-      }),
+      })
     ),
     currency: z.string(),
     shippingAddress: z.string(),

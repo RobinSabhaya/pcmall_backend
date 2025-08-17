@@ -1,6 +1,8 @@
 import z from 'zod';
 
-export type CreateUpdateWarehouseSchema = z.infer<typeof createUpdateWarehouse.body>;
+export type CreateUpdateWarehouseSchema = z.infer<
+  typeof createUpdateWarehouse.body
+>;
 export type DeleteWarehouseSchema = z.infer<typeof deleteWarehouse.query>;
 export type GetAllWarehouseSchema = z.infer<typeof getAllWarehouse.query>;
 

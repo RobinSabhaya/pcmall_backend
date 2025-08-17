@@ -9,7 +9,7 @@ export const createUpdateRating = z.object({
   rating: z.string().optional(),
   message: z.string().optional(),
   ratingId: z.string().optional(),
-  images : z.array(z.string().optional()).optional()
+  images: z.array(z.string().optional()).optional(),
 });
 
 export const getRatingList = {
