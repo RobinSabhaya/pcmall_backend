@@ -1,13 +1,6 @@
-import { User, IUserProfile } from '../../models/user';
-import { IUser } from '../../models/user/user.model';
-import { handleStorage } from '../storage/storageStrategy';
-import { config } from '../../config/config';
+import httpStatus from 'http-status';
 import { FilterQuery } from 'mongoose';
-import {
-  DeleteAddressSchema,
-  UpdateAddressSchema,
-  UpdateUserSchema,
-} from '@/validations/user.validation';
+
 import {
   createDoc,
   findOneAndDeleteDoc,
@@ -15,10 +8,21 @@ import {
   findOneDoc,
   updateManyDoc,
 } from '@/helpers/mongoose.helper';
-import { IAddress } from '@/models/user';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import ApiError from '@/utils/ApiError';
-import httpStatus from 'http-status';
+import { IAddress, IUserProfile, user } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
+import {
+  DeleteAddressSchema,
+  UpdateAddressSchema,
+  UpdateUserSchema,
+} from '@/validations/user.validation';
+
+import { config } from '../../config/config';
+import { IUser } from '../../models/user/user.model';
+import { handleStorage } from '../storage/storageStrategy';
+
+import { IUserM } from './users.service.type';
+
 const {
   minIO: { fileStorageProvider },
 } = config;
@@ -34,10 +38,10 @@ interface IOptions {
  * @returns {Promise<User>}
  */
 export const getUser = async (
-  filter: FilterQuery<IUser>,
-  options: object = {},
+  filter: FilterQuery<IUser>
+  // options: object = {}
 ): Promise<IUser[]> => {
-  const userData = await User.aggregate([
+  const userData = await user.aggregate([
     {
       $match: {
         ...filter,
@@ -88,102 +92,56 @@ export const getUser = async (
     },
   ]);
 
-  return await Promise.all(
-    userData.map(async (user) => {
-      if (user.user_profile?.profile_picture && user.user_profile.profile_picture !== '') {
-        user.user_profile.profile_picture = await handleStorage(fileStorageProvider!).getFileLink({
-          fileName: user.user_profile.profile_picture,
-        });
-      } else {
-        user.user_profile.profile_picture = null;
-      }
+  return Promise.all(
+    userData.map(async (user: IUserM) => {
+      user.user_profile.profile_picture =
+        user.user_profile?.profile_picture !== null &&
+        user.user_profile.profile_picture !== ''
+          ? await handleStorage(fileStorageProvider!).getFileLink({
+              fileName: user.user_profile.profile_picture,
+            })
+          : null;
 
       return user;
-    }),
+    })
   );
 };
 
 export const updateUser = async (
   reqBody: UpdateUserSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   message: string;
   userData: IUser | null | undefined;
 }> => {
-  const { line1, line2, state, city, country, first_name, last_name, dob, gender, language } =
-    reqBody;
+  const {
+    line1,
+    line2,
+    state,
+    city,
+    country,
+    // dob,
+  } = reqBody;
   const user = options?.user;
-  // const file = req.file;
-  let userData, message;
 
-  // if (file) {
-  //   const fileName = await fileService.generateFileName(file);
-  //   const fileUploadAcknowledgement = await fileService.saveFiles([
-  //     {
-  //       fileName,
-  //       fileBuffer: file.buffer,
-  //       fileMainFolder: FILES_FOLDER.PUBLIC,
-  //       fileUploadType: 'single',
-  //       subFolderName: FILES_FOLDER.TEMP,
-  //       fileMimeType: file.mimetype,
-  //       fileSize: file.size,
-  //     },
-  //   ]);
-  //   if (fileUploadAcknowledgement) req.body.profile_picture = fileName;
-  // }
+  let userData,
+    message = '';
 
   // Add or Update Address
-  if (line1 || line2 || state || city || country) {
-    await updateManyDoc<IAddress>(
-      MONGOOSE_MODELS.ADDRESS,
-      {
-        user: user?._id,
-      },
-      {
-        isPrimary: false,
-      },
-    );
-
-    const addressData = await createDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
-      user: user?._id,
-      ...reqBody,
-      isPrimary: true,
-    });
-
-    userData = await findOneAndUpdateDoc<IUser>(
-      MONGOOSE_MODELS.USER,
-      {
-        _id: user?._id,
-      },
-      {
-        ...reqBody,
-        primary_address: addressData._id,
-      },
-      {
-        new: true,
-      },
-    );
+  if (
+    line1 !== null ||
+    line2 !== null ||
+    state !== null ||
+    city !== null ||
+    country !== null
+  ) {
+    const updateUserAddressData = await updateUserAddress(reqBody, { user });
+    // eslint-disable-next-line prefer-destructuring
+    userData = updateUserAddressData.userData;
   }
 
   // Add or update User Profile
-  if (
-    first_name ||
-    last_name ||
-    dob ||
-    gender ||
-    // || reqBody?.profile_picture
-    language
-  )
-    await findOneAndUpdateDoc<IUserProfile>(
-      MONGOOSE_MODELS.USER_PROFILE,
-      {
-        user: user?._id,
-      },
-      reqBody,
-      {
-        upsert: true,
-      },
-    );
+  await updateUserDetails(reqBody, { user });
 
   message = 'User updated successfully';
 
@@ -194,26 +152,27 @@ export const updateUser = async (
 };
 
 export const updateAddress = async (
-  reqBody: UpdateAddressSchema,
+  reqBody: UpdateAddressSchema
 ): Promise<{
   addressData: IAddress | null;
 }> => {
-  const { _id, ...rest } = reqBody;
+  const { addressId, ...rest } = reqBody;
   let addressData = await findOneDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
-    _id,
+    _id: addressId,
   });
 
-  if (!addressData) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found.');
+  if (!addressData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Address not found.');
 
   addressData = await findOneAndUpdateDoc<IAddress>(
     MONGOOSE_MODELS.ADDRESS,
     {
-      _id,
+      _id: addressId,
     },
     { ...rest },
     {
       new: true,
-    },
+    }
   );
 
   return {
@@ -222,21 +181,98 @@ export const updateAddress = async (
 };
 
 export const deleteAddress = async (
-  reqParams: DeleteAddressSchema,
+  reqParams: DeleteAddressSchema
 ): Promise<{
   addressData: IAddress | null;
 }> => {
-  const { _id } = reqParams;
-  let addressData = await findOneDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, { _id });
+  const { addressId } = reqParams;
+  let addressData = await findOneDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
+    _id: addressId,
+  });
 
-  if (addressData?.isPrimary)
-    throw new ApiError(httpStatus.NOT_FOUND, "You can't delete primary address.");
+  if (addressData?.isPrimary as boolean)
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "You can't delete primary address."
+    );
 
   addressData = await findOneAndDeleteDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
-    _id,
+    _id: addressId,
   });
 
   return {
     addressData,
   };
+};
+
+export const updateUserAddress = async (
+  payload: UpdateUserSchema,
+  options: IOptions
+): Promise<{
+  userData: IUser | null;
+  addressData: IAddress | null;
+}> => {
+  const { user } = options;
+
+  await updateManyDoc<IAddress>(
+    MONGOOSE_MODELS.ADDRESS,
+    {
+      user: user?._id,
+    },
+    {
+      isPrimary: false,
+    }
+  );
+
+  const addressData = await createDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
+    user: user?._id,
+    ...payload,
+    isPrimary: true,
+  });
+
+  const userData = await findOneAndUpdateDoc<IUser>(
+    MONGOOSE_MODELS.USER,
+    {
+      _id: user?._id,
+    },
+    {
+      ...payload,
+      primary_address: addressData._id,
+    },
+    {
+      new: true,
+    }
+  );
+
+  return {
+    userData,
+    addressData,
+  };
+};
+
+export const updateUserDetails = async (
+  payload: UpdateUserSchema,
+  options: IOptions
+): Promise<void> => {
+  const { first_name, last_name, gender, language } = payload;
+  const { user } = options;
+
+  if (
+    first_name !== null ||
+    last_name !== null ||
+    // dob ||
+    gender !== null ||
+    // || reqBody?.profile_picture
+    language !== null
+  )
+    await findOneAndUpdateDoc<IUserProfile>(
+      MONGOOSE_MODELS.USER_PROFILE,
+      {
+        user: user?._id,
+      },
+      payload,
+      {
+        upsert: true,
+      }
+    );
 };

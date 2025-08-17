@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface ILoginHistory extends Document {
   ip_address: string;
@@ -25,7 +26,7 @@ const loginHistorySchema = new Schema<ILoginHistory>(
       default: Date.now,
     },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const userSecuritySchema = new Schema<IUserSecurity>(
@@ -53,7 +54,10 @@ const userSecuritySchema = new Schema<IUserSecurity>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const User_Security = model<IUserSecurity>('User_Security', userSecuritySchema);
+export const userSecurity = model<IUserSecurity>(
+  'User_Security',
+  userSecuritySchema
+);

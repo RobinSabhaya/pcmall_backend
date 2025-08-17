@@ -1,15 +1,19 @@
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import httpStatus from 'http-status';
 
-export const errorHandler = (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
+export const errorHandler = (
+  error: FastifyError,
+  request: FastifyRequest,
+  reply: FastifyReply
+): FastifyReply => {
   if (error.validation) {
-    const formattedErrors = (error?.validation as any[])
-      .map((err) => ({
+    const formattedErrors = error?.validation
+      .map(err => ({
         field: err.instancePath.replace('/', '') || 'body',
         message: err.message,
-        expected: err.params?.expected || null,
+        expected: err.params?.expected ?? null,
       }))
-      .map((error) => `${error.field}: expected ${error.expected}`)
+      .map(error => `${error.field}: expected ${error.expected}`)
       .join(',');
 
     return reply.code(httpStatus.BAD_REQUEST).send({

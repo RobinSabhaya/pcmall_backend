@@ -1,7 +1,8 @@
-import { PAYMENT_STATUS, USER_CURRENCY, PAYMENT_PROVIDERS } from '../../helpers/constant.helper';
-import { config } from '../../config/config';
 import { Document, model, Schema } from 'mongoose';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { PAYMENTSTATUS, USERCURRENCY } from '../../helpers/constant.helper';
 
 export interface IPaymentRefund extends Document, IBaseDocumentModel {
   paymentId: Schema.Types.ObjectId;
@@ -14,7 +15,7 @@ export interface IPaymentRefund extends Document, IBaseDocumentModel {
   status: string;
 }
 
-const PaymentRefundSchema = new Schema<IPaymentRefund>(
+const paymentRefundSchema = new Schema<IPaymentRefund>(
   {
     paymentId: {
       type: Schema.Types.ObjectId,
@@ -23,20 +24,23 @@ const PaymentRefundSchema = new Schema<IPaymentRefund>(
     },
     refundId: { type: String },
     chargeId: { type: String },
-    balance_transaction: {type : String},
+    balance_transaction: { type: String },
     amount: { type: Number },
-    currency: { type: String, default: USER_CURRENCY.INR },
-    reason: { type: String, default : null},
+    currency: { type: String, default: USERCURRENCY.INR },
+    reason: { type: String, default: null },
     status: {
       type: String,
-      enum: Object.values(PAYMENT_STATUS),
-      default: PAYMENT_STATUS.PENDING,
+      enum: Object.values(PAYMENTSTATUS),
+      default: PAYMENTSTATUS.PENDING,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const PaymentRefund = model<IPaymentRefund>('Payment_Refund', PaymentRefundSchema);
+export const paymentRefund = model<IPaymentRefund>(
+  'Payment_Refund',
+  paymentRefundSchema
+);

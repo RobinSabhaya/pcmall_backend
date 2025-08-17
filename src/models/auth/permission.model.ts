@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { model, Schema, Document } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IPermission extends Document, IBaseDocumentModel {
   module: string;
@@ -30,7 +31,7 @@ const permissionSchema = new Schema<IPermission>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Permission = model<IPermission>('Permission', permissionSchema);
+export const permission = model<IPermission>('Permission', permissionSchema);

@@ -1,6 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { PAYMENT_STATUS } from '../../helpers/constant.helper';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { PAYMENTSTATUS } from '../../helpers/constant.helper';
 
 export interface ICart extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -25,14 +27,14 @@ const cartSchema = new Schema<ICart>(
     },
     status: {
       type: String,
-      enum: Object.values(PAYMENT_STATUS),
-      default: PAYMENT_STATUS.PENDING,
+      enum: Object.values(PAYMENTSTATUS),
+      default: PAYMENTSTATUS.PENDING,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Cart = model<ICart>('Cart', cartSchema);
+export const cart = model<ICart>('Cart', cartSchema);

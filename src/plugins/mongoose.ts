@@ -1,13 +1,14 @@
 import fp from 'fastify-plugin';
 import mongoose from 'mongoose';
+
 import { config } from '../config/config';
 
-export default fp(async (fastify) => {
+export default fp(async () => {
   try {
     await mongoose.connect(config.mongoose.url);
+    // eslint-disable-next-line no-console
     console.log('Database connected ✅');
-  } catch (err) {
-    console.error(err, 'MongoDB connection error');
-    process.exit(1);
+  } catch (error) {
+    throw new Error(`MongoDB connection error ${error}`);
   }
 });

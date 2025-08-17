@@ -1,17 +1,22 @@
-import httpStatus from 'http-status';
-import ApiError from '@/utils/ApiError';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import httpStatus from 'http-status';
+
 import * as warehouseService from '@/services/warehouse/warehouse.service';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateWarehouseSchema,
   DeleteWarehouseSchema,
 } from '@/validations/warehouse.validation';
 
-export const createUpdateWarehouse = async (request: FastifyRequest, reply: FastifyReply) => {
+export const createUpdateWarehouse = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const { message, warehouseData } = await warehouseService.createUpdateWarehouse(
-      request.body as CreateUpdateWarehouseSchema,
-    );
+    const { message, warehouseData } =
+      await warehouseService.createUpdateWarehouse(
+        request.body as CreateUpdateWarehouseSchema
+      );
 
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -19,15 +24,20 @@ export const createUpdateWarehouse = async (request: FastifyRequest, reply: Fast
       data: warehouseData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const deleteWarehouse = async (request: FastifyRequest, reply: FastifyReply) => {
+export const deleteWarehouse = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { message, warehouseData } = await warehouseService.deleteWarehouse(
-      request.query as DeleteWarehouseSchema,
+      request.query as DeleteWarehouseSchema
     );
 
     return reply.code(httpStatus.OK).send({
@@ -36,12 +46,17 @@ export const deleteWarehouse = async (request: FastifyRequest, reply: FastifyRep
       data: warehouseData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const getAllWarehouse = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getAllWarehouse = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { warehouseData } = await warehouseService.getAllWarehouse({});
     return reply.code(httpStatus.OK).send({
@@ -49,7 +64,9 @@ export const getAllWarehouse = async (request: FastifyRequest, reply: FastifyRep
       data: warehouseData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

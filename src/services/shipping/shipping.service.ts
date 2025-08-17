@@ -1,20 +1,23 @@
-import { findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
-import { IShipment } from '../../models/shipment';
-import { IAddress, IUser } from '@/models/user';
-import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import { SHIPMENT_TYPE, USER_ROLE } from '@/helpers/constant.helper';
-import { generateAddressForShipping } from '@/helpers/function.helper';
-import { handleShipping } from './shippingStrategy';
+import httpStatus from 'http-status';
+import { ParcelCreateRequest, Shipment } from 'shippo';
+
 import { config } from '@/config/config';
+import { SHIPMENTTYPE, USERROLE } from '@/helpers/constant.helper';
+import { generateAddressForShipping } from '@/helpers/function.helper';
+import { findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IAddress, IUser } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateAndUpdateShippingSchema,
   GenerateBuyLabelSchema,
   TrackSchema,
 } from '@/validations/shipping.validation';
-import ApiError from '@/utils/ApiError';
-import httpStatus from 'http-status';
-import { ParcelCreateRequest, Shipment, ShipmentCreateRequest } from 'shippo';
-import { GetShippoAccountRequest } from 'shippo/models/operations';
+
+import { IShipment } from '../../models/shipment';
+
+import { handleShipping } from './shippingStrategy';
+
 const {
   shipping: { shippingCarrier },
 } = config;
@@ -31,21 +34,23 @@ interface IOptions {
  */
 export const createAndUpdateShipping = async (
   reqBody: CreateAndUpdateShippingSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   shipment: IShipment | null;
   shippoShipment: Shipment;
 }> => {
   const { parcel } = reqBody;
   const user = options?.user;
-  const userData = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, { _id: user?._id });
+  const userData = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, {
+    _id: user?._id,
+  });
   const userAddressData = await findOneDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
     user: user?._id,
     isPrimary: true,
   });
 
   const adminData = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, {
-    roles: { $in: [USER_ROLE.SUPER_ADMIN] },
+    roles: { $in: [USERROLE.SUPER_ADMIN] },
   });
   const adminAddressData = await findOneDoc<IAddress>(MONGOOSE_MODELS.ADDRESS, {
     user: adminData?._id,
@@ -64,7 +69,7 @@ export const createAndUpdateShipping = async (
       email: adminData?.email,
       ...JSON.parse(JSON.stringify(adminAddressData)),
     }),
-    parcel as ParcelCreateRequest,
+    parcel as ParcelCreateRequest
   );
 
   const payload = {
@@ -74,7 +79,7 @@ export const createAndUpdateShipping = async (
     parcel,
     rates: shippoShipment.rates,
     // selectedRate: selectedRate,
-    shipmentType: SHIPMENT_TYPE.OUTGOING,
+    shipmentType: SHIPMENTTYPE.OUTGOING,
     isReturn: false,
   };
 
@@ -85,7 +90,7 @@ export const createAndUpdateShipping = async (
     {
       upsert: true,
       new: true,
-    },
+    }
   );
   return {
     shipment,
@@ -94,7 +99,7 @@ export const createAndUpdateShipping = async (
 };
 
 export const generateBuyLabel = async (
-  reqBody: GenerateBuyLabelSchema,
+  reqBody: GenerateBuyLabelSchema
 ): Promise<{
   shipment: IShipment | null;
   label: unknown;
@@ -105,7 +110,8 @@ export const generateBuyLabel = async (
     shippoShipmentId,
   });
 
-  if (!shipment) throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not valid.');
+  if (!shipment)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not valid.');
 
   /** Create label */
   const label = await handleShipping(shippingCarrier!).buyLabel(rateObjectId);
@@ -130,7 +136,7 @@ export const generateBuyLabel = async (
         statusDate: new Date(),
       },
     ],
-    status: label.trackingStatus || 'UNKNOWN',
+    status: label.trackingStatus ?? 'UNKNOWN',
   };
 
   shipment = await findOneAndUpdateDoc<IShipment>(
@@ -139,8 +145,11 @@ export const generateBuyLabel = async (
     payload,
     {
       new: true,
-    },
+    }
   );
+
+  if (shipment === null || label === null)
+    console.error('Shipment and Label has been fail');
 
   return {
     shipment,
@@ -149,8 +158,7 @@ export const generateBuyLabel = async (
 };
 
 export const track = async (
-  reqBody: TrackSchema,
-  options?: IOptions,
+  reqBody: TrackSchema
 ): Promise<{
   tracking: IShipment | null;
 }> => {
@@ -158,13 +166,17 @@ export const track = async (
   let tracking;
 
   if (tracking_number) {
-    let tracking = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, {
+    const tracking = await findOneDoc<IShipment>(MONGOOSE_MODELS.SHIPMENT, {
       'label.trackingNumber': tracking_number,
     });
-    if (!tracking) throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not found');
+    if (!tracking)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Shipping not found');
   }
 
-  tracking = await handleShipping(shippingCarrier!).trackShipment(carrier, trackingNumber);
+  tracking = await handleShipping(shippingCarrier!).trackShipment(
+    carrier,
+    trackingNumber
+  );
 
   // Optional: update DB with fresh status
   tracking = await findOneAndUpdateDoc<IShipment>(
@@ -177,7 +189,7 @@ export const track = async (
     },
     {
       new: true,
-    },
+    }
   );
 
   return {

@@ -1,14 +1,19 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import * as orderService from '../../services/orders/order.service';
-import { IUser } from '@/models/user';
 import httpStatus from 'http-status';
+
+import { IUser } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
 import { GetOrderListSchema } from '@/validations/order.validation';
-import ApiError from '@/utils/ApiError';
+
+import * as orderService from '../../services/orders/order.service';
 
 /**
  * Get order list
  */
-export const getOrderList = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getOrderList = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const user = request.user as IUser;
 
@@ -16,7 +21,7 @@ export const getOrderList = async (request: FastifyRequest, reply: FastifyReply)
       {
         user: user._id,
       },
-      request.query as GetOrderListSchema,
+      request.query as GetOrderListSchema
     );
 
     return reply.code(httpStatus.OK).send({
@@ -24,7 +29,9 @@ export const getOrderList = async (request: FastifyRequest, reply: FastifyReply)
       data: orderData[0],
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

@@ -1,30 +1,35 @@
 import { FastifyInstance } from 'fastify';
+
 import authRoute from './auth';
 import cartRoute from './cart';
 import categoryRoute from './category';
 import checkoutRoute from './checkout';
-import orderRoute from './orders';
-import userRoute from './user';
-import wishlistRoute from './wishlist';
-import productRoute from './product';
-import shippingRoute from './shipping';
 import inventoryRoute from './inventory';
-import warehouseRoute from './warehouse';
-import ratingRoute from './rating';
+import orderRoute from './orders';
 import paymentRoute from './payment';
+import productRoute from './product';
+import ratingRoute from './rating';
+import shippingRoute from './shipping';
+import userRoute from './user';
+import warehouseRoute from './warehouse';
+import wishlistRoute from './wishlist';
 
-export default function indexRoutes(fastify: FastifyInstance) {
-  fastify.register(authRoute);
-  fastify.register(cartRoute);
-  fastify.register(categoryRoute);
-  fastify.register(checkoutRoute);
-  fastify.register(orderRoute);
-  fastify.register(userRoute);
-  fastify.register(wishlistRoute);
-  fastify.register(productRoute);
-  fastify.register(shippingRoute);
-  fastify.register(inventoryRoute);
-  fastify.register(warehouseRoute);
-  fastify.register(ratingRoute);
-  fastify.register(paymentRoute);
+const routes = [
+  { route: authRoute },
+  { route: cartRoute },
+  { route: categoryRoute },
+  { route: checkoutRoute },
+  { route: orderRoute },
+  { route: userRoute },
+  { route: wishlistRoute },
+  { route: productRoute },
+  { route: shippingRoute },
+  { route: inventoryRoute },
+  { route: warehouseRoute },
+  { route: ratingRoute },
+  { route: paymentRoute },
+] as const;
+
+export default function indexRoutes(fastify: FastifyInstance): void {
+  routes.map(({ route }) => fastify.register(route));
 }

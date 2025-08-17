@@ -1,28 +1,39 @@
-import { IProduct, IProductSKU, IProductVariant, Product } from '../../models/product';
-import {
-  findOneAndDeleteDoc,
-  findOneAndUpdateDoc,
-  findOneDoc,
-  PaginationOptions,
-  paginationQuery,
-} from '../../helpers/mongoose.helper';
-import { PAYMENT_STATUS } from '../../helpers/constant.helper';
+import httpStatus from 'http-status';
 import { FilterQuery, Schema } from 'mongoose';
+
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import '@/models/product/productVariant.model';
-import { IUser } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateProductSchema,
   DeleteProductSchema,
   GenerateProductSkuSchema,
   GetAllProductsSchema,
 } from '@/validations/product.validation';
-import { GetAllProductsFilter, IProductPopulated } from './product.service.type';
-import ApiError from '@/utils/ApiError';
-import httpStatus from 'http-status';
-import { generateSKU } from '@/helpers/function.helper';
 
-export interface IOptions extends PaginationOptions {
+import { PAYMENTSTATUS } from '../../helpers/constant.helper';
+import {
+  findOneAndDeleteDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
+  IPaginationOptions,
+  paginationQuery,
+} from '../../helpers/mongoose.helper';
+import {
+  IProduct,
+  IProductSKU,
+  IProductVariant,
+  product,
+} from '../../models/product';
+import { IUser } from '../../models/user';
+import { buildArrayFilter, buildPriceFilter } from '../../utils/custom.util';
+
+import {
+  IGetAllProductsFilter,
+  IProductPopulated,
+} from './product.service.type';
+import { generateSKUPayload } from './product.service.utils';
+
+export interface IOptions extends IPaginationOptions {
   user?: IUser;
 }
 
@@ -30,11 +41,11 @@ export interface IOptions extends PaginationOptions {
  * Get product
  * @param {object} filter
  * @param {object} options
- * @returns {Promise<Product>}
+ * @returns {Promise<product>}
  */
-export const getProduct = (
+export const getProduct = async (
   filter: FilterQuery<IProduct>,
-  options = {},
+  options = {}
 ): Promise<IProduct | null> => {
   return findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, filter, options);
 };
@@ -43,51 +54,18 @@ export const getProduct = (
  * Get all product
  * @param {object} reqQuery
  * @param {object} options
- * @returns {Promise<[Product]>}
+ * @returns {Promise<[product]>}
  */
 export const getAllProducts = async (
   reqQuery: GetAllProductsSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<IProduct[]> => {
-  let { categories, colors, prices, productId } = reqQuery;
   const user = options?.user;
-  categories = JSON.parse(String(categories || '[]'));
-  colors = JSON.parse(String(colors || '[]'));
-  prices = JSON.parse(String(prices || '{}'));
 
-  const filter: GetAllProductsFilter = {
-    $or: [],
-  };
+  const filter = generateProductFilter(reqQuery);
 
-  // Set categories
-  if (categories?.length) {
-    filter.categories = {
-      $in: categories,
-    };
-  }
-
-  // Set colors
-  if (colors?.length) {
-    filter.colors = {
-      colors: { $in: colors },
-    };
-  }
-
-  // Set prices
-  if (prices) {
-    filter.prices = {
-      price: { $gte: prices?.min || 0, $lte: prices?.max || 1000000 },
-    };
-  }
-
-  // For Single Product
-  if (productId) {
-    filter._id = new Schema.Types.ObjectId(productId);
-  }
-
-  if (!filter?.$or?.length) delete filter?.$or;
   const pagination = paginationQuery(options!);
-  return Product.aggregate([
+  return product.aggregate([
     {
       $match: {
         ...(filter?._id && { _id: filter._id }),
@@ -174,7 +152,7 @@ export const getAllProducts = async (
           {
             $match: {
               user: new Schema.Types.ObjectId(String(user?._id)),
-              status: PAYMENT_STATUS.PENDING,
+              status: PAYMENTSTATUS.PENDING,
             },
           },
         ],
@@ -196,32 +174,6 @@ export const getAllProducts = async (
         as: 'wishlistProducts',
       },
     },
-    // {
-    //   $addFields: {
-    //     img: {
-    //       $map: {
-    //         input: '$img',
-    //         as: 'image',
-    //         in: {
-    //           $cond: [
-    //             {
-    //               $and: [
-    //                 {
-    //                   $ne: ['$image', ''],
-    //                   $ne: ['$image', null],
-    //                 },
-    //               ],
-    //             },
-    //             {
-    //               $concat: [imageUrl, 'uploads/', '$$image'],
-    //             },
-    //             [],
-    //           ],
-    //         },
-    //       },
-    //     },
-    //   },
-    // },
     {
       $addFields: {
         isInCart: {
@@ -240,99 +192,21 @@ export const getAllProducts = async (
 
 export const createUpdateProduct = async (
   reqBody: CreateUpdateProductSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   message: string;
   productData: IProduct | null;
   productVariantData: IProductVariant | null;
 }> => {
-  const { productId, variantId, name, attributeCombination, images, ...rest } = reqBody;
   const user = options?.user;
 
-  let productData,
-    productVariantData: IProductVariant | null = null,
-    message;
+  // Handle product creation/update
+  const { productData, message } = await handleProductOperation(reqBody, {
+    user,
+  });
 
-  /** Create and Update Product */
-  if (productId) {
-    /** Get product */
-    productData = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {
-      _id: productId,
-    });
-
-    if (!productData) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
-
-    productData = await findOneAndUpdateDoc<IProduct>(
-      MONGOOSE_MODELS.PRODUCT,
-      { _id: productId },
-      { ...rest, updatedBy: user?._id },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
-    if (variantId) {
-      /** Get product variant */
-      productVariantData = await findOneDoc<IProductVariant>(MONGOOSE_MODELS.PRODUCT_VARIANT, {
-        _id: variantId,
-      });
-
-      if (!productVariantData)
-        throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
-
-      const payload = {
-        product: productData?._id,
-        name,
-        attributeCombination,
-        images,
-        updatedBy: user?._id,
-      };
-
-      productVariantData = await findOneAndUpdateDoc<IProductVariant>(
-        MONGOOSE_MODELS.PRODUCT_VARIANT,
-        { _id: variantId },
-        payload,
-        {
-          upsert: true,
-          new: true,
-        },
-      );
-    }
-
-    message = 'Product update successfully';
-  } else {
-    productData = await findOneAndUpdateDoc<IProduct>(
-      MONGOOSE_MODELS.PRODUCT,
-      { ...rest, createdBy: user?._id, updatedBy: user?._id },
-      { ...rest, createdBy: user?._id, updatedBy: user?._id },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
-    const payload = {
-      product: productData?._id,
-      name,
-      attributeCombination,
-      images,
-      createdBy: user?._id,
-      updatedBy: user?._id,
-    };
-
-    productVariantData = await findOneAndUpdateDoc<IProductVariant>(
-      MONGOOSE_MODELS.PRODUCT_VARIANT,
-      payload,
-      payload,
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
-    message = 'Product create successfully';
-  }
+  let productVariantData: IProductVariant | null = null;
+  productVariantData = await handleVariantOperation(reqBody, { user });
 
   return {
     message,
@@ -342,25 +216,34 @@ export const createUpdateProduct = async (
 };
 
 export const deleteProduct = async (
-  filter: DeleteProductSchema,
-  options?: IOptions,
+  filter: DeleteProductSchema
 ): Promise<{
   message: string;
   productData: IProduct | null;
 }> => {
   const { productId } = filter;
-  let productData, message;
+  let productData,
+    message = '';
 
   /** Get product */
-  productData = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, { _id: productId });
+  productData = await findOneDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {
+    _id: productId,
+  });
 
-  if (!productData) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  if (!productData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'product not found');
 
-  productData = await findOneAndDeleteDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, { _id: productId });
-  await findOneAndDeleteDoc<IProduct>(MONGOOSE_MODELS.PRODUCT_VARIANT, { product: productId });
-  await findOneAndDeleteDoc<IProductSKU>(MONGOOSE_MODELS.PRODUCT_SKU, { product: productId });
+  productData = await findOneAndDeleteDoc<IProduct>(MONGOOSE_MODELS.PRODUCT, {
+    _id: productId,
+  });
+  await findOneAndDeleteDoc<IProduct>(MONGOOSE_MODELS.PRODUCT_VARIANT, {
+    product: productId,
+  });
+  await findOneAndDeleteDoc<IProductSKU>(MONGOOSE_MODELS.PRODUCT_SKU, {
+    product: productId,
+  });
 
-  message = 'Product delete successfully';
+  message = 'product delete successfully';
   return {
     productData,
     message,
@@ -369,26 +252,27 @@ export const deleteProduct = async (
 
 export const generateProductSku = async (
   reqBody: GenerateProductSkuSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   message: string;
   productData: IProductPopulated | null;
   productSkuData: IProductSKU | null;
 }> => {
-  const { variantId, productSkuId, price, discount, tax } = reqBody;
-  const user = options?.user as IUser;
-
-  let productData, productVariantData, productSkuData, message;
-
+  const { variantId } = reqBody;
+  const user = options?.user;
   /** Get product variant */
-  productVariantData = await findOneDoc<IProductVariant>(MONGOOSE_MODELS.PRODUCT_VARIANT, {
-    _id: variantId,
-  });
+  const productVariantData = await findOneDoc<IProductVariant>(
+    MONGOOSE_MODELS.PRODUCT_VARIANT,
+    {
+      _id: variantId,
+    }
+  );
 
-  if (!productVariantData) throw new ApiError(httpStatus.NOT_FOUND, 'Product Variant not found');
+  if (!productVariantData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'product Variant not found');
 
   /** Get product */
-  productData = await findOneDoc<IProductPopulated>(
+  const productData = await findOneDoc<IProductPopulated>(
     MONGOOSE_MODELS.PRODUCT,
     { _id: productVariantData.product },
     {
@@ -402,56 +286,212 @@ export const generateProductSku = async (
           select: 'categoryName',
         },
       ],
-    },
+    }
   );
 
-  if (!productData) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+  if (!productData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'product not found');
 
-  const skuPayload = {
-    name: productData.title,
-    category: productData?.category?.categoryName || 'category',
-    brand: productData?.brand?.name || 'brand',
-    variants: productVariantData?.attributeCombination,
-  };
-
-  const payload = {
-    variant: productVariantData._id,
-    product: productData._id,
-    skuCode: generateSKU(skuPayload),
-    price,
-    discount,
-    tax,
-    createdBy: user?._id,
-    updatedBy: user?._id,
-  };
-
-  if (productSkuId) {
-    productSkuData = await findOneAndUpdateDoc<IProductSKU>(
-      MONGOOSE_MODELS.PRODUCT_SKU,
-      { _id: productSkuId },
-      payload,
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-    message = 'Product Sku update successfully';
-  } else {
-    productSkuData = await findOneAndUpdateDoc<IProductSKU>(
-      MONGOOSE_MODELS.PRODUCT_SKU,
-      payload,
-      payload,
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-    message = 'Generate Product Sku successfully';
-  }
+  const { productSkuData, message } = await handleProductSkuOperation({
+    productData,
+    productVariantData,
+    reqBody,
+    options: { user },
+  });
 
   return {
     message,
     productData,
     productSkuData,
+  };
+};
+
+export const generateProductFilter = (
+  reqQuery: GetAllProductsSchema
+): IGetAllProductsFilter => {
+  let { categories, colors, prices } = reqQuery;
+
+  categories = JSON.parse(String(categories ?? '[]'));
+  colors = JSON.parse(String(colors ?? '[]'));
+  prices = JSON.parse(String(prices ?? '{}'));
+
+  const filter: IGetAllProductsFilter = {};
+
+  const categoryFilter = buildArrayFilter(categories!);
+  if (categoryFilter) filter.categories = categoryFilter;
+
+  const colorFilter = buildArrayFilter(colors!);
+  if (colorFilter) filter.colors = colorFilter;
+
+  const priceFilter = buildPriceFilter(prices!);
+  if (priceFilter) filter.prices = priceFilter;
+
+  return filter;
+};
+
+export const handleProductOperation = async (
+  payload: CreateUpdateProductSchema,
+  options: IOptions
+): Promise<{ productData: IProduct | null; message: string }> => {
+  const { productId, ...rest } = payload;
+  const { user } = options;
+
+  const productPayload = {
+    ...rest,
+    createdBy: user?._id,
+    updatedBy: user?._id,
+  };
+
+  if (productId !== null) {
+    // Update existing product
+    const existingProduct = await findOneDoc<IProduct>(
+      MONGOOSE_MODELS.PRODUCT,
+      {
+        _id: productId,
+      }
+    );
+
+    if (!existingProduct) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'product not found');
+    }
+
+    const productData = await findOneAndUpdateDoc<IProduct>(
+      MONGOOSE_MODELS.PRODUCT,
+      { _id: productId },
+      { ...productPayload, updatedBy: user?._id },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    return { productData, message: 'product update successfully' };
+  } else {
+    // Create new product
+    const productData = await findOneAndUpdateDoc<IProduct>(
+      MONGOOSE_MODELS.PRODUCT,
+      productPayload,
+      productPayload,
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    return { productData, message: 'product create successfully' };
+  }
+};
+
+export const handleVariantOperation = async (
+  payload: CreateUpdateProductSchema,
+  options: IOptions
+): Promise<IProductVariant | null> => {
+  const { variantId, productId, name, attributeCombination, images } = payload;
+  const { user } = options;
+
+  const productVariantPayload = {
+    product: productId,
+    name,
+    attributeCombination,
+    images,
+    createdBy: user?._id,
+    updatedBy: user?._id,
+  };
+
+  if (variantId !== null) {
+    // Update existing variant
+    const existingVariant = await findOneDoc<IProductVariant>(
+      MONGOOSE_MODELS.PRODUCT_VARIANT,
+      {
+        _id: variantId,
+      }
+    );
+
+    if (!existingVariant) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'product variant not found');
+    }
+
+    return findOneAndUpdateDoc<IProductVariant>(
+      MONGOOSE_MODELS.PRODUCT_VARIANT,
+      { _id: variantId },
+      { ...productVariantPayload, updatedBy: user?._id },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+  } else {
+    return findOneAndUpdateDoc<IProductVariant>(
+      MONGOOSE_MODELS.PRODUCT_VARIANT,
+      payload,
+      payload,
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+  }
+};
+
+export const handleProductSkuOperation = async (payload: {
+  productData: IProductPopulated;
+  productVariantData: IProductVariant;
+  reqBody: GenerateProductSkuSchema;
+  options: IOptions;
+}): Promise<{
+  productSkuData: IProductSKU | null;
+  message: string;
+}> => {
+  const {
+    productData,
+    productVariantData,
+    reqBody: { productSkuId, price, discount, tax },
+    options,
+  } = payload;
+  const { user } = options;
+  let productSkuData, message;
+
+  const productSKUPayload = generateSKUPayload({
+    productData,
+    productVariantData,
+    price,
+    discount,
+    tax,
+  });
+
+  const productSKUPayloadData = Object.assign(
+    {
+      createdBy: user?._id,
+      updatedBy: user?._id,
+    },
+    productSKUPayload
+  ) as IProductSKU;
+
+  if (productSkuId != null) {
+    productSkuData = await findOneAndUpdateDoc<IProductSKU>(
+      MONGOOSE_MODELS.PRODUCT_SKU,
+      { _id: productSkuId },
+      { ...productSKUPayloadData },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+    message = 'product Sku update successfully';
+  } else {
+    productSkuData = await findOneAndUpdateDoc<IProductSKU>(
+      MONGOOSE_MODELS.PRODUCT_SKU,
+      {},
+      { ...productSKUPayloadData, updatedBy: user?._id } as IProductSKU,
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+    message = 'Generate product Sku successfully';
+  }
+  return {
+    productSkuData,
+    message,
   };
 };

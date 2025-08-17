@@ -1,6 +1,7 @@
-import wishlistRoute from './wishlist.route';
 import { FastifyInstance } from 'fastify';
 
-export default async function indexRoute(fastify: FastifyInstance) {
+import wishlistRoute from './wishlist.route';
+
+export default function indexRoute(fastify: FastifyInstance): void {
   fastify.register(wishlistRoute, { prefix: '/wishlist' });
 }

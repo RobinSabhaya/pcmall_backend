@@ -1,8 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import * as categoryService from '../../services/category/category.service';
 import httpStatus from 'http-status';
 
-export const getAllCategories = async (request: FastifyRequest, reply: FastifyReply) => {
+import * as categoryService from '../../services/category/category.service';
+
+export const getAllCategories = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   // get all category
   const categoryData = await categoryService.getAllCategories(
     {},
@@ -12,7 +16,7 @@ export const getAllCategories = async (request: FastifyRequest, reply: FastifyRe
           path: 'subCategory',
         },
       ],
-    },
+    }
   );
 
   return reply.code(httpStatus.OK).send({

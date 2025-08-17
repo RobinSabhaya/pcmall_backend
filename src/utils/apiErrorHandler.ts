@@ -9,9 +9,10 @@ class ApiError extends Error {
     public statusCode: number,
     public message: string,
     public isOperational = true,
-    public stack = '',
+    public stack = ''
   ) {
     super(message);
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     if (stack) {

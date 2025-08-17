@@ -1,16 +1,17 @@
 import { FastifyInstance } from 'fastify';
-import * as cartController from '@/controllers/cart/cart.controller';
-import * as cartValidation from '@/validations/cart.validation';
-import { createBaseRoute } from '@/utils/baseRoute';
-import { USER_ROLE } from '@/helpers/constant.helper';
 
-export default function cartRoute(fastify: FastifyInstance) {
+import * as cartController from '@/controllers/cart/cart.controller';
+import { USERROLE } from '@/helpers/constant.helper';
+import { createBaseRoute } from '@/utils/baseRoute';
+import * as cartValidation from '@/validations/cart.validation';
+
+export default function cartRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
     method: 'POST',
     url: '/add',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: cartValidation.addToCart,
     description: 'Add a product to cart',
     tags: ['Cart'],
@@ -20,7 +21,7 @@ export default function cartRoute(fastify: FastifyInstance) {
   route({
     method: 'DELETE',
     url: '/remove/:cartId',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: cartValidation.removeToCart,
     description: 'Remove a product from cart',
     tags: ['Cart'],
@@ -30,7 +31,7 @@ export default function cartRoute(fastify: FastifyInstance) {
   route({
     method: 'PUT',
     url: '/update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: cartValidation.updateToCart,
     description: 'Update cart item quantity',
     tags: ['Cart'],
@@ -40,7 +41,7 @@ export default function cartRoute(fastify: FastifyInstance) {
   route({
     method: 'GET',
     url: '/all',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: cartValidation.getAllCart,
     description: 'Get all cart items',
     tags: ['Cart'],

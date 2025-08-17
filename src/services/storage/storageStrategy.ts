@@ -1,11 +1,14 @@
-import * as minIO from './providers/minIO.service';
+import * as minIO from './providers/minIo.storage.service';
 
 const strategyMap = {
   minIO,
 };
 
-export function handleStorage(storageProvider: string) {
+type Strategy = (typeof strategyMap)[keyof typeof strategyMap];
+
+export function handleStorage(storageProvider: string): Strategy {
   const strategy = strategyMap[storageProvider as keyof typeof strategyMap];
-  if (!strategy) throw new Error(`Storage strategy "${storageProvider}" not found`);
+  if (strategy == null)
+    throw new Error(`Storage strategy "${storageProvider}" not found`);
   return strategy;
 }

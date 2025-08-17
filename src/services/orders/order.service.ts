@@ -1,9 +1,12 @@
-import { IOrder } from '@/models/orders';
 import { FilterQuery, UpdateQuery } from 'mongoose';
-import { Order } from '../../models/orders';
-import { findOneAndUpdateDoc, PaginationOptions, paginationQuery } from '@/helpers/mongoose.helper';
+
+import {
+  findOneAndUpdateDoc,
+  IPaginationOptions,
+  paginationQuery,
+} from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import { IUser } from '@/models/user';
+import { IOrder, order } from '@/models/orders';
 
 /**
  * Get order list
@@ -11,14 +14,13 @@ import { IUser } from '@/models/user';
  * @param {object} options
  * @returns {Promise<[Order]>}
  */
-export const getOrderList = (
+export const getOrderList = async (
   filter: FilterQuery<IOrder>,
-  options?: PaginationOptions,
+  options?: IPaginationOptions
 ): Promise<IOrder[]> => {
-  console.log('🚀 ~ filter:', filter);
   const pagination = paginationQuery(options!);
 
-  return Order.aggregate([
+  return order.aggregate([
     {
       $match: {
         ...filter,
@@ -35,10 +37,10 @@ export const getOrderList = (
  * @param {object} options
  * @returns {Promise<Order>}
  */
-export const updateOrder = (
+export const updateOrder = async (
   filter: FilterQuery<IOrder>,
   reqBody: UpdateQuery<IOrder>,
-  options = {},
+  options = {}
 ): Promise<IOrder | null> => {
   return findOneAndUpdateDoc(MONGOOSE_MODELS.ORDER, filter, reqBody, options);
 };

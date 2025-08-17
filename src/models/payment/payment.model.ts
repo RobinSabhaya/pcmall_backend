@@ -1,7 +1,13 @@
-import { PAYMENT_STATUS, USER_CURRENCY, PAYMENT_PROVIDERS } from '../../helpers/constant.helper';
-import { config } from '../../config/config';
 import { Document, model, Schema } from 'mongoose';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { config } from '../../config/config';
+import {
+  PAYMENTPROVIDERS,
+  PAYMENTSTATUS,
+  USERCURRENCY,
+} from '../../helpers/constant.helper';
 
 export interface IPayment extends Document, IBaseDocumentModel {
   orderId: Schema.Types.ObjectId;
@@ -13,7 +19,7 @@ export interface IPayment extends Document, IBaseDocumentModel {
   status: string;
 }
 
-const PaymentSchema = new Schema<IPayment>(
+const paymentSchema = new Schema<IPayment>(
   {
     orderId: {
       type: Schema.Types.ObjectId,
@@ -22,24 +28,24 @@ const PaymentSchema = new Schema<IPayment>(
     },
     provider: {
       type: String,
-      enum: Object.values(PAYMENT_PROVIDERS),
+      enum: Object.values(PAYMENTPROVIDERS),
       required: true,
       default: config.paymentGateway.paymentProvider,
     },
     sessionId: { type: String },
     transactionId: { type: String },
     amount: { type: Number },
-    currency: { type: String, default: USER_CURRENCY.INR },
+    currency: { type: String, default: USERCURRENCY.INR },
     status: {
       type: String,
-      enum: Object.values(PAYMENT_STATUS),
-      default: PAYMENT_STATUS.PENDING,
+      enum: Object.values(PAYMENTSTATUS),
+      default: PAYMENTSTATUS.PENDING,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Payment = model<IPayment>('Payment', PaymentSchema);
+export const payment = model<IPayment>('Payment', paymentSchema);

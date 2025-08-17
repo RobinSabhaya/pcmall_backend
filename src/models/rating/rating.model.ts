@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IRating extends Document, IBaseDocumentModel {
   product: Schema.Types.ObjectId;
@@ -39,7 +40,7 @@ const ratingSchema = new Schema<IRating>(
   {
     versionKey: false,
     timestamps: true,
-  },
+  }
 );
 
-export const Rating = model<IRating>('Rating', ratingSchema);
+export const rating = model<IRating>('Rating', ratingSchema);

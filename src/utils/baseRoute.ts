@@ -1,4 +1,10 @@
-import { FastifyInstance, FastifyReply, FastifyRequest, preHandlerHookHandler } from 'fastify';
+import {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  preHandlerHookHandler,
+  RouteOptions,
+} from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
@@ -19,7 +25,7 @@ type ExtractRequest<T extends RouteSchemas> = {
   Params: T['params'] extends z.ZodTypeAny ? z.infer<T['params']> : unknown;
 };
 
-interface RouteConfig<T extends RouteSchemas> {
+interface IRouteConfig<T extends RouteSchemas> {
   method: RequestType;
   url: string;
   schema?: T;
@@ -28,27 +34,93 @@ interface RouteConfig<T extends RouteSchemas> {
   preHandlerHookHandler?: preHandlerHookHandler | preHandlerHookHandler[];
   handler: (
     request: FastifyRequest<ExtractRequest<T>>,
-    reply: FastifyReply,
+    reply: FastifyReply
   ) => Promise<unknown> | unknown;
 }
 
-export function createBaseRoute(app: FastifyInstance) {
+type RouteSchema = {
+  description: string;
+  tags: string[];
+  body?: z.ZodTypeAny;
+  querystring?: z.ZodTypeAny;
+  params?: z.ZodTypeAny;
+  response?: {
+    [statusCode: number]: z.ZodTypeAny;
+  };
+};
+
+type SchemaMapping = {
+  sourceKey: keyof RouteSchemas;
+  targetKey: keyof RouteSchema;
+}[];
+
+const SCHEMA_MAPPINGS: SchemaMapping = [
+  { sourceKey: 'body', targetKey: 'body' },
+  { sourceKey: 'query', targetKey: 'querystring' },
+  { sourceKey: 'params', targetKey: 'params' },
+  { sourceKey: 'response', targetKey: 'response' },
+];
+
+function applySchemaMapping<T extends RouteSchemas>(
+  schema: RouteSchema,
+  config: IRouteConfig<T>
+): void {
+  SCHEMA_MAPPINGS.forEach(({ sourceKey, targetKey }) => {
+    if (config?.schema?.[sourceKey]) {
+      (schema as Record<string, unknown>)[targetKey] = config.schema[sourceKey];
+    }
+  });
+}
+
+function buildRouteSchema<T extends RouteSchemas>(
+  config: IRouteConfig<T>
+): RouteSchema {
+  const schema: RouteSchema = {
+    description: config.description ?? '',
+    tags: config.tags ?? [],
+  };
+
+  applySchemaMapping(schema, config);
+  return schema;
+}
+
+type FastifyRouteOptions<T extends RouteSchemas> = {
+  method: RequestType;
+  url: string;
+  schema: RouteSchema;
+  handler: (
+    request: FastifyRequest<ExtractRequest<T>>,
+    reply: FastifyReply
+  ) => Promise<unknown> | unknown;
+  preHandler?: preHandlerHookHandler | preHandlerHookHandler[];
+};
+
+function buildRouteOptions<T extends RouteSchemas>(
+  config: IRouteConfig<T>
+): FastifyRouteOptions<T> {
+  const options: FastifyRouteOptions<T> = {
+    method: config.method,
+    url: config.url,
+    schema: buildRouteSchema(config),
+    handler: config.handler,
+  };
+
+  if (config?.preHandlerHookHandler) {
+    options.preHandler = config.preHandlerHookHandler;
+  }
+
+  return options;
+}
+
+export function createBaseRoute(
+  app: FastifyInstance
+): <T extends RouteSchemas>(config: IRouteConfig<T>) => void {
   const fastify = app.withTypeProvider<ZodTypeProvider>();
 
-  return function baseRoute<T extends RouteSchemas>(config: RouteConfig<T>) {
-    fastify.route({
-      method: config.method,
-      url: config.url,
-      schema: {
-        description: config.description || '',
-        tags: config.tags || [],
-        ...(config?.schema?.body && { body: config.schema.body }),
-        ...(config?.schema?.query && { querystring: config.schema.query }),
-        ...(config?.schema?.params && { params: config.schema.params }),
-        ...(config?.schema?.response && { response: config.schema.response }),
-      },
-      ...(config?.preHandlerHookHandler && { preHandler: config?.preHandlerHookHandler }),
-      handler: config.handler,
-    });
+  return function baseRoute<T extends RouteSchemas>(
+    config: IRouteConfig<T>
+  ): void {
+    const routeOptions = buildRouteOptions(config);
+    fastify.route(routeOptions as RouteOptions);
   };
 }

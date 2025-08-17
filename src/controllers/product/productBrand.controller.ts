@@ -1,16 +1,20 @@
-import httpStatus from 'http-status';
-import ApiError from '@/utils/ApiError';
-import * as productBrandService from '@/services/product/productBrand.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { createUpdateBrandSchema } from '@/validations/brand.validation';
-import { IUser } from '@/models/user';
+import httpStatus from 'http-status';
 
-export const createUpdateBrand = async (request: FastifyRequest, reply: FastifyReply) => {
+import { IUser } from '@/models/user';
+import * as productBrandService from '@/services/product/productBrand.service';
+import ApiError from '@/utils/apiErrorHandler';
+import { CreateUpdateBrandSchema } from '@/validations/brand.validation';
+
+export const createUpdateBrand = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const user = request.user as IUser;
     const { message, brandData } = await productBrandService.createUpdateBrand(
-      request.body as createUpdateBrandSchema,
-      { user },
+      request.body as CreateUpdateBrandSchema,
+      { user }
     );
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -18,17 +22,22 @@ export const createUpdateBrand = async (request: FastifyRequest, reply: FastifyR
       data: brandData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const deleteBrand = async (request: FastifyRequest, reply: FastifyReply) => {
+export const deleteBrand = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const user = request.user as IUser;
+    // const user = request.user as IUser;
     const { message, brandData } = await productBrandService.deleteBrand(
-      request.query as Partial<createUpdateBrandSchema>,
-      { user },
+      request.query as Partial<CreateUpdateBrandSchema>
+      // { user }
     );
 
     return reply.code(httpStatus.OK).send({
@@ -37,12 +46,17 @@ export const deleteBrand = async (request: FastifyRequest, reply: FastifyReply) 
       data: brandData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const getAllBrands = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getAllBrands = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const brandData = await productBrandService.getAllBrands({});
 
@@ -51,7 +65,9 @@ export const getAllBrands = async (request: FastifyRequest, reply: FastifyReply)
       data: brandData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

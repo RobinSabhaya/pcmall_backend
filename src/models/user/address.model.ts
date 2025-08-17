@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IAddress extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -41,9 +42,9 @@ const addressSchema = new Schema<IAddress>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
 // addressSchema.index({ geo_location: '2dsphere' });
 
-export const Address = model<IAddress>('Address', addressSchema);
+export const address = model<IAddress>('Address', addressSchema);

@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface ISeller extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -9,18 +10,24 @@ export interface ISeller extends Document, IBaseDocumentModel {
   gstNumber: string;
 }
 
-const SellerSchema = new Schema<ISeller>(
+const sellerSchema = new Schema<ISeller>(
   {
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
     },
     name: { type: String },
-    businessEmail: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    businessEmail: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     businessName: { type: String },
     gstNumber: { type: String },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true, versionKey: false }
 );
 
-export const Seller = model<ISeller>('Seller', SellerSchema);
+export const seller = model<ISeller>('Seller', sellerSchema);

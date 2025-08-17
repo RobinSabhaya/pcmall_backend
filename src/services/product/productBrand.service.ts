@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+
 import {
   findDoc,
   findOneAndDeleteDoc,
@@ -7,23 +9,27 @@ import {
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { IProductBrand } from '@/models/product';
 import { IUser } from '@/models/user';
-import ApiError from '@/utils/ApiError';
-import { createUpdateBrandSchema, GetAllBrandsSchema } from '@/validations/brand.validation';
-import httpStatus from 'http-status';
+import ApiError from '@/utils/apiErrorHandler';
+import {
+  CreateUpdateBrandSchema,
+  GetAllBrandsSchema,
+} from '@/validations/brand.validation';
 
 export interface IOptions {
   user?: IUser;
 }
 
-export const getAllBrands = async (filter: GetAllBrandsSchema): Promise<IProductBrand[]> => {
+export const getAllBrands = async (
+  filter: GetAllBrandsSchema
+): Promise<IProductBrand[]> => {
   return findDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, filter, {
     sort: { name: 1 },
   });
 };
 
 export const createUpdateBrand = async (
-  reqBody: createUpdateBrandSchema,
-  options?: IOptions,
+  reqBody: CreateUpdateBrandSchema,
+  options?: IOptions
 ): Promise<{
   message: string;
   brandData: IProductBrand | null;
@@ -34,13 +40,14 @@ export const createUpdateBrand = async (
   let brandData, message;
 
   /** Create and Update Brand */
-  if (brandId) {
+  if (brandId !== null) {
     /** Get brand */
     brandData = await findOneDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, {
       _id: brandId,
     });
 
-    if (!brandData) throw new ApiError(httpStatus.NOT_FOUND, 'Product Brand not found');
+    if (!brandData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product Brand not found');
 
     brandData = await findOneAndUpdateDoc<IProductBrand>(
       MONGOOSE_MODELS.PRODUCT_BRAND,
@@ -49,7 +56,7 @@ export const createUpdateBrand = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
     message = 'Product Brand update successfully';
   } else {
@@ -60,7 +67,7 @@ export const createUpdateBrand = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
     message = 'Product Brand create successfully';
   }
@@ -72,24 +79,30 @@ export const createUpdateBrand = async (
 };
 
 export const deleteBrand = async (
-  filter: Partial<createUpdateBrandSchema>,
-  options?: IOptions,
+  filter: Partial<CreateUpdateBrandSchema>
 ): Promise<{
   message: string;
   brandData: IProductBrand | null;
 }> => {
   const { brandId } = filter;
 
-  let brandData, message;
+  let brandData,
+    message = '';
 
   /** Get brand */
-  brandData = await findOneDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, { _id: brandId });
-
-  if (!brandData) throw new ApiError(httpStatus.NOT_FOUND, 'Product Brand not found');
-
-  brandData = await findOneAndDeleteDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, {
+  brandData = await findOneDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, {
     _id: brandId,
   });
+
+  if (!brandData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Brand not found');
+
+  brandData = await findOneAndDeleteDoc<IProductBrand>(
+    MONGOOSE_MODELS.PRODUCT_BRAND,
+    {
+      _id: brandId,
+    }
+  );
   message = 'Product Brand delete successfully';
 
   return {

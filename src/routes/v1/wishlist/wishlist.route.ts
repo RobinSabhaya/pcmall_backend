@@ -1,16 +1,18 @@
-import * as wishlistController from '@/controllers/wishlist/wishlist.controller';
-import * as wishlistValidation from '@/validations/wishlist.validation';
 import { FastifyInstance } from 'fastify';
-import { USER_ROLE } from '../../../helpers/constant.helper';
-import { createBaseRoute } from '@/utils/baseRoute';
 
-export default async function wishlistRoute(fastify: FastifyInstance) {
+import * as wishlistController from '@/controllers/wishlist/wishlist.controller';
+import { createBaseRoute } from '@/utils/baseRoute';
+import * as wishlistValidation from '@/validations/wishlist.validation';
+
+import { USERROLE } from '../../../helpers/constant.helper';
+
+export default function wishlistRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
     method: 'POST',
     url: '/',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: wishlistValidation.createUpdateWishlist,
     description: 'Create & Update wishlist',
     tags: ['Wishlist'],

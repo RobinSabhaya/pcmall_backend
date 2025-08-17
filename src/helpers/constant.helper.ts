@@ -1,77 +1,77 @@
-export enum ACCOUNT_STATUS {
+export enum ACCOUNTSTATUS {
   ACTIVE = 'ACTIVE',
   SUSPENDED = 'SUSPENDED',
   DELETED = 'DELETED',
 }
 
-export enum USER_ROLE {
+export enum USERROLE {
   BUYER = 'BUYER',
   SELLER = 'SELLER',
   ADMIN = 'ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
-export enum AUTH_PROVIDER {
+export enum AUTHPROVIDER {
   EMAIL = 'EMAIL',
   GOOGLE = 'GOOGLE',
   FACEBOOK = 'FACEBOOK',
   APPLE = 'APPLE',
 }
 
-export enum USER_GENDER {
+export enum USERGENDER {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
 }
 
-export enum USER_LANGUAGE {
+export enum USERLANGUAGE {
   ENGLISH = 'ENGLISH',
   GUJARATI = 'GUJARATI',
   HINDI = 'HINDI',
 }
 
-export enum USER_TIMEZONES {
+export enum USERTIMEZONES {
   UTC = 'UTC',
 }
 
-export enum USER_CURRENCY {
+export enum USERCURRENCY {
   USD = 'USD',
   INR = 'INR',
 }
 
-export enum TOKEN_TYPES {
+export enum TOKENTYPES {
   ACCESS = 'access',
   REFRESH = 'refresh',
   RESET_PASSWORD = 'resetPassword',
   VERIFY_EMAIL = 'verifyEmail',
 }
 
-export enum PAYMENT_STATUS {
+export enum PAYMENTSTATUS {
   SUCCESS = 'SUCCESS',
   PAID = 'PAID',
   FAILED = 'FAILED',
   EXPIRED = 'EXPIRED',
   PENDING = 'PENDING',
   REFUND_SUCCESS = 'REFUND_SUCCESS',
-  REFUND_FAILED = 'REFUND_FAILED'
+  REFUND_FAILED = 'REFUND_FAILED',
 }
 
-export enum SHIPPING_STATUS {
+export enum SHIPPINGSTATUS {
   PENDING = 'PENDING',
 }
 
-export enum SHIPMENT_TYPE {
+export enum SHIPMENTTYPE {
   OUTGOING = 'OUTGOING',
   RETURN = 'RETURN',
 }
 
-export enum CONFIRMATION_TYPE {
+export enum CONFIRMATIONTYPE {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
 
-export enum INVENTORY_TYPE {
+export enum INVENTORYTYPE {
   IN = 'IN',
   OUT = 'OUT',
   RESERVE = 'RESERVE',
@@ -79,20 +79,20 @@ export enum INVENTORY_TYPE {
   ADJUSTMENT = 'ADJUSTMENT',
 }
 
-export enum PRODUCT_SKU_STATUS {
+export enum PRODUCTSKUSTATUS {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
 }
 
-export enum PAYMENT_PROVIDERS {
+export enum PAYMENTPROVIDERS {
   STRIPE = 'stripe',
 }
 
-export enum SHIPPING_CARRIERS {
+export enum SHIPPINGCARRIERS {
   SHIPPO = 'shippo',
 }
 
-export enum FILES_FOLDER {
+export enum FILESFOLDER {
   PUBLIC = 'public',
   TEMP = 'temp',
 }

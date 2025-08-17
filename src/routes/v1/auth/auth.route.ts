@@ -1,15 +1,17 @@
+import { FastifyInstance } from 'fastify';
+
 import { createBaseRoute } from '@/utils/baseRoute';
+import * as authValidation from '@/validations/auth.validation';
+
 import {
   login,
   logout,
   refreshTokens,
   register,
-  signup
+  signup,
 } from '../../../controllers/auth/auth.controller';
-import { FastifyInstance} from 'fastify';
-import * as authValidation from '@/validations/auth.validation';
 
-export default async function authRoute(fastify: FastifyInstance) {
+export default function authRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
   route({
     method: 'POST',

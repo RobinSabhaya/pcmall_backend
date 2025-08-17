@@ -1,12 +1,13 @@
-import { config } from '../../../config/config';
 import {
   AddressCreateRequest,
-  ParcelCreateFromTemplateRequest,
   ParcelCreateRequest,
-  Rate,
   Shipment,
   Shippo,
+  Track,
+  Transaction,
 } from 'shippo';
+
+import { config } from '../../../config/config';
 
 const {
   shipping: { shippingApiKey },
@@ -23,7 +24,7 @@ const shippo = new Shippo({
 export const createShipment = async (
   addressFrom: AddressCreateRequest,
   addressTo: AddressCreateRequest,
-  parcel: ParcelCreateRequest,
+  parcel: ParcelCreateRequest
 ): Promise<Shipment> => {
   const shipment = await shippo.shipments.create({
     addressFrom,
@@ -33,14 +34,14 @@ export const createShipment = async (
   });
   console.log('🚀 ~ createShipment ~ shipment:', shipment);
 
-  if (!shipment.rates || shipment.rates.length === 0) {
+  if (shipment.rates.length === 0) {
     throw new Error('No rates returned by Shippo');
   }
 
   return shipment;
 };
 
-export const buyLabel = async (rateObjectId: string) => {
+export const buyLabel = async (rateObjectId: string): Promise<Transaction> => {
   const transaction = await shippo.transactions.create({
     rate: rateObjectId,
     labelFileType: 'PDF',
@@ -48,13 +49,15 @@ export const buyLabel = async (rateObjectId: string) => {
   });
 
   if (transaction.status !== 'SUCCESS') {
-    throw new Error(transaction?.messages?.map((m) => m.text).join(', '));
+    throw new Error(transaction?.messages?.map(m => m.text).join(', '));
   }
 
   return transaction;
 };
 
-export const trackShipment = async (carrier: string, trackingNumber: string) => {
-  const tracking = await shippo.trackingStatus.get(trackingNumber, carrier);
-  return tracking;
+export const trackShipment = async (
+  carrier: string,
+  trackingNumber: string
+): Promise<Track> => {
+  return shippo.trackingStatus.get(trackingNumber, carrier);
 };

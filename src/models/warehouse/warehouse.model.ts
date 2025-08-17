@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IWarehouse extends Document, IBaseDocumentModel {
   name: string;
@@ -9,7 +10,7 @@ export interface IWarehouse extends Document, IBaseDocumentModel {
   createdBy: Schema.Types.ObjectId;
   updatedBy: Schema.Types.ObjectId;
 }
-const WarehouseSchema = new Schema<IWarehouse>(
+const warehouseSchema = new Schema<IWarehouse>(
   {
     name: String,
     seller: { type: Schema.Types.ObjectId, ref: 'Seller' },
@@ -21,7 +22,7 @@ const WarehouseSchema = new Schema<IWarehouse>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Warehouse = model<IWarehouse>('Warehouse', WarehouseSchema);
+export const warehouse = model<IWarehouse>('Warehouse', warehouseSchema);

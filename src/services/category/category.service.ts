@@ -1,8 +1,9 @@
-import { findDoc, FindOptions } from '@/helpers/mongoose.helper';
-import { ICategory } from '../../models/category';
+import { findDoc, IFindOptions } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 
-interface IOptions extends FindOptions {}
+import { ICategory } from '../../models/category';
+
+interface IOptions extends IFindOptions {}
 
 /**
  * Get ALL categories
@@ -10,9 +11,14 @@ interface IOptions extends FindOptions {}
  * @param {object} options
  * @returns {Promise<Category>}
  */
-export const getAllCategories = (filter: object, options: IOptions): Promise<ICategory[]> => {
-  if (options?.populate)
-    return findDoc<ICategory>(MONGOOSE_MODELS.CATEGORY, filter, { populate: options.populate });
+export const getAllCategories = async (
+  filter: object,
+  options: IOptions
+): Promise<ICategory[]> => {
+  if (options?.populate != null)
+    return findDoc<ICategory>(MONGOOSE_MODELS.CATEGORY, filter, {
+      populate: options.populate,
+    });
 
   return findDoc(MONGOOSE_MODELS.CATEGORY, filter);
 };

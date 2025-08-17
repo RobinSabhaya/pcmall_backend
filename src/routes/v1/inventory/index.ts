@@ -1,6 +1,7 @@
-import inventoryRoutes from './inventory.route';
 import { FastifyInstance } from 'fastify';
 
-export default async function indexRoute(fastify: FastifyInstance) {
+import inventoryRoutes from './inventory.route';
+
+export default function indexRoute(fastify: FastifyInstance): void {
   fastify.register(inventoryRoutes, { prefix: '/inventory' });
 }

@@ -1,11 +1,16 @@
-import { findOneAndDeleteDoc, findOneAndUpdateDoc, findOneDoc } from '@/helpers/mongoose.helper';
+import httpStatus from 'http-status';
+
+import {
+  findOneAndDeleteDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
+} from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { IProduct } from '@/models/product';
 import { IUser } from '@/models/user';
 import { IWishlist } from '@/models/wishlist';
-import ApiError from '@/utils/ApiError';
+import ApiError from '@/utils/apiErrorHandler';
 import { CreateUpdateWishlistSchema } from '@/validations/wishlist.validation';
-import httpStatus from 'http-status';
 
 interface IOptions {
   user?: IUser;
@@ -20,7 +25,7 @@ interface IOptions {
  */
 export const createUpdateWishlist = async (
   reqBody: CreateUpdateWishlistSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   message: string;
   wishlistData: IWishlist | null;
@@ -62,7 +67,7 @@ export const createUpdateWishlist = async (
       {
         new: true,
         upsert: true,
-      },
+      }
     );
 
     message = 'Wishlist added successfully!!';

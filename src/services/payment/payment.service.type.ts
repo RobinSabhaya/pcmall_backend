@@ -1,21 +1,21 @@
-import { INVENTORY_TYPE } from '@/helpers/constant.helper';
-import { IOrder } from '@/models/orders';
-import { IUser, IUserProfile } from '@/models/user';
 import Stripe from 'stripe';
 
-export interface UpdateAllCartStatusFilter {
+import { IOrder } from '@/models/orders';
+import { IUser, IUserProfile } from '@/models/user';
+
+export interface IUpdateAllCartStatusFilter {
   cartIds: Array<string>;
 }
 
-export interface UpdateAllCartStatusBody {}
+export interface IUpdateAllCartStatusBody {}
 
-export interface OrderConfirmationNotification {
+export interface IOrderConfirmationNotification {
   userData: IUser;
   userProfileData: IUserProfile;
   order: IOrder;
 }
-export interface UpdateStockInInventoryFilter {
+export interface IUpdateStockInInventoryFilter {
   order: IOrder;
   eventType?: Stripe.Event['type'];
 }
-export interface UpdateStockInInventoryBody {}
+export interface IUpdateStockInInventoryBody {}

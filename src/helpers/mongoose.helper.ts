@@ -1,23 +1,23 @@
 import mongoose, {
   FilterQuery,
-  UpdateQuery,
-  QueryOptions,
-  PopulateOptions,
   PipelineStage,
+  PopulateOptions,
+  QueryOptions,
+  UpdateQuery,
 } from 'mongoose';
 
-export interface PaginationOptions {
+export interface IPaginationOptions {
   sortBy?: string;
   limit?: number;
   page?: number;
 }
 
-export interface FindOptions {
+export interface IFindOptions {
   populate?: string | PopulateOptions | (string | PopulateOptions)[];
   sort?: Record<string, 1 | -1>;
 }
 
-export interface PaginationResponse<T> {
+export interface IPaginationResponse<T> {
   results: T;
   page: number;
   limit: number;
@@ -29,22 +29,23 @@ export interface PaginationResponse<T> {
  * Pagination aggregation pipeline
  */
 export const paginationQuery = (
-  options: PaginationOptions,
-  stages: Record<string, any>[] = [],
+  options: IPaginationOptions,
+  stages: Record<string, object>[] = []
 ): Array<PipelineStage> => {
-  let { page = 1, limit = 10, sortBy } = options;
+  //
+  const { page = 1, limit = 10, sortBy } = options;
 
   const sort: Record<string, 1 | -1> = {};
-  if (sortBy) {
-    sortBy.split(',').forEach((sortOption) => {
+  if (sortBy != null) {
+    sortBy.split(',').forEach(sortOption => {
       const [key, order] = sortOption.split(':');
-      sort[key] = order === 'desc' ? -1 : 1;
+      Object.assign(sort, { [key]: order === 'desc' ? -1 : 1 });
     });
   } else {
     sort._id = -1;
   }
 
-  const query = [
+  return [
     { $sort: sort },
     {
       $facet: {
@@ -79,14 +80,15 @@ export const paginationQuery = (
       },
     },
   ] as Array<PipelineStage>;
-
-  return query;
 };
 
 /**
  * Create document
  */
-export const createDoc = async <T>(modelName: string, reqBody: Record<string, any>): Promise<T> => {
+export const createDoc = async <T>(
+  modelName: string,
+  reqBody: Record<string, unknown>
+): Promise<T> => {
   return mongoose.model<T>(modelName).create(reqBody);
 };
 
@@ -97,9 +99,11 @@ export const findOneAndUpdateDoc = async <T>(
   modelName: string,
   filter: FilterQuery<T>,
   reqBody: UpdateQuery<T>,
-  options: QueryOptions = {},
+  options: QueryOptions = {}
 ): Promise<T | null> => {
-  return mongoose.model<T>(modelName).findOneAndUpdate(filter, reqBody, options);
+  return mongoose
+    .model<T>(modelName)
+    .findOneAndUpdate(filter, reqBody, options);
 };
 
 /**
@@ -108,7 +112,7 @@ export const findOneAndUpdateDoc = async <T>(
 export const findOneAndDeleteDoc = async <T>(
   modelName: string,
   filter: FilterQuery<T>,
-  options: QueryOptions = {},
+  options: QueryOptions = {}
 ): Promise<T | null> => {
   return mongoose.model<T>(modelName).findOneAndDelete(filter, options).exec();
 };
@@ -119,13 +123,13 @@ export const findOneAndDeleteDoc = async <T>(
 export const findOneDoc = async <T>(
   modelName: string,
   filter: FilterQuery<T>,
-  options: FindOptions = {},
+  options: IFindOptions = {}
 ): Promise<T | null> => {
   return mongoose
     .model<T>(modelName)
     .findOne(filter)
-    .populate((options.populate as Array<string>) || [])
-    .sort(options.sort || {});
+    .populate((options.populate as string[]) ?? [])
+    .sort(options.sort ?? {});
 };
 
 /**
@@ -134,13 +138,13 @@ export const findOneDoc = async <T>(
 export const findDoc = async <T>(
   modelName: string,
   filter: FilterQuery<T>,
-  options: FindOptions = {},
+  options: IFindOptions = {}
 ): Promise<T[]> => {
   return mongoose
     .model<T>(modelName)
     .find(filter)
-    .populate((options.populate as Array<string>) || [])
-    .sort(options.sort || {});
+    .populate((options.populate as string[]) ?? [])
+    .sort(options.sort ?? {});
 };
 
 /**
@@ -149,8 +153,7 @@ export const findDoc = async <T>(
 export const updateManyDoc = async <T>(
   modelName: string,
   filter: FilterQuery<T>,
-  reqBody: UpdateQuery<T>,
-  options: QueryOptions = {},
+  reqBody: UpdateQuery<T>
 ): Promise<mongoose.UpdateWriteOpResult> => {
   return mongoose.model<T>(modelName).updateMany(filter, reqBody);
 };

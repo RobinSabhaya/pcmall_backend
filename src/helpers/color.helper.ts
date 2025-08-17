@@ -1,4 +1,4 @@
-export const errorColor = '\x1b[31m%s\x1b[0m'; // Red Color
-export const successColor = '\x1b[32m%s\x1b[0m'; // Green Color
-export const warningColor = '\x1b[33m%s\x1b[0m'; // Yellow Color
-export const cyanColor = '\x1b[36m%s\x1b[0m'; // Cyan Color
+export const errorColor = '\u001B[31m%s\u001B[0m'; // Red Color
+export const successColor = '\u001B[32m%s\u001B[0m'; // Green Color
+export const warningColor = '\u001B[33m%s\u001B[0m'; // Yellow Color
+export const cyanColor = '\u001B[36m%s\u001B[0m'; // Cyan Color

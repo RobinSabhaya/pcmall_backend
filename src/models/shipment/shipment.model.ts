@@ -1,7 +1,13 @@
-import { SHIPPING_STATUS, SHIPMENT_TYPE, SHIPPING_CARRIERS } from '../../helpers/constant.helper';
-import { config } from '../../config/config';
 import { Document, model, Schema } from 'mongoose';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { config } from '../../config/config';
+import {
+  SHIPMENTTYPE,
+  SHIPPINGCARRIERS,
+  SHIPPINGSTATUS,
+} from '../../helpers/constant.helper';
 
 export interface IShippingTracking extends Document {
   status: string;
@@ -70,7 +76,7 @@ const trackingStatusSchema = new Schema<IShippingTracking>(
     statusDetails: String,
     statusDate: Date,
   },
-  { _id: false },
+  { _id: false }
 );
 
 const addressSchema = new Schema<IAddress>(
@@ -85,7 +91,7 @@ const addressSchema = new Schema<IAddress>(
     phone: String,
     email: String,
   },
-  { _id: false },
+  { _id: false }
 );
 
 const parcelSchema = new Schema<IShippingParcel>(
@@ -97,7 +103,7 @@ const parcelSchema = new Schema<IShippingParcel>(
     weight: Number,
     massUnit: { type: String, default: 'lb' },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const rateSchema = new Schema<IShippingRate>(
@@ -109,7 +115,7 @@ const rateSchema = new Schema<IShippingRate>(
     estimatedDays: Number,
     objectId: String,
   },
-  { _id: false },
+  { _id: false }
 );
 
 const labelSchema = new Schema<IShippingLabel>(
@@ -120,13 +126,13 @@ const labelSchema = new Schema<IShippingLabel>(
     carrier: String,
     transactionId: String,
   },
-  { _id: false },
+  { _id: false }
 );
 
 const shipmentSchema = new Schema<IShipment>(
   {
     shippoShipmentId: { type: String, unique: true, index: true },
-    status: { type: String, default: SHIPPING_STATUS.PENDING, index: true },
+    status: { type: String, default: SHIPPINGSTATUS.PENDING, index: true },
     fromAddress: addressSchema,
     toAddress: addressSchema,
     parcel: parcelSchema,
@@ -143,22 +149,22 @@ const shipmentSchema = new Schema<IShipment>(
     isReturn: { type: Boolean, default: false },
     shipmentType: {
       type: String,
-      enum: Object.values(SHIPMENT_TYPE),
-      default: SHIPMENT_TYPE.OUTGOING,
+      enum: Object.values(SHIPMENTTYPE),
+      default: SHIPMENTTYPE.OUTGOING,
     },
     shippingCarrier: {
       type: String,
-      enum: Object.values(SHIPPING_CARRIERS),
+      enum: Object.values(SHIPPINGCARRIERS),
       default: config.shipping.shippingCarrier,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
 // Optional TTL (e.g., auto-delete after 60 days if unneeded)
 // shipmentSchema.index({ createdAt: 1 }, { expireAfterSeconds: 5184000 });
 
-export const Shipment = model<IShipment>('Shipment', shipmentSchema);
+export const shipment = model<IShipment>('Shipment', shipmentSchema);

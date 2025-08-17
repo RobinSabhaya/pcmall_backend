@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IInventory extends Document, IBaseDocumentModel {
   sku: Schema.Types.ObjectId;
@@ -26,7 +27,10 @@ const inventorySchema = new Schema(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Inventory = model<IInventory>('Product_Inventory', inventorySchema);
+export const inventory = model<IInventory>(
+  'Product_Inventory',
+  inventorySchema
+);

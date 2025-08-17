@@ -1,6 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { USER_CURRENCY } from '../../helpers/constant.helper';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { USERCURRENCY } from '../../helpers/constant.helper';
 
 export interface IUserPreference extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -21,8 +23,8 @@ const userPreferenceSchema = new Schema<IUserPreference>(
     },
     currency: {
       type: String,
-      enum: Object.values(USER_CURRENCY),
-      default: USER_CURRENCY.INR,
+      enum: Object.values(USERCURRENCY),
+      default: USERCURRENCY.INR,
     },
     notification_email: {
       type: Boolean,
@@ -44,7 +46,10 @@ const userPreferenceSchema = new Schema<IUserPreference>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const User_Preference = model<IUserPreference>('User_Preference', userPreferenceSchema);
+export const userPreference = model<IUserPreference>(
+  'User_Preference',
+  userPreferenceSchema
+);

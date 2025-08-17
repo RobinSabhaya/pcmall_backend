@@ -1,19 +1,30 @@
-import * as cartService from '@/services/cart/cart.service';
-import ApiError from '../../utils/ApiError';
-import httpStatus from 'http-status';
-import { PAYMENT_STATUS } from '../../helpers/constant.helper';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { AddToCartSchema, UpdateToCartSchema } from '@/validations/cart.validation';
+import httpStatus from 'http-status';
+
 import { ICart } from '@/models/cart';
 import { IUser } from '@/models/user';
-import '@/models/product/productVariant.model';
-import { PaginationResponse } from '@/helpers/mongoose.helper';
+import * as cartService from '@/services/cart/cart.service';
+import {
+  AddToCartSchema,
+  UpdateToCartSchema,
+} from '@/validations/cart.validation';
 
-export const addToCart = async (request: FastifyRequest, reply: FastifyReply) => {
+import { PAYMENTSTATUS } from '../../helpers/constant.helper';
+import ApiError from '../../utils/apiErrorHandler';
+
+import '@/models/product/productVariant.model';
+
+export const addToCart = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const user = request.user as IUser;
   const options = { user };
   /** create cart */
-  const cartData = await cartService.createCart(request.body as AddToCartSchema, options);
+  const cartData = await cartService.createCart(
+    request.body as AddToCartSchema,
+    options
+  );
 
   return reply.code(httpStatus.OK).send({
     success: true,
@@ -22,13 +33,19 @@ export const addToCart = async (request: FastifyRequest, reply: FastifyReply) =>
   });
 };
 
-export const updateToCart = async (request: FastifyRequest, reply: FastifyReply) => {
+export const updateToCart = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const user = request.user as IUser;
-    const options = { user };
+    // const user = request.user as IUser;
+    // const options = { user };
 
     /** create cart */
-    const cartData = await cartService.updateToCart(request.body as UpdateToCartSchema, options);
+    const cartData = await cartService.updateToCart(
+      request.body as UpdateToCartSchema
+      // options
+    );
 
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -36,12 +53,17 @@ export const updateToCart = async (request: FastifyRequest, reply: FastifyReply)
       message: 'Cart updated successfully',
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const removeToCart = async (request: FastifyRequest, reply: FastifyReply) => {
+export const removeToCart = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { cartId } = request.params as Partial<UpdateToCartSchema>;
 
@@ -55,12 +77,17 @@ export const removeToCart = async (request: FastifyRequest, reply: FastifyReply)
       message: 'Cart removed successfully',
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const getAllCart = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getAllCart = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { ...options } = request.query as object;
     const user = request.user as IUser;
@@ -69,24 +96,29 @@ export const getAllCart = async (request: FastifyRequest, reply: FastifyReply) =
     const [cartData] = await cartService.getAllCart(
       {
         user: user._id,
-        status: PAYMENT_STATUS.PENDING,
+        status: PAYMENTSTATUS.PENDING,
       },
-      options,
+      options
     );
 
-    const totalQty = Array(cartData?.results)?.reduce((acc: number, c: ICart): number => {
-      return acc + c?.quantity;
-    }, 0);
+    const totalQty = new Array(cartData?.results)?.reduce(
+      (acc: number, c: ICart): number => {
+        return acc + c?.quantity;
+      },
+      0
+    );
 
     return reply.code(httpStatus.OK).send({
       success: true,
       data: {
-        items: cartData || [],
+        items: cartData,
         totalQty,
       },
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

@@ -1,13 +1,21 @@
-import httpStatus from 'http-status';
-import ApiError from '../../utils/ApiError';
-import * as sellerService from '@/services/user/seller.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { CreateUpdateSellerSchema, DeleteSellerSchema } from '@/validations/seller.validation';
+import httpStatus from 'http-status';
 
-export const createUpdateSeller = async (request: FastifyRequest, reply: FastifyReply) => {
+import * as sellerService from '@/services/user/seller.service';
+import {
+  CreateUpdateSellerSchema,
+  DeleteSellerSchema,
+} from '@/validations/seller.validation';
+
+import ApiError from '../../utils/apiErrorHandler';
+
+export const createUpdateSeller = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { message, sellerData } = await sellerService.createUpdateSeller(
-      request.body as CreateUpdateSellerSchema,
+      request.body as CreateUpdateSellerSchema
     );
 
     return reply.code(httpStatus.OK).send({
@@ -16,15 +24,20 @@ export const createUpdateSeller = async (request: FastifyRequest, reply: Fastify
       data: sellerData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const deleteSeller = async (request: FastifyRequest, reply: FastifyReply) => {
+export const deleteSeller = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { message, sellerData } = await sellerService.deleteSeller(
-      request.query as DeleteSellerSchema,
+      request.query as DeleteSellerSchema
     );
 
     return reply.code(httpStatus.OK).send({
@@ -33,12 +46,17 @@ export const deleteSeller = async (request: FastifyRequest, reply: FastifyReply)
       data: sellerData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const getAllSellers = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getAllSellers = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { sellerData } = await sellerService.getAllSellers({});
 
@@ -47,7 +65,9 @@ export const getAllSellers = async (request: FastifyRequest, reply: FastifyReply
       data: sellerData,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

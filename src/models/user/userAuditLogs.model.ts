@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IUserAuditLog extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -25,7 +26,10 @@ const userAuditLogSchema = new Schema<IUserAuditLog>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const User_AuditLog = model<IUserAuditLog>('User_AuditLog', userAuditLogSchema);
+export const userAuditLog = model<IUserAuditLog>(
+  'User_AuditLog',
+  userAuditLogSchema
+);

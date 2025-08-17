@@ -1,7 +1,13 @@
 import bcrypt from 'bcryptjs';
-import { ACCOUNT_STATUS, AUTH_PROVIDER, USER_ROLE } from '../../helpers/constant.helper';
 import { Document, Model, model, Schema } from 'mongoose';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import {
+  ACCOUNTSTATUS,
+  AUTHPROVIDER,
+  USERROLE,
+} from '../../helpers/constant.helper';
 
 export interface IUser extends Document, IBaseDocumentModel {
   _id: Schema.Types.ObjectId;
@@ -43,25 +49,25 @@ const userSchema = new Schema<IUser>(
     },
     account_status: {
       type: String,
-      enum: Object.values(ACCOUNT_STATUS),
-      default: ACCOUNT_STATUS.ACTIVE,
+      enum: Object.values(ACCOUNTSTATUS),
+      default: ACCOUNTSTATUS.ACTIVE,
     },
     roles: {
       type: [String],
-      enum: Object.values(USER_ROLE),
-      default: [USER_ROLE.BUYER],
+      enum: Object.values(USERROLE),
+      default: [USERROLE.BUYER],
     },
     auth_provider: {
       type: String,
-      enum: Object.values(AUTH_PROVIDER),
-      default: AUTH_PROVIDER.EMAIL,
+      enum: Object.values(AUTHPROVIDER),
+      default: AUTHPROVIDER.EMAIL,
     },
     is_active: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 /**
@@ -69,7 +75,9 @@ const userSchema = new Schema<IUser>(
  * @param {string} password
  * @returns {Promise<boolean>}
  */
-userSchema.methods.isPasswordMatch = async function (password: string): Promise<boolean> {
+userSchema.methods.isPasswordMatch = async function (
+  password: string
+): Promise<boolean> {
   const user = this;
   return bcrypt.compare(password, user.password);
 };
@@ -85,4 +93,4 @@ userSchema.pre('save', async function (next) {
 /**
  * @typedef User
  */
-export const User = model<IUser, IUserModel>('User', userSchema);
+export const user = model<IUser, IUserModel>('User', userSchema);

@@ -6,42 +6,44 @@ export enum FileSizeType {
   HIGH = 'high',
   LOW = 'low',
 }
-export interface SubFileQualities {
+export interface ISubFileQualities {
   type: string;
   quality: number;
 }
-export interface FileQualities {
-  large: SubFileQualities;
-  small: SubFileQualities;
+export interface IFileQualities {
+  large: ISubFileQualities;
+  small: ISubFileQualities;
 }
-export interface SubFileSize {
+export interface ISubFileSize {
   type: string;
   size: Array<number>;
 }
-export interface FileSize {
-  large: SubFileSize;
-  small: SubFileSize;
+export interface IFileSize {
+  large: ISubFileSize;
+  small: ISubFileSize;
 }
-export const FILE_QUALITY: FileQualities = {
+export const FILE_QUALITY: IFileQualities = {
   large: { type: FileQualityType.LARGE, quality: 80 },
   small: { type: FileQualityType.SMALL, quality: 1 },
 };
 
-export const FILE_SIZE: FileSize = {
+export const FILE_SIZE: IFileSize = {
+  //
   large: { type: FileSizeType.HIGH, size: [888, 595] },
+  //
   small: { type: FileSizeType.LOW, size: [84, 48] },
 };
 
-export interface File {
+export interface IFile {
   fileName: string;
   originalname?: string;
   fileMimeType: string;
   fileBuffer: Buffer;
-  fileQualities?: FileQualities;
+  fileQualities?: IFileQualities;
   fileSize: number;
 }
 
-export interface Folder {
+export interface IFolder {
   mainFolderName?: string;
   folderName?: string;
   innerFolderName?: string;
@@ -50,7 +52,7 @@ export interface Folder {
   fileMainFolder?: string;
 }
 
-export interface FileDetails extends Folder, File {
+export interface IFileDetails extends IFolder, IFile {
   fileUploadType: string;
   needCompress?: boolean;
 }

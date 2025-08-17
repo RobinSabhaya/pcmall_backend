@@ -33,7 +33,7 @@ export const deleteUser = {
 
 export const updateAddress = {
   body: z.object({
-    _id: z.string(),
+    addressId: z.string(),
     line1: z.string().optional(),
     line2: z.string().optional(),
     state: z.string().optional(),
@@ -44,6 +44,6 @@ export const updateAddress = {
 
 export const deleteAddress = {
   params: z.object({
-    _id: z.string(),
+    addressId: z.string(),
   }),
 };

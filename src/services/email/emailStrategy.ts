@@ -4,8 +4,11 @@ const strategyMap = {
   smtp,
 };
 
-export function handleEmail(carrierKey: string) {
+type Strategy = (typeof strategyMap)[keyof typeof strategyMap];
+
+export function handleEmail(carrierKey: string): Strategy {
   const strategy = strategyMap[carrierKey as keyof typeof strategyMap];
-  if (!strategy) throw new Error(`Email strategy "${carrierKey}" not found`);
+  if (strategy == null)
+    throw new Error(`Email strategy "${carrierKey}" not found`);
   return strategy;
 }

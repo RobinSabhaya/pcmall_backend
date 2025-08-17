@@ -1,16 +1,18 @@
-import * as userController from '@/controllers/user/user.controller';
-import * as userValidation from '@/validations/user.validation';
 import { FastifyInstance } from 'fastify';
-import { USER_ROLE } from '../../../helpers/constant.helper';
-import { createBaseRoute } from '@/utils/baseRoute';
 
-export default async function cartRoute(fastify: FastifyInstance) {
+import * as userController from '@/controllers/user/user.controller';
+import { createBaseRoute } from '@/utils/baseRoute';
+import * as userValidation from '@/validations/user.validation';
+
+import { USERROLE } from '../../../helpers/constant.helper';
+
+export default function cartRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
     method: 'PUT',
     url: '/update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: userValidation.updateUser,
     description: 'Update user',
     tags: ['User'],
@@ -20,7 +22,7 @@ export default async function cartRoute(fastify: FastifyInstance) {
   route({
     method: 'GET',
     url: '/details',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: userValidation.getUser,
     description: 'Get user details',
     tags: ['User'],
@@ -30,7 +32,7 @@ export default async function cartRoute(fastify: FastifyInstance) {
   route({
     method: 'PUT',
     url: '/address/update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: userValidation.updateAddress,
     description: 'Update address',
     tags: ['User Address'],
@@ -39,8 +41,8 @@ export default async function cartRoute(fastify: FastifyInstance) {
 
   route({
     method: 'DELETE',
-    url: '/address/delete/:_id',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    url: '/address/delete/:addressId',
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: userValidation.deleteAddress,
     description: 'Delete address',
     tags: ['User Address'],

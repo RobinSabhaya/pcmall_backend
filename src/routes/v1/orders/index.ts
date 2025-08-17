@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
+
 import orderRoute from './order.route';
 
-export default async function indexRoute(fastify: FastifyInstance) {
+export default function indexRoute(fastify: FastifyInstance): void {
   fastify.register(orderRoute, { prefix: '/order' });
 }

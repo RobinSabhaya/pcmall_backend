@@ -1,16 +1,18 @@
 import { FastifyInstance } from 'fastify';
-import * as productController from '@/controllers/product/product.controller';
-import * as productValidation from '@/validations/product.validation';
-import { USER_ROLE } from '../../../helpers/constant.helper';
-import { createBaseRoute } from '@/utils/baseRoute';
 
-export default async function productRoute(fastify: FastifyInstance) {
+import * as productController from '@/controllers/product/product.controller';
+import { createBaseRoute } from '@/utils/baseRoute';
+import * as productValidation from '@/validations/product.validation';
+
+import { USERROLE } from '../../../helpers/constant.helper';
+
+export default function productRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
     method: 'GET',
     url: '/all',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: productValidation.getAllProducts,
     description: 'Get all products',
     tags: ['Product'],
@@ -19,7 +21,7 @@ export default async function productRoute(fastify: FastifyInstance) {
   route({
     method: 'DELETE',
     url: '/delete',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: productValidation.deleteProduct,
     description: 'Delete products',
     tags: ['Product'],
@@ -28,7 +30,7 @@ export default async function productRoute(fastify: FastifyInstance) {
   route({
     method: 'POST',
     url: '/create-update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: productValidation.createUpdateProduct,
     description: 'Create & Update product',
     tags: ['Product'],
@@ -37,7 +39,7 @@ export default async function productRoute(fastify: FastifyInstance) {
   route({
     method: 'POST',
     url: '/generate-sku',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: productValidation.generateProductSku,
     description: 'Generate product SKU',
     tags: ['Product'],

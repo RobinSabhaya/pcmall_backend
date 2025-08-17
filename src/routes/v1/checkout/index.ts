@@ -1,6 +1,7 @@
-import checkoutRoute from './checkout.route';
 import { FastifyInstance } from 'fastify';
 
-export default function indexRoute(fastify: FastifyInstance) {
+import checkoutRoute from './checkout.route';
+
+export default function indexRoute(fastify: FastifyInstance): void {
   fastify.register(checkoutRoute, { prefix: '/checkout' });
 }

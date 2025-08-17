@@ -1,6 +1,12 @@
 import { Document, model, Schema } from 'mongoose';
-import { USER_GENDER, USER_LANGUAGE, USER_TIMEZONES } from '../../helpers/constant.helper';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import {
+  USERGENDER,
+  USERLANGUAGE,
+  USERTIMEZONES,
+} from '../../helpers/constant.helper';
 
 export interface IUserProfile extends Document, IBaseDocumentModel {
   user: Schema.Types.ObjectId;
@@ -28,17 +34,17 @@ const userProfileSchema = new Schema<IUserProfile>(
     dob: { type: Date },
     gender: {
       type: String,
-      enum: Object.values(USER_GENDER),
+      enum: Object.values(USERGENDER),
     },
     profile_picture: { type: String, default: null },
     language: {
       type: String,
-      enum: Object.values(USER_LANGUAGE),
-      default: USER_LANGUAGE.ENGLISH,
+      enum: Object.values(USERLANGUAGE),
+      default: USERLANGUAGE.ENGLISH,
     },
     timezone: {
       type: String,
-      default: USER_TIMEZONES.UTC,
+      default: USERTIMEZONES.UTC,
     },
     metadata: {
       type: Schema.Types.Mixed,
@@ -47,7 +53,10 @@ const userProfileSchema = new Schema<IUserProfile>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const User_Profile = model<IUserProfile>('User_Profile', userProfileSchema);
+export const userProfile = model<IUserProfile>(
+  'User_Profile',
+  userProfileSchema
+);

@@ -1,13 +1,17 @@
 import { Worker, Queue } from 'bullmq';
-import * as paymentService from '../services/payment/payment.service';
-import { QUEUES } from '@/helpers/constant.helper';
+
 import { config } from '@/config/config';
-import { findOneDoc } from '@/helpers/mongoose.helper';
-import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import { IUser, IUserProfile } from '@/models/user';
+import { QUEUES } from '@/helpers/constant.helper';
+
+import * as paymentService from '../services/payment/payment.service';
 
 const {
-  redis: { redisDatabaseUserName, redisDatabasePassword, redisDatabaseUrl, redisDatabasePort },
+  redis: {
+    redisDatabaseUserName,
+    redisDatabasePassword,
+    redisDatabaseUrl,
+    redisDatabasePort,
+  },
 } = config;
 
 const connection = {
@@ -20,17 +24,25 @@ const connection = {
 // Worker
 new Worker(
   QUEUES.NOTIFICATION_QUEUE,
-  async (job) => {
-    if (job?.data) {
+  async job => {
+    if (job?.data !== null) {
       const { userData, userProfileData, order } = job.data;
 
       switch (job?.data?.type) {
         case 'sms':
-          await paymentService.orderConfirmationSMS({ userData, userProfileData, order });
+          await paymentService.orderConfirmationSMS({
+            userData,
+            userProfileData,
+            order,
+          });
           break;
 
         case 'email':
-          await paymentService.orderConfirmationEmail({ userData, userProfileData, order });
+          await paymentService.orderConfirmationEmail({
+            userData,
+            userProfileData,
+            order,
+          });
           break;
 
         default:
@@ -40,7 +52,7 @@ new Worker(
   },
   {
     connection,
-  },
+  }
 );
 
 // Queue

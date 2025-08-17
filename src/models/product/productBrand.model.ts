@@ -1,6 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { ACCOUNT_STATUS } from '../../helpers/constant.helper';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { ACCOUNTSTATUS } from '../../helpers/constant.helper';
 
 export interface IProductBrand extends Document, IBaseDocumentModel {
   name: string;
@@ -37,7 +39,7 @@ export interface IProductBrand extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const BrandSchema = new Schema<IProductBrand>(
+const brandSchema = new Schema<IProductBrand>(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, trim: true },
@@ -76,8 +78,8 @@ const BrandSchema = new Schema<IProductBrand>(
     // Status & moderation
     status: {
       type: String,
-      enum: Object.values(ACCOUNT_STATUS),
-      default: ACCOUNT_STATUS.ACTIVE,
+      enum: Object.values(ACCOUNTSTATUS),
+      default: ACCOUNTSTATUS.ACTIVE,
     },
 
     // Ratings & Analytics
@@ -89,7 +91,7 @@ const BrandSchema = new Schema<IProductBrand>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true, versionKey: false }
 );
 
-export const Product_Brand = model<IProductBrand>('Product_Brand', BrandSchema);
+export const productBrand = model<IProductBrand>('Product_Brand', brandSchema);

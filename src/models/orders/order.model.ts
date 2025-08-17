@@ -1,6 +1,8 @@
 import { Document, model, Schema } from 'mongoose';
-import { PAYMENT_STATUS } from '../../helpers/constant.helper';
+
 import { IBaseDocumentModel } from '@/types/mongoose.types';
+
+import { PAYMENTSTATUS } from '../../helpers/constant.helper';
 
 export interface IOrderItem extends Document, IBaseDocumentModel {
   variant: Schema.Types.ObjectId;
@@ -24,7 +26,7 @@ export interface IOrder extends Document, IBaseDocumentModel {
   metadata: object;
 }
 
-const OrderItemSchema = new Schema<IOrderItem>({
+const orderItemSchema = new Schema<IOrderItem>({
   variant: {
     type: Schema.Types.ObjectId,
     ref: 'Product_Variant',
@@ -35,14 +37,14 @@ const OrderItemSchema = new Schema<IOrderItem>({
   totalPrice: { type: Number, required: true },
 });
 
-const OrderSchema = new Schema<IOrder>(
+const orderSchema = new Schema<IOrder>(
   {
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    items: [OrderItemSchema],
+    items: [orderItemSchema],
     shippingAddress: {
       type: Schema.Types.ObjectId,
       ref: 'Address',
@@ -55,8 +57,8 @@ const OrderSchema = new Schema<IOrder>(
     totalAmount: { type: Number },
     status: {
       type: String,
-      enum: Object.values(PAYMENT_STATUS),
-      default: PAYMENT_STATUS.PENDING,
+      enum: Object.values(PAYMENTSTATUS),
+      default: PAYMENTSTATUS.PENDING,
     },
     shipping: {
       type: Schema.Types.ObjectId,
@@ -67,7 +69,7 @@ const OrderSchema = new Schema<IOrder>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-export const Order = model<IOrder>('Order', OrderSchema);
+export const order = model<IOrder>('Order', orderSchema);

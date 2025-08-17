@@ -1,6 +1,7 @@
-import paymentWebhookRoutes from './webhook.route';
 import { FastifyInstance } from 'fastify';
 
-export default async function indexRoute(fastify: FastifyInstance) {
+import paymentWebhookRoutes from './webhook.route';
+
+export default function indexRoute(fastify: FastifyInstance): void {
   fastify.register(paymentWebhookRoutes, { prefix: '/' });
 }

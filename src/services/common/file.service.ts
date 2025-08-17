@@ -1,22 +1,28 @@
 import fs from 'fs';
-import { FILES_FOLDER } from '@/helpers/constant.helper';
-import httpStatus from 'http-status';
 import path from 'path';
-import ApiError from '@/utils/ApiError';
-import { localUpload } from './aws.service';
-import { handleStorage } from '../storage/storageStrategy';
-// import sharp from 'sharp'
+
+import httpStatus from 'http-status';
+
+import { FILESFOLDER } from '@/helpers/constant.helper';
+import ApiError from '@/utils/apiErrorHandler';
+
 import { config } from '../../config/config';
-import { FileDetails, FileQualityType, Folder, File } from './file.service.type';
+import { handleStorage } from '../storage/storageStrategy';
+
+// import sharp from 'sharp'
+
+import { IFileDetails, IFolder } from './file.service.type';
 
 const {
   minIO: { fileStorageProvider },
 } = config;
 
-export const createFilePath = (filePath: Folder): string => {
+export const createFilePath = (filePath: IFolder): string => {
   let file_path = `${filePath.mainFolderName}`;
-  if (filePath.idFolder) file_path = `${file_path}/${String(filePath.idFolder)}`; // Add folder name(idFolder) in write file path.
-  if (filePath.subFolderName) file_path = `${file_path}/${filePath.subFolderName}`; // Add sub folder name in write file path.
+  if (filePath.idFolder != null)
+    file_path = `${file_path}/${String(filePath.idFolder)}`; // Add folder name(idFolder) in write file path.
+  if (filePath.subFolderName != null)
+    file_path = `${file_path}/${filePath.subFolderName}`; // Add sub folder name in write file path.
 
   return file_path;
 };
@@ -28,8 +34,8 @@ export const createFilePath = (filePath: Folder): string => {
  * @param {string} [folder.innerFolderName] - File's inner folder name.
  * @returns {Promise<String>} - Folder path.
  */
-export const createFolder = (folder: Folder): string => {
-  const publicDir = `./${FILES_FOLDER.PUBLIC}`;
+export const createFolder = (folder: IFolder): string => {
+  const publicDir = `./${FILESFOLDER.PUBLIC}`;
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir); // If public folder doesn't exist, create it.
   }
@@ -40,7 +46,7 @@ export const createFolder = (folder: Folder): string => {
     fs.mkdirSync(folderPath); // If write file path doesn't exist, create it.
   }
 
-  if (folder.innerFolderName) {
+  if (folder.innerFolderName != null) {
     folderPath = path.join(folderPath, folder.innerFolderName); // Add folder name(innerFolderName) in write file path.
 
     if (!fs.existsSync(folderPath)) {
@@ -383,7 +389,7 @@ export const createFolder = (folder: Folder): string => {
  * @param {number} [filesDtl.fileSize]
  * @returns {Boolean}
  */
-export const saveFiles = async (filesDtl: FileDetails[]) => {
+export const saveFiles = (filesDtl: IFileDetails[]): boolean | undefined => {
   try {
     for (let j = 0; j < filesDtl.length; j++) {
       // const writeFilePath = createFilePath({
@@ -392,14 +398,14 @@ export const saveFiles = async (filesDtl: FileDetails[]) => {
       //   idFolder: filesDtl[j].idFolder || null,
       // });
 
+      // eslint-disable-next-line security/detect-object-injection
       if (filesDtl[j].fileUploadType === 'single') {
-        let fileName = Buffer.from(
-          filesDtl[j].fileName.split('/').at(-1) as string,
-          'latin1',
-        ).toString('utf-8'); //! For support non-latin language
-        console.log("🚀 ~ saveFiles ~ fileName:", fileName)
-        const fromFile = filesDtl[j].fileMimeType;
-        let buffer = filesDtl[j].fileBuffer;
+        // const fileName = Buffer.from(
+        //   filesDtl[j].fileName.split('/').at(-1) as string,
+        //   'latin1'
+        // ).toString('utf-8'); //! For support non-latin language
+        // const fromFile = filesDtl[j].fileMimeType;
+        // const buffer = filesDtl[j].fileBuffer;
         // if (fromFile.split('/').includes('image')) {
         //   buffer = await sharp(filesDtl[j].fileBuffer).toFormat('webp').toBuffer();
         // }
@@ -410,22 +416,20 @@ export const saveFiles = async (filesDtl: FileDetails[]) => {
         // await localUpload(`${writeFilePath}/${fileName}`, buffer, {
         //   filePathForMimeType: fromFile,
         // });
-
-        await handleStorage(fileStorageProvider!).uploadFileToMinio(filesDtl);
+        handleStorage(fileStorageProvider!).uploadFileToMinio(filesDtl).then;
 
         // if (filesDtl[j].needCompress) {
         //   await compressFile(fromFile, filesDtl[j]?.fileQualities, writeFilePath, filesDtl[j].fileName, buffer);
         // }
       } else {
+        // eslint-disable-next-line security/detect-object-injection
         for (let i = 0; i < filesDtl[j].fileName.length; i++) {
-          let fileName = filesDtl[j].fileName;
-
-          const fromFile = filesDtl[j].fileMimeType;
-          let buffer = filesDtl[j].fileBuffer;
+          // const { fileName } = filesDtl[j];
+          // const fromFile = filesDtl[j].fileMimeType;
+          // const buffer = filesDtl[j].fileBuffer;
           // if (fromFile.split('/').includes('image')) {
           //   buffer = await sharp(filesDtl[j].fileBuffer).toFormat('webp').toBuffer();
           // }
-
           /** save original file */
           // await localUpload(`${writeFilePath}/${fileName}`, buffer, {
           //   filePathForMimeType: fromFile,
@@ -440,160 +444,13 @@ export const saveFiles = async (filesDtl: FileDetails[]) => {
 
     return true;
   } catch (error) {
-    if (error instanceof Error) throw new ApiError(httpStatus.BAD_REQUEST, error?.message);
+    if (error instanceof Error)
+      throw new ApiError(httpStatus.BAD_REQUEST, error?.message);
   }
 };
 
-/**
- * Validate image files
- * @param {Object} filesObj
- * @returns {Boolean}
- */
-// export const validateImageFile = async (filesObj) => {
-//   try {
-//     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.docx'];
-
-//     for (const key in filesObj) {
-//       if (Array.isArray(filesObj[key])) {
-//         for (const filename of filesObj[key]) {
-//           const extension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
-//           if (!allowedExtensions.includes(extension)) {
-//             throw new ApiError(
-//               httpStatus.BAD_REQUEST,
-//               `${key} some files are not valid, please check once. allowed extensions are (${allowedExtensions})`,
-//               '',
-//               ''
-//             );
-//           }
-//         }
-//       } else if (typeof filesObj[key] === 'string') {
-//         const extension = filesObj[key].substring(filesObj[key].lastIndexOf('.')).toLowerCase();
-//         if (!allowedExtensions.includes(extension)) {
-//           throw new ApiError(
-//             httpStatus.BAD_REQUEST,
-//             `${key} file is not valid, please check once. allowed extensions are (${allowedExtensions})`,
-//             '',
-//             ''
-//           );
-//         }
-//       }
-//     }
-//     return true;
-//   } catch (error) {
-//     throw new ApiError(error.statusCode, error.message, '', '');
-//   }
-// };
-
-/**
- * Validate document types
- * @param {Object} filesObj
- * @returns {Promise<Boolean>}
- */
-// exports.validateDocFile = async (filesObj) => {
-//   try {
-//     const allowedExtensions = ['.pdf', '.docx'];
-
-//     for (const key in filesObj) {
-//       if (Array.isArray(filesObj[key])) {
-//         for (const filename of filesObj[key]) {
-//           const extension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
-//           if (!allowedExtensions.includes(extension)) {
-//             throw new ApiError(
-//               httpStatus.BAD_REQUEST,
-//               `${key} some files are not valid, please check once. allowed extensions are (${allowedExtensions})`,
-//               '',
-//               ''
-//             );
-//           }
-//         }
-//       } else if (typeof filesObj[key] === 'string') {
-//         const extension = filesObj[key].substring(filesObj[key].lastIndexOf('.')).toLowerCase();
-//         if (!allowedExtensions.includes(extension)) {
-//           throw new ApiError(
-//             httpStatus.BAD_REQUEST,
-//             `${key} file is not valid, please check once. allowed extensions are (${allowedExtensions})`,
-//             '',
-//             ''
-//           );
-//         }
-//       }
-//     }
-//     return true;
-//   } catch (error) {
-//     throw new ApiError(error.statusCode, error.message, '', '');
-//   }
-// };
-
-// Upload images without compress
-// exports.uploadWithoutCompress = async (file, uploadFolder, fileFor) => {
-//   const ext = file.originalname === 'blob' ? `.${file.mimetype.split('/')[1]}` : path.extname(file.originalname);
-
-//   // Check file size is greater than 10 MB (Binary)?
-//   if (file.size > 10485760) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, 'Maximum image size limit is 10 MB.');
-//   }
-
-//   // Check file formate
-//   switch (fileFor) {
-//     case 'image':
-//       if (!['.png', '.jpg', '.jpeg', '.webp', '.gif', '.tiff'].includes(ext.toLowerCase()))
-//         throw new ApiError(
-//           httpStatus.BAD_REQUEST,
-//           'Only .png, .jpg, .jpeg, .webp, .gif, .tiff formats are allowed.',
-//           '',
-//           ''
-//         );
-//       break;
-//     case 'sound':
-//       if (!['.mp3', '.wav', '.wav', '.ogg', '.m4a'].includes(ext.toLowerCase()))
-//         throw new ApiError(httpStatus.BAD_REQUEST, 'Only .mp3, .wav, .ogg, .m4a formats are allowed.', '', '');
-//       break;
-//     case 'csv':
-//       if (ext !== '.csv') {
-//         throw new ApiError(httpStatus.BAD_REQUEST, 'Only .csv format is allowed.', '', '');
-//       }
-//       break;
-//     case 'document':
-//       if (!['.pdf', '.docx'].includes(ext.toLowerCase())) {
-//         throw new ApiError(httpStatus.BAD_REQUEST, 'Only .pdf .docx format is allowed.', '', '');
-//       }
-//       break;
-
-//     default:
-//       if (!['.png', '.jpg', '.jpeg', '.webp', '.mp3', '.wav', '.ogg', '.m4a', '.pdf', '.docx'].includes(ext.toLowerCase()))
-//         throw new ApiError(
-//           httpStatus.BAD_REQUEST,
-//           'Only .png, .jpg, .jpeg, .webp, .mp3, .wav, .ogg, .m4a .pdf and .docx formats are allowed.'
-//         );
-//       break;
-//   }
-
-//   const dir = `./${FILES_FOLDER.PUBLIC}/${uploadFolder}`;
-//   let tempFileName;
-
-//   // Check that if directory is present or not.
-//   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-//   // Check file extension for convert image into .webp format
-//   if (
-//     (['.png', '.jpg', '.jpeg'].includes(ext.toLowerCase()) || fileFor === 'image') &&
-//     !['.webp'].includes(ext.toLowerCase())
-//   ) {
-//     tempFileName = `file_${Date.now()}.webp`;
-//     const fileName = `${dir}/${tempFileName}`;
-
-//     await sharp(file.buffer).toFormat('webp').toFile(fileName);
-//   } else {
-//     tempFileName = `file_${Date.now()}${ext}`;
-//     const fileName = `${dir}/${tempFileName}`;
-
-//     fs.writeFileSync(fileName, file.buffer, 'base64');
-//   }
-
-//   return tempFileName;
-// };
-
-export const generateFileName = (file:Partial<FileDetails>):string => {
+export const generateFileName = (file: Partial<IFileDetails>): string => {
   const ext = path.extname(file.originalname!);
+  //
   return `file_${Date.now()}${Math.random().toString(16).slice(2, 7)}${ext}`;
 };

@@ -1,21 +1,28 @@
 import Fastify from 'fastify';
+import {
+  serializerCompiler,
+  validatorCompiler,
+} from 'fastify-type-provider-zod';
+
 import app from './app';
 import { config } from './config/config';
-import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { errorHandler } from './utils/errorHandler';
 
-const server = Fastify({logger : true});
+const server = Fastify({ logger: true });
 
 server.setValidatorCompiler(validatorCompiler);
 server.setSerializerCompiler(serializerCompiler);
 
 app(server)
-  .then(() => {
-    server.listen({ port: +config.port! || 3000, host:config.host || "0.0.0.0" });
+  .then(async() => {
+    return server.listen({
+      port: +config.port! || 3000,
+      host: config.host || '0.0.0.0',
+    });
   })
-  .catch((err) => {
-    server.log.error(err);
-    process.exit(1);
+  .catch(error => {
+    server.log.error(error);
+    throw error;
   });
 
 server.setErrorHandler(errorHandler);

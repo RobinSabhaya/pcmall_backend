@@ -1,16 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import httpStatus from 'http-status';
-import * as authService from '../../services/auth/auth.service';
-import * as userService from '../../services/user/user.service';
-import {
-  generateAuthTokens,
-  generateResetPasswordToken,
-  generateVerifyEmailToken,
-} from '../../services/auth/token.service';
-import { parseDeviceInfo } from '../../helpers/function.helper';
-import { createDoc, findOneAndUpdateDoc, findOneDoc } from '../../helpers/mongoose.helper';
-import { MONGOOSE_MODELS } from '../../helpers/mongoose.model.helper';
-import ApiError from '../../utils/ApiError';
+
+import { IUser } from '@/models/user';
 import {
   ForgotPasswordSchema,
   LoginSchema,
@@ -20,28 +11,50 @@ import {
   SignupSchema,
   VerifyEmailSchema,
 } from '@/validations/auth.validation';
-import { IUser } from '@/models/user';
-import '@/models/user/user.model';
 
-export const register = async (req: FastifyRequest, reply: FastifyReply) => {
+import {
+  createDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
+} from '../../helpers/mongoose.helper';
+import { MONGOOSE_MODELS } from '../../helpers/mongoose.model.helper';
+import * as authService from '../../services/auth/auth.service';
+import {
+  generateAuthTokens,
+  generateResetPasswordToken,
+  generateVerifyEmailToken,
+} from '../../services/auth/token.service';
+import ApiError from '../../utils/apiErrorHandler';
+
+export const register = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const { first_name, email, password, confirm_password } = req.body as RegisterSchema;
+    const { first_name, email, password, confirm_password } =
+      request.body as RegisterSchema;
 
     // Match password and confirm password
-    if (password != confirm_password)
+    if (password.localeCompare(confirm_password) !== 0)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
-    let user: Partial<IUser | null> = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, { email });
+    let user: Partial<IUser | null> = await findOneDoc<IUser>(
+      MONGOOSE_MODELS.USER,
+      { email }
+    );
 
     if (user) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
     }
 
-    if (password != confirm_password)
+    if (password.localeCompare(confirm_password) !== 0)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
     // Create User
-    user = await createDoc<IUser>(MONGOOSE_MODELS.USER, req.body as RegisterSchema);
+    user = await createDoc<IUser>(
+      MONGOOSE_MODELS.USER,
+      request.body as RegisterSchema
+    );
 
     // set profile details
     await findOneAndUpdateDoc(
@@ -57,7 +70,7 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
       {
         upsert: true,
         new: true,
-      },
+      }
     );
 
     return reply.code(httpStatus.CREATED).send({
@@ -66,14 +79,21 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
       data: { user },
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const signup = async (req: FastifyRequest, reply: FastifyReply) => {
+export const signup = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const { user,tokens} = await authService.signup(req.body as SignupSchema)
+    const { user, tokens } = await authService.signup(
+      request.body as SignupSchema
+    );
 
     return reply.code(httpStatus.CREATED).send({
       success: true,
@@ -81,15 +101,23 @@ export const signup = async (req: FastifyRequest, reply: FastifyReply) => {
       data: { user, tokens },
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const login = async (req: FastifyRequest, reply: FastifyReply) => {
-  const { email, password } = req.body as LoginSchema;
+export const login = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
+  const { email } = request.body as LoginSchema;
   try {
-    const user = await authService.loginUserWithEmailAndPassword(email, password);
+    const user = await authService.loginUserWithEmailAndPassword(
+      email
+      // password
+    );
 
     // generate tokens
     const tokens = await generateAuthTokens(user!);
@@ -113,14 +141,19 @@ export const login = async (req: FastifyRequest, reply: FastifyReply) => {
       message: 'User login successfully',
     });
   } catch (error: unknown) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const logout = async (req: FastifyRequest, reply: FastifyReply) => {
+export const logout = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
-    const { refreshToken } = req.body as RefreshTokensSchema;
+    const { refreshToken } = request.body as RefreshTokensSchema;
     await authService.logout(refreshToken);
 
     return reply.code(httpStatus.OK).send({
@@ -128,44 +161,63 @@ export const logout = async (req: FastifyRequest, reply: FastifyReply) => {
       message: 'User logged out successfully',
     });
   } catch (error: unknown) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const refreshTokens = async (request: FastifyRequest, reply: FastifyReply) => {
+export const refreshTokens = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   try {
     const { refreshToken } = request.body as RefreshTokensSchema;
     const tokens = await authService.refreshAuth(refreshToken);
     return reply.code(httpStatus.OK).send({ data: { ...(tokens as object) } });
   } catch (error: unknown) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };
 
-export const forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+export const forgotPassword = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const { email } = request.body as ForgotPasswordSchema;
-  const resetPasswordToken = await generateResetPasswordToken(email);
+  await generateResetPasswordToken(email);
   // await sendResetPasswordEmail(email, resetPasswordToken);
   return reply.code(httpStatus.NO_CONTENT).send();
 };
 
-export const resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+export const resetPassword = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const { token } = request.query as ResetPasswordSchema;
   const { password } = request.body as ResetPasswordSchema;
   await authService.resetPassword(token, password);
   return reply.code(httpStatus.NO_CONTENT).send();
 };
 
-export const sendVerificationEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+export const sendVerificationEmail = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const user = request.user as IUser;
-  const verifyEmailToken = await generateVerifyEmailToken(user);
+  await generateVerifyEmailToken(user);
   // await sendVerificationEmail(user?.email!, verifyEmailToken);
   return reply.code(httpStatus.NO_CONTENT).send();
 };
 
-export const verifyEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+export const verifyEmail = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const { token } = request.query as VerifyEmailSchema;
   await authService.verifyEmail(token);
   return reply.code(httpStatus.NO_CONTENT).send();

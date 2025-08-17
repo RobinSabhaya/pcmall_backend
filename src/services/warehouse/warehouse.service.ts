@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+
 import {
   findDoc,
   findOneAndDeleteDoc,
@@ -7,13 +9,12 @@ import {
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { ISeller, IUser } from '@/models/user';
 import { IWarehouse } from '@/models/warehouse';
-import ApiError from '@/utils/ApiError';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateWarehouseSchema,
   DeleteWarehouseSchema,
   GetAllWarehouseSchema,
 } from '@/validations/warehouse.validation';
-import httpStatus from 'http-status';
 
 interface IOptions {
   user?: IUser;
@@ -21,7 +22,7 @@ interface IOptions {
 
 export const createUpdateWarehouse = async (
   reqBody: CreateUpdateWarehouseSchema,
-  options?: IOptions,
+  options?: IOptions
 ): Promise<{
   message: string;
   warehouseData: IWarehouse | null;
@@ -31,18 +32,24 @@ export const createUpdateWarehouse = async (
 
   let warehouseData, sellerData, message;
 
-  if (sellerId) {
-    sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, { _id: sellerId });
+  if (sellerId !== null) {
+    sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
+      _id: sellerId,
+    });
 
-    if (!sellerData) throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+    if (!sellerData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
   }
 
   /** Create and Update Inventory*/
-  if (warehouseId) {
+  if (warehouseId !== null) {
     /** Get inventory */
-    warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, { _id: warehouseId });
+    warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, {
+      _id: warehouseId,
+    });
 
-    if (!warehouseData) throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
+    if (!warehouseData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
 
     const payload = {
       seller: sellerId,
@@ -58,7 +65,7 @@ export const createUpdateWarehouse = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
     message = 'Warehouse update successfully';
   } else {
@@ -77,7 +84,7 @@ export const createUpdateWarehouse = async (
       {
         new: true,
         upsert: true,
-      },
+      }
     );
     message = 'Warehouse create successfully';
   }
@@ -89,23 +96,30 @@ export const createUpdateWarehouse = async (
 };
 
 export const deleteWarehouse = async (
-  reqQuery: DeleteWarehouseSchema,
+  reqQuery: DeleteWarehouseSchema
 ): Promise<{
   message: string;
   warehouseData: IWarehouse | null;
 }> => {
   const { warehouseId } = reqQuery;
 
-  let warehouseData, message;
+  let warehouseData,
+    message = '';
 
   /** Get inventory */
-  warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, { _id: warehouseId });
-
-  if (!warehouseData) throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
-
-  warehouseData = await findOneAndDeleteDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, {
+  warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, {
     _id: warehouseId,
   });
+
+  if (!warehouseData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
+
+  warehouseData = await findOneAndDeleteDoc<IWarehouse>(
+    MONGOOSE_MODELS.WAREHOUSE,
+    {
+      _id: warehouseId,
+    }
+  );
   message = 'Warehouse delete successfully';
 
   return {
@@ -115,11 +129,14 @@ export const deleteWarehouse = async (
 };
 
 export const getAllWarehouse = async (
-  reqQuery: GetAllWarehouseSchema,
+  reqQuery: GetAllWarehouseSchema
 ): Promise<{
   warehouseData: IWarehouse[];
 }> => {
-  const warehouseData = await findDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, reqQuery);
+  const warehouseData = await findDoc<IWarehouse>(
+    MONGOOSE_MODELS.WAREHOUSE,
+    reqQuery
+  );
   return {
     warehouseData,
   };

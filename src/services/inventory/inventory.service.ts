@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+
 import {
   findDoc,
   findOneAndDeleteDoc,
@@ -9,13 +11,12 @@ import { IInventory } from '@/models/inventory';
 import { IProductSKU } from '@/models/product';
 import { IUser } from '@/models/user';
 import { IWarehouse } from '@/models/warehouse';
-import ApiError from '@/utils/ApiError';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateInventorySchema,
   DeleteInventorySchema,
   GetAllInventorySchema,
 } from '@/validations/inventory.validation';
-import httpStatus from 'http-status';
 
 export interface IOptions {
   user?: IUser;
@@ -23,7 +24,7 @@ export interface IOptions {
 
 export const saveInventory = async (
   reqBody: CreateUpdateInventorySchema,
-  options: IOptions = {},
+  options: IOptions = {}
 ): Promise<{
   message: string;
   inventoryData: IInventory | null;
@@ -31,28 +32,37 @@ export const saveInventory = async (
   const { inventoryId, skuId, warehouseId, ...rest } = reqBody;
   const user = options.user as IUser;
   let inventoryData, productSkuData, warehouseData, message: string;
-  if (skuId) {
-    productSkuData = await findOneDoc<IProductSKU>(MONGOOSE_MODELS.PRODUCT_SKU, { _id: skuId });
+  if (skuId != null) {
+    productSkuData = await findOneDoc<IProductSKU>(
+      MONGOOSE_MODELS.PRODUCT_SKU,
+      { _id: skuId }
+    );
 
-    if (!productSkuData) throw new ApiError(httpStatus.NOT_FOUND, 'Product sku not found');
+    if (!productSkuData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product sku not found');
   }
 
-  if (warehouseId) {
+  if (warehouseId !== null) {
     warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, {
       _id: warehouseId,
     });
 
-    if (!warehouseData) throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
+    if (!warehouseData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Warehouse not found');
   }
 
   /** Create and Update Inventory*/
-  if (inventoryId) {
+  if (inventoryId !== null) {
     /** Get inventory */
-    inventoryData = (await findOneDoc<IInventory>(MONGOOSE_MODELS.PRODUCT_INVENTORY, {
-      _id: inventoryId,
-    })) as IInventory;
+    inventoryData = (await findOneDoc<IInventory>(
+      MONGOOSE_MODELS.PRODUCT_INVENTORY,
+      {
+        _id: inventoryId,
+      }
+    )) as IInventory;
 
-    if (!inventoryData) throw new ApiError(httpStatus.NOT_FOUND, 'Product Inventory not found');
+    if (inventoryData !== null)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product Inventory not found');
 
     const payload = {
       sku: skuId,
@@ -68,7 +78,7 @@ export const saveInventory = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
     message = 'Product Inventory update successfully';
   } else {
@@ -86,7 +96,7 @@ export const saveInventory = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
     message = 'Product Inventory create successfully';
   }
@@ -98,25 +108,32 @@ export const saveInventory = async (
 };
 
 export const deleteInventory = async (
-  filter: DeleteInventorySchema,
-  options?: IOptions,
+  filter: DeleteInventorySchema
 ): Promise<{
   message: string;
   inventoryData: IInventory | null;
 }> => {
   const { inventoryId } = filter;
-  let inventoryData, message;
+  let inventoryData,
+    message = '';
 
   /** Get inventory */
-  inventoryData = await findOneDoc<IInventory>(MONGOOSE_MODELS.PRODUCT_INVENTORY, {
-    _id: inventoryId,
-  });
+  inventoryData = await findOneDoc<IInventory>(
+    MONGOOSE_MODELS.PRODUCT_INVENTORY,
+    {
+      _id: inventoryId,
+    }
+  );
 
-  if (!inventoryData) throw new ApiError(httpStatus.NOT_FOUND, 'Product Inventory not found');
+  if (!inventoryData)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Product Inventory not found');
 
-  inventoryData = await findOneAndDeleteDoc<IInventory>(MONGOOSE_MODELS.PRODUCT_INVENTORY, {
-    _id: inventoryId,
-  });
+  inventoryData = await findOneAndDeleteDoc<IInventory>(
+    MONGOOSE_MODELS.PRODUCT_INVENTORY,
+    {
+      _id: inventoryId,
+    }
+  );
   message = 'Product Inventory delete successfully';
 
   return {
@@ -126,8 +143,7 @@ export const deleteInventory = async (
 };
 
 export const getAllInventory = async (
-  filter: GetAllInventorySchema,
-  options?: IOptions,
+  filter: GetAllInventorySchema
 ): Promise<IInventory[]> => {
   return findDoc<IInventory>(MONGOOSE_MODELS.PRODUCT_INVENTORY, filter);
 };

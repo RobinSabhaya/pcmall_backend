@@ -1,5 +1,6 @@
 import ejs from 'ejs';
 import nodemailer from 'nodemailer';
+
 import { config } from '../../../config/config';
 
 const {
@@ -12,11 +13,13 @@ const transport = nodemailer.createTransport(smtp);
 if (env !== 'test') {
   transport
     .verify()
+    // eslint-disable-next-line no-console
     .then(() => console.log('📧 Connected to email server 📧'))
     .catch(() =>
+      // eslint-disable-next-line no-console
       console.warn(
-        'Unable to connect to email server. Make sure you have configured the SMTP options in .env',
-      ),
+        'Unable to connect to email server. Make sure you have configured the SMTP options in .env'
+      )
     );
 }
 
@@ -31,7 +34,7 @@ export const sendEmail = async (
   to: string,
   subject: string,
   mailData: object,
-  filePath: string,
+  filePath: string
 ): Promise<boolean> => {
   try {
     const html = await ejs.renderFile(filePath, mailData);
@@ -46,6 +49,7 @@ export const sendEmail = async (
 
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Email send failed:', error);
     return false;
   }

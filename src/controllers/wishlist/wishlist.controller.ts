@@ -1,18 +1,24 @@
-import httpStatus from 'http-status';
-import * as wishlistService from '@/services/wishlist/wishlist.service';
-import ApiError from '../../utils/ApiError';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { CreateUpdateWishlistSchema } from '@/validations/wishlist.validation';
-import { IUser } from '@/models/user';
+import httpStatus from 'http-status';
 
-export const addRemoveWishlist = async (request: FastifyRequest, reply: FastifyReply) => {
+import { IUser } from '@/models/user';
+import * as wishlistService from '@/services/wishlist/wishlist.service';
+import { CreateUpdateWishlistSchema } from '@/validations/wishlist.validation';
+
+import ApiError from '../../utils/apiErrorHandler';
+
+export const addRemoveWishlist = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
   const user = request.user as IUser;
   const options = { user };
   try {
-    const { message, wishlistData } = await wishlistService.createUpdateWishlist(
-      request.body as CreateUpdateWishlistSchema,
-      options,
-    );
+    const { message, wishlistData } =
+      await wishlistService.createUpdateWishlist(
+        request.body as CreateUpdateWishlistSchema,
+        options
+      );
 
     return reply.status(httpStatus.OK).send({
       success: true,
@@ -20,7 +26,9 @@ export const addRemoveWishlist = async (request: FastifyRequest, reply: FastifyR
       message,
     });
   } catch (error) {
-    if (error instanceof Error)
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message || 'Something went wrong');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
   }
 };

@@ -1,11 +1,11 @@
-interface IORDER_PAYMENT_SHIPPING_SUCCESS_SMS {
+interface IOrderPaymentShippingSuccessSms {
   customerName: string;
   orderDate: string;
   orderId: string;
   storeName: string;
 }
 
-interface IORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL {
+interface IOrderPaymentShippingSuccessEmail {
   customerName?: string;
   orderDate?: string;
   orderId?: string;
@@ -13,9 +13,9 @@ interface IORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL {
 }
 
 export const ORDER_PAYMENT_SHIPPING_SUCCESS_SMS = (
-  payload: IORDER_PAYMENT_SHIPPING_SUCCESS_SMS,
+  payload: IOrderPaymentShippingSuccessSms
 ): string => {
-  const { customerName, orderDate, orderId, storeName } = payload;
+  const { orderDate, orderId, storeName } = payload;
   return `
 🛒 Thank you for your order!
 Order #${orderId} placed successfully on ${orderDate}.
@@ -24,8 +24,8 @@ ${storeName}`;
 };
 
 export const ORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL = (
-  payload: IORDER_PAYMENT_SHIPPING_SUCCESS_EMAIL,
+  payload: IOrderPaymentShippingSuccessEmail
 ): string => {
-  const { customerName, orderDate, orderId, storeName } = payload;
+  const { orderId } = payload;
   return `Order ${orderId} is confirm!`;
 };

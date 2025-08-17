@@ -1,16 +1,18 @@
 import { FastifyInstance } from 'fastify';
-import * as inventoryController from '@/controllers/inventory/inventory.controller';
-import * as inventoryValidation from '@/validations/inventory.validation';
-import { USER_ROLE } from '../../../helpers/constant.helper';
-import { createBaseRoute } from '@/utils/baseRoute';
 
-export default async function inventoryRoute(fastify: FastifyInstance) {
+import * as inventoryController from '@/controllers/inventory/inventory.controller';
+import { createBaseRoute } from '@/utils/baseRoute';
+import * as inventoryValidation from '@/validations/inventory.validation';
+
+import { USERROLE } from '../../../helpers/constant.helper';
+
+export default function inventoryRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
     method: 'POST',
     url: '/create-update',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: inventoryValidation.createUpdateInventory,
     description: 'Create & Update Inventory',
     tags: ['Inventory'],
@@ -19,7 +21,7 @@ export default async function inventoryRoute(fastify: FastifyInstance) {
   route({
     method: 'DELETE',
     url: '/delete',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: inventoryValidation.deleteInventory,
     description: 'Delete Inventory',
     tags: ['Inventory'],
@@ -28,7 +30,7 @@ export default async function inventoryRoute(fastify: FastifyInstance) {
   route({
     method: 'GET',
     url: '/all',
-    preHandlerHookHandler: [fastify.authorizeV1(USER_ROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: inventoryValidation.getAllInventory,
     description: 'Get All Inventories',
     tags: ['Inventory'],

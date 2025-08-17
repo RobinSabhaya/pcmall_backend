@@ -1,40 +1,41 @@
-import { Cart, ICart } from '../../models/cart/cart.model';
-import { config } from '../../config/config';
+import httpStatus from 'http-status';
+import { FilterQuery } from 'mongoose';
+
+import { PAYMENTSTATUS } from '@/helpers/constant.helper';
+import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
+import { IUser } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
+import {
+  AddToCartSchema,
+  UpdateToCartSchema,
+} from '@/validations/cart.validation';
+
 import {
   findOneAndDeleteDoc,
   findOneAndUpdateDoc,
   findOneDoc,
+  IPaginationResponse,
   paginationQuery,
-  PaginationResponse,
 } from '../../helpers/mongoose.helper';
-import { FilterQuery, PipelineStage, UpdateQuery } from 'mongoose';
-import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import ApiError from '@/utils/ApiError';
-import httpStatus from 'http-status';
-import { PAYMENT_STATUS } from '@/helpers/constant.helper';
-import { AddToCartSchema, UpdateToCartSchema } from '@/validations/cart.validation';
-import { IUser } from '@/models/user';
+import { cart, ICart } from '../../models/cart/cart.model';
 
 interface IOptions {
   user: IUser;
 }
 
-/**
- * Create a cart
- * @param {object} reqBody
- * @param {object} options
- * @returns {Promise<Cart>}
- */
 export const createCart = async (
   reqBody: AddToCartSchema,
-  options: IOptions,
+  options: IOptions
 ): Promise<ICart | null> => {
   const { productVariantId, quantity } = reqBody;
   const { user } = options;
   /** Check product exists or not */
-  const productVariantExists = await findOneDoc(MONGOOSE_MODELS.PRODUCT_VARIANT, {
-    _id: productVariantId,
-  });
+  const productVariantExists = await findOneDoc(
+    MONGOOSE_MODELS.PRODUCT_VARIANT,
+    {
+      _id: productVariantId,
+    }
+  );
 
   if (!productVariantExists) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
@@ -46,7 +47,7 @@ export const createCart = async (
       variant: productVariantExists._id,
       user: user._id,
       quantity,
-      status: PAYMENT_STATUS.PENDING,
+      status: PAYMENTSTATUS.PENDING,
     },
     {
       variant: productVariantExists._id,
@@ -56,22 +57,14 @@ export const createCart = async (
     {
       upsert: true,
       new: true,
-    },
+    }
   );
 };
 
-/**
- * Create a cart
- * @param {object} reqBody
- * @param {object} options
- * @returns {Promise<Cart>}
- */
 export const updateToCart = async (
-  reqBody: UpdateToCartSchema,
-  options: IOptions,
+  reqBody: UpdateToCartSchema
 ): Promise<ICart | null> => {
   const { cartId, quantity } = reqBody;
-  const { user } = options;
   /** Check product exists or not */
   const cartExists = await findOneDoc<ICart>(MONGOOSE_MODELS.CART, {
     _id: cartId,
@@ -92,19 +85,13 @@ export const updateToCart = async (
     {
       upsert: true,
       new: true,
-    },
+    }
   );
 };
 
-/**
- * remove a cart
- * @param {object} reqBody
- * @param {object} options
- * @returns {Promise<Cart>}
- */
 export const removeCart = async (
   reqBody: FilterQuery<ICart>,
-  options = {},
+  options = {}
 ): Promise<ICart | null> => {
   const { cartId } = reqBody as Partial<UpdateToCartSchema>;
 
@@ -115,31 +102,26 @@ export const removeCart = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
   }
 
-  return findOneAndDeleteDoc<ICart>(MONGOOSE_MODELS.CART, { _id: cartExists._id }, options);
+  return findOneAndDeleteDoc<ICart>(
+    MONGOOSE_MODELS.CART,
+    { _id: cartExists._id },
+    options
+  );
 };
 
-/**
- * Get a cart
- * @param {object} filter
- * @param {object} options
- * @returns {Promise<Cart>}
- */
-export const getCart = (filter: FilterQuery<ICart>, options = {}): Promise<ICart | null> => {
+export const getCart = async (
+  filter: FilterQuery<ICart>,
+  options = {}
+): Promise<ICart | null> => {
   return findOneDoc<ICart>(MONGOOSE_MODELS.CART, filter, options);
 };
 
-/**
- * Get all cart
- * @param {object} filter
- * @param {object} options
- * @returns {Promise<Cart>}
- */
 export const getAllCart = async (
   filter: FilterQuery<ICart>,
-  options = {},
-): Promise<PaginationResponse<ICart>[]> => {
+  options = {}
+): Promise<IPaginationResponse<ICart>[]> => {
   const pagination = paginationQuery(options);
-  return await Cart.aggregate([
+  return cart.aggregate([
     {
       $match: {
         ...filter,

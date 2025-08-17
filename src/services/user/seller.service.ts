@@ -1,4 +1,6 @@
-import { USER_ROLE } from '@/helpers/constant.helper';
+import httpStatus from 'http-status';
+
+import { USERROLE } from '@/helpers/constant.helper';
 import {
   createDoc,
   findDoc,
@@ -7,23 +9,21 @@ import {
   findOneDoc,
 } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import { ISeller, IUser } from '@/models/user';
-import ApiError from '@/utils/ApiError';
+import { ISeller } from '@/models/user';
+import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateSellerSchema,
   DeleteSellerSchema,
   GetAllSellersSchema,
 } from '@/validations/seller.validation';
-import httpStatus from 'http-status';
-import { DeleteSellerFilter } from './seller.service.type';
 
-interface IOptions {
-  user?: IUser;
-}
+// interface IOptions {
+//   user?: IUser;
+// }
 
 export const createUpdateSeller = async (
-  reqBody: CreateUpdateSellerSchema,
-  options?: IOptions,
+  reqBody: CreateUpdateSellerSchema
+  // options?: IOptions
 ): Promise<{
   message: string;
   sellerData: ISeller | null;
@@ -37,11 +37,14 @@ export const createUpdateSeller = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
   /** Create and Update Seller */
-  if (sellerId) {
+  if (sellerId !== null) {
     /** Get seller */
-    sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, { _id: sellerId });
+    sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
+      _id: sellerId,
+    });
 
-    if (!sellerData) throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
+    if (!sellerData)
+      throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
 
     sellerData = await findOneAndUpdateDoc<ISeller>(
       MONGOOSE_MODELS.SELLER,
@@ -50,7 +53,7 @@ export const createUpdateSeller = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
 
     message = 'Seller update successfully';
@@ -58,7 +61,7 @@ export const createUpdateSeller = async (
     userData = await createDoc<ISeller>(MONGOOSE_MODELS.USER, {
       email: reqBody.businessEmail,
       password,
-      roles: [USER_ROLE.SELLER],
+      roles: [USERROLE.SELLER],
     });
 
     sellerData = await findOneAndUpdateDoc<ISeller>(
@@ -68,7 +71,7 @@ export const createUpdateSeller = async (
       {
         upsert: true,
         new: true,
-      },
+      }
     );
 
     message = 'Seller create successfully';
@@ -80,7 +83,7 @@ export const createUpdateSeller = async (
 };
 
 export const deleteSeller = async (
-  reqQuery: DeleteSellerSchema,
+  reqQuery: DeleteSellerSchema
 ): Promise<{
   message: string;
   sellerData: ISeller | null;
@@ -88,15 +91,22 @@ export const deleteSeller = async (
   const { sellerId } = reqQuery;
   console.log('🚀 ~ deleteSeller ~ sellerId:', sellerId);
 
-  let sellerData, message;
+  let sellerData,
+    message = '';
 
   /** Get seller */
-  sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, { _id: sellerId });
+  sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
+    _id: sellerId,
+  });
 
   if (!sellerData) throw new ApiError(httpStatus.NOT_FOUND, 'Seller not found');
 
-  sellerData = await findOneAndDeleteDoc<ISeller>(MONGOOSE_MODELS.SELLER, { _id: sellerId });
-  await findOneAndDeleteDoc<ISeller>(MONGOOSE_MODELS.USER, { _id: sellerData?.user });
+  sellerData = await findOneAndDeleteDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
+    _id: sellerId,
+  });
+  await findOneAndDeleteDoc<ISeller>(MONGOOSE_MODELS.USER, {
+    _id: sellerData?.user,
+  });
   message = 'Seller delete successfully';
 
   return {
@@ -106,8 +116,8 @@ export const deleteSeller = async (
 };
 
 export const getAllSellers = async (
-  reqQuery: GetAllSellersSchema,
-  options?: IOptions,
+  reqQuery: GetAllSellersSchema
+  // options?: IOptions
 ): Promise<{
   sellerData: ISeller[];
 }> => {

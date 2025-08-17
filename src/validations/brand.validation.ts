@@ -1,7 +1,7 @@
 import z from 'zod';
 
-export type createUpdateBrandSchema = z.infer<typeof createUpdateBrand.body>;
-export type deleteBrandSchema = z.infer<typeof deleteBrand.query>;
+export type CreateUpdateBrandSchema = z.infer<typeof createUpdateBrand.body>;
+export type DeleteBrandSchema = z.infer<typeof deleteBrand.query>;
 export type GetAllBrandsSchema = z.infer<typeof getAllBrands.query>;
 
 export const createUpdateBrand = {

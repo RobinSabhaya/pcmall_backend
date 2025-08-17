@@ -1,6 +1,8 @@
 import z from 'zod';
 
-export type CreateUpdateProductSchema = z.infer<typeof createUpdateProduct.body>;
+export type CreateUpdateProductSchema = z.infer<
+  typeof createUpdateProduct.body
+>;
 export type DeleteProductSchema = z.infer<typeof deleteProduct.query>;
 export type GetAllProductsSchema = z.infer<typeof getAllProducts.query>;
 export type GenerateProductSkuSchema = z.infer<typeof generateProductSku.body>;
@@ -41,7 +43,7 @@ export const generateProductSku = {
     variantId: z.string().optional(),
     productSkuId: z.string().optional(),
     price: z.number().optional(),
-    discount: z.string().optional(),
-    tax: z.string().optional(),
+    discount: z.number().optional(),
+    tax: z.number().optional(),
   }),
 };

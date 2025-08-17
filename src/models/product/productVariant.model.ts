@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { Document, model, Schema } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IProductVariant extends Document, IBaseDocumentModel {
   product: Schema.Types.ObjectId;
@@ -10,7 +11,7 @@ export interface IProductVariant extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const VariantSchema = new Schema<IProductVariant>(
+const variantSchema = new Schema<IProductVariant>(
   {
     product: { type: Schema.Types.ObjectId, ref: 'Product' },
     name: {
@@ -23,7 +24,10 @@ const VariantSchema = new Schema<IProductVariant>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true, versionKey: false }
 );
 
-export const Product_Variant = model<IProductVariant>('Product_Variant', VariantSchema);
+export const productVariant = model<IProductVariant>(
+  'Product_Variant',
+  variantSchema
+);

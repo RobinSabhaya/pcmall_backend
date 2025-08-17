@@ -1,5 +1,6 @@
-import { IBaseDocumentModel } from '@/types/mongoose.types';
 import { model, Schema, Document } from 'mongoose';
+
+import { IBaseDocumentModel } from '@/types/mongoose.types';
 
 export interface IAccessPermission extends Document, IBaseDocumentModel {
   role: Schema.Types.ObjectId;
@@ -22,10 +23,10 @@ const accessPermissionSchema = new Schema<IAccessPermission>(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
 export const accessPermission = model<IAccessPermission>(
   'Access_permission',
-  accessPermissionSchema,
+  accessPermissionSchema
 );
