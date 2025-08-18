@@ -47,14 +47,14 @@ while read local_ref local_sha remote_ref remote_sha; do
     fi
 
     # Check for WIP commits
-    # print_status "Checking for WIP commits..."
-    # WIP_COMMITS=$(git log --oneline $range | grep -i "wip\|work in progress\|fixup\|squash")
-    # if [ ! -z "$WIP_COMMITS" ]; then
-    #     print_error "WIP commits detected:"
-    #     echo "$WIP_COMMITS"
-    #     print_error "Please clean up WIP commits before pushing"
-    #     exit 1
-    # fi
+    print_status "Checking for WIP commits..."
+    WIP_COMMITS=$(git log --oneline $range | grep -i "wip\|work in progress\|fixup\|squash")
+    if [ ! -z "$WIP_COMMITS" ]; then
+        print_error "WIP commits detected:"
+        echo "$WIP_COMMITS"
+        print_error "Please clean up WIP commits before pushing"
+        exit 1
+    fi
 
     # Check for merge commits (if we want to prevent them)
     print_status "Checking for merge commits..."
@@ -131,22 +131,22 @@ fi
 # fi
 
 # Test suite
-# print_status "Running test suite..."
-# npm run test:coverage
-# if [ $? -ne 0 ]; then
-#     print_error "Test suite failed"
-#     exit 1
-# fi
+print_status "Running test suite..."
+npm run test:coverage
+if [ $? -ne 0 ]; then
+    print_error "Test suite failed"
+    exit 1
+fi
 
 # Integration tests (if they exist)
-# if [ -f "jest.integration.config.js" ]; then
-#     print_status "Running integration tests..."
-#     npm run test:integration
-#     if [ $? -ne 0 ]; then
-#         print_error "Integration tests failed"
-#         exit 1
-#     fi
-# fi
+if [ -f "vitest.config.js" ]; then
+    print_status "Running integration tests..."
+    npm run test:run
+    if [ $? -ne 0 ]; then
+        print_error "Integration tests failed"
+        exit 1
+    fi
+fi
 
 # Build check
 print_status "Testing production build..."
