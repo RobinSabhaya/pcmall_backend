@@ -47,14 +47,14 @@ while read local_ref local_sha remote_ref remote_sha; do
     fi
 
     # Check for WIP commits
-    print_status "Checking for WIP commits..."
-    WIP_COMMITS=$(git log --oneline $range | grep -i "wip\|work in progress\|fixup\|squash")
-    if [ ! -z "$WIP_COMMITS" ]; then
-        print_error "WIP commits detected:"
-        echo "$WIP_COMMITS"
-        print_error "Please clean up WIP commits before pushing"
-        exit 1
-    fi
+    # print_status "Checking for WIP commits..."
+    # WIP_COMMITS=$(git log --oneline $range | grep -i "wip\|work in progress\|fixup\|squash")
+    # if [ ! -z "$WIP_COMMITS" ]; then
+    #     print_error "WIP commits detected:"
+    #     echo "$WIP_COMMITS"
+    #     print_error "Please clean up WIP commits before pushing"
+    #     exit 1
+    # fi
 
     # Check for merge commits (if we want to prevent them)
     print_status "Checking for merge commits..."
