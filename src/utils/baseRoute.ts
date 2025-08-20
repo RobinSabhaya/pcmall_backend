@@ -8,6 +8,8 @@ import {
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
+import { config as envConfig } from '@/config/config';
+
 export type RouteSchemas = {
   body?: z.ZodTypeAny;
   query?: z.ZodTypeAny;
@@ -87,7 +89,7 @@ function buildRouteSchema<T extends RouteSchemas>(
 type FastifyRouteOptions<T extends RouteSchemas> = {
   method: RequestType;
   url: string;
-  schema: RouteSchema;
+  schema?: RouteSchema;
   handler: (
     request: FastifyRequest<ExtractRequest<T>>,
     reply: FastifyReply
@@ -101,7 +103,7 @@ function buildRouteOptions<T extends RouteSchemas>(
   const options: FastifyRouteOptions<T> = {
     method: config.method,
     url: config.url,
-    schema: buildRouteSchema(config),
+    ...(envConfig.env !== 'test' && { schema: buildRouteSchema(config) }),
     handler: config.handler,
   };
 

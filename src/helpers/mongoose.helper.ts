@@ -1,4 +1,5 @@
 import mongoose, {
+  Document,
   FilterQuery,
   PipelineStage,
   PopulateOptions,
@@ -156,4 +157,14 @@ export const updateManyDoc = async <T>(
   reqBody: UpdateQuery<T>
 ): Promise<mongoose.UpdateWriteOpResult> => {
   return mongoose.model<T>(modelName).updateMany(filter, reqBody);
+};
+
+/**
+ * Insert many documents
+ */
+export const insertManyDoc = async <T extends Document = Document>(
+  modelName: string,
+  reqBody: Record<string, unknown>[]
+): Promise<T[]> => {
+  return (await mongoose.model<T>(modelName).insertMany(reqBody)) as T[];
 };

@@ -30,6 +30,8 @@ const routes = [
   { route: paymentRoute },
 ] as const;
 
-export default function indexRoutes(fastify: FastifyInstance): void {
-  routes.map(({ route }) => fastify.register(route));
+export default async function indexRoutes(
+  fastify: FastifyInstance
+): Promise<void> {
+  await Promise.all(routes.map(({ route }) => fastify.register(route)));
 }

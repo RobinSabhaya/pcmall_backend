@@ -1,4 +1,4 @@
-import { Worker, Queue } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 
 import { config } from '@/config/config';
 import { QUEUES } from '@/helpers/constant.helper';
