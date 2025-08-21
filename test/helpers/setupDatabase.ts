@@ -16,12 +16,6 @@ export const cleanupDatabase = async (): Promise<void> => {
   try {
     await setupDatabase();
 
-    // Drop all collections
-    const { collections } = mongoose.connection;
-    for (const key in collections) {
-      collections[key].deleteMany({}).then;
-    }
-
     console.log('Database cleanup completed 🧹');
   } catch (error) {
     console.error('Database cleanup failed ❌', error);

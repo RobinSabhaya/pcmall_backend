@@ -7,7 +7,7 @@ import buildApp from '@/app';
 import {
   login,
   logout,
-  // refreshTokens,
+  refreshTokens,
   register,
   signup,
 } from '../../../src/validations/auth.validation';
@@ -100,6 +100,36 @@ describe('Auth route Integration Tests', () => {
     });
   });
 
+  describe('POST /refresh-token', () => {
+    test('Should return 200 for valid POST request', async () => {
+      const refreshTokenPayload = {
+        refreshToken,
+      };
+
+      // Validate the payload
+      expect(
+        validateReqPayload<typeof refreshTokenPayload>(
+          refreshTokens.body,
+          refreshTokenPayload
+        )
+      ).toBe(true);
+
+      // make request
+      const response = await makeRequest(
+        app,
+        'POST',
+        '/v1/auth/refresh-tokens',
+        {
+          // headers: withAuth(accessToken),
+          body: refreshTokenPayload,
+        }
+      );
+
+      // test cases
+      expectSuccessResponse(response, httpStatus.OK);
+    });
+  });
+
   describe('POST /logout', () => {
     test('Should return 200 for valid POST request', async () => {
       const logoutPayload = {
@@ -121,37 +151,4 @@ describe('Auth route Integration Tests', () => {
       expectSuccessResponse(response, httpStatus.OK);
     });
   });
-
-  // describe('POST /refresh-token', () => {
-  //   test('Should return 200 for valid POST request', async () => {
-  //     const refreshTokenPayload = {
-  //       refreshToken,
-  //     };
-  //     console.log("🚀 ~ refreshTokenPayload:", refreshTokenPayload)
-
-  //     // Validate the payload
-  //     expect(
-  //       validateReqPayload<typeof refreshTokenPayload>(
-  //         refreshTokens.body,
-  //         refreshTokenPayload
-  //       )
-  //     ).toBe(true);
-  //     console.log("🚀 ~ response:", config.mongoose.url)
-
-  //     // make request
-  //     const response = await makeRequest(
-  //       app,
-  //       'POST',
-  //       '/v1/auth/refresh-tokens',
-  //       {
-  //         // headers: withAuth(accessToken),
-  //         body: refreshTokenPayload,
-  //       }
-  //     );
-  //     console.log("🚀 ~ response:", response)
-
-  //     // test cases
-  //     expectSuccessResponse(response, httpStatus.OK);
-  //   });
-  // });
 });

@@ -1,3 +1,5 @@
+import { cleanupDatabase } from './helpers/setupDatabase';
+
 export function setup(): void {
   // Set test environment variables
   process.env.NODE_ENV = 'test';
@@ -5,7 +7,9 @@ export function setup(): void {
   console.log('🧪 Setting up TypeScript tests...');
 }
 
-export function teardown(): void {
+export async function teardown(): Promise<void> {
   // Global cleanup
   console.log('🧹 Cleaning up TypeScript tests...');
+  // cleanup database
+  await cleanupDatabase();
 }

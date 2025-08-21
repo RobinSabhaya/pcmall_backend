@@ -94,7 +94,7 @@ export const config = {
   port: env.PORT,
   host: env.HOST,
   mongoose: {
-    url: env.MONGODB_URL + (env.NODE_ENV === 'test' ? '-test' : ''),
+    url: env.MONGODB_URL,
     options: {},
   },
   jwt: {
