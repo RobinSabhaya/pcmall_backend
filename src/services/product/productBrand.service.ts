@@ -40,7 +40,7 @@ export const createUpdateBrand = async (
   let brandData, message;
 
   /** Create and Update Brand */
-  if (brandId !== null) {
+  if (brandId != null) {
     /** Get brand */
     brandData = await findOneDoc<IProductBrand>(MONGOOSE_MODELS.PRODUCT_BRAND, {
       _id: brandId,

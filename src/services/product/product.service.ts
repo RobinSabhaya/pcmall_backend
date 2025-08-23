@@ -37,12 +37,6 @@ export interface IOptions extends IPaginationOptions {
   user?: IUser;
 }
 
-/**
- * Get product
- * @param {object} filter
- * @param {object} options
- * @returns {Promise<product>}
- */
 export const getProduct = async (
   filter: FilterQuery<IProduct>,
   options = {}
@@ -342,7 +336,11 @@ export const handleProductOperation = async (
     updatedBy: user?._id,
   };
 
-  if (productId !== null) {
+  // exclude the field
+  delete productPayload.attributeCombination;
+  delete productPayload.name;
+
+  if (productId != null) {
     // Update existing product
     const existingProduct = await findOneDoc<IProduct>(
       MONGOOSE_MODELS.PRODUCT,
@@ -398,7 +396,7 @@ export const handleVariantOperation = async (
     updatedBy: user?._id,
   };
 
-  if (variantId !== null) {
+  if (variantId != null) {
     // Update existing variant
     const existingVariant = await findOneDoc<IProductVariant>(
       MONGOOSE_MODELS.PRODUCT_VARIANT,
@@ -423,8 +421,8 @@ export const handleVariantOperation = async (
   } else {
     return findOneAndUpdateDoc<IProductVariant>(
       MONGOOSE_MODELS.PRODUCT_VARIANT,
-      payload,
-      payload,
+      productVariantPayload,
+      productVariantPayload,
       {
         upsert: true,
         new: true,

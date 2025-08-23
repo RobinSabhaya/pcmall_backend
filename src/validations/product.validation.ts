@@ -40,7 +40,7 @@ export const getAllProducts = {
 
 export const generateProductSku = {
   body: z.object({
-    variantId: z.string().optional(),
+    variantId: z.string(),
     productSkuId: z.string().optional(),
     price: z.number().optional(),
     discount: z.number().optional(),

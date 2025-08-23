@@ -25,17 +25,19 @@ export const createProductPayload = {
   title: faker.commerce.productName(),
   description: faker.commerce.productDescription(),
   slug: faker.commerce.productName(),
-  brand: productBrandData != null && (productBrandData as IProductBrand)?._id,
+  brand:
+    productBrandData != null &&
+    String((productBrandData as IProductBrand)?._id),
   modelNumber: faker.commerce.product(),
   tags: [faker.commerce.productAdjective(), faker.commerce.productAdjective()],
 };
 
 export const productSkuPayload = {
-  variant:
+  variantId:
     productVariantData != null &&
     String((productVariantData as IProductVariant)?._id),
   // productSkuId: "sku id",
-  price: faker.commerce.price(),
+  price: +faker.commerce.price(),
   discount: faker.number.int(),
   tax: faker.number.int(),
 };

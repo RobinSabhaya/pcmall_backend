@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { FilterQuery } from 'mongoose';
 
 import {
@@ -15,6 +16,7 @@ import {
 import { IAddress } from '@/models/shipment';
 import { ISeller, IUser } from '@/models/user';
 import { IWarehouse } from '@/models/warehouse';
+import * as tokenService from '@/services/auth/token.service';
 import { disconnectDatabase, setupDatabase } from 'test/helpers/setupDatabase';
 import { registerPayload } from 'test/integration/auth/auth.fixture';
 import {
@@ -27,8 +29,11 @@ import { createUpdateUser } from 'test/integration/user/user.fixture';
 import { createUpdateWarehouse } from 'test/integration/warehouse/warehouse.fixture';
 
 import '@/models';
+import { config } from '../../src/config/config';
+import { TOKENTYPES } from '../../src/helpers/constant.helper';
+import { roleSeeder } from '../../src/seeder/role.seeder';
 
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-statements
 export async function fixturesSeed(): Promise<void> {
   try {
     await setupDatabase();
@@ -38,10 +43,18 @@ export async function fixturesSeed(): Promise<void> {
       new: true,
     };
 
+    const accessTokenExpires = moment().add(
+      config.jwt.accessExpirationMinutes,
+      'minutes'
+    );
+
     const userPayload = {
       email: registerPayload.email,
       password: registerPayload.password,
     };
+
+    // seed role
+    await roleSeeder();
 
     // seed user
     const user = await findOneAndUpdateDoc<IUser>(
@@ -50,6 +63,22 @@ export async function fixturesSeed(): Promise<void> {
       userPayload,
       options
     );
+
+    if (user != null) {
+      const token = tokenService.generateToken(
+        user?._id,
+        accessTokenExpires,
+        TOKENTYPES.ACCESS
+      );
+
+      await tokenService.saveToken(
+        token,
+        user?._id,
+        accessTokenExpires,
+        TOKENTYPES.ACCESS,
+        options
+      );
+    }
 
     // seed user address
     const userAddress = await findOneAndUpdateDoc<IAddress>(
@@ -100,10 +129,16 @@ export async function fixturesSeed(): Promise<void> {
     );
 
     // seed product sku
+    const createProductSkuPayload = {
+      variant: productVariant?._id,
+      price: productSkuPayload.price,
+      discount: productSkuPayload.discount,
+      tax: productSkuPayload.tax,
+    };
     await findOneAndUpdateDoc<IProductSKU>(
       MONGOOSE_MODELS.PRODUCT_SKU,
-      { ...productSkuPayload, variant: productVariant?._id },
-      { ...productSkuPayload, variant: productVariant?._id },
+      createProductSkuPayload,
+      createProductSkuPayload,
       options
     );
 
@@ -140,8 +175,9 @@ export async function fixturesSeed(): Promise<void> {
     );
 
     console.log('Test seeder run successfully');
-  } catch {
+  } catch (error) {
     await disconnectDatabase();
+    throw error;
   } finally {
     await disconnectDatabase();
   }

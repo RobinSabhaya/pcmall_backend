@@ -52,7 +52,7 @@ export const saveInventory = async (
   }
 
   /** Create and Update Inventory*/
-  if (inventoryId !== null) {
+  if (inventoryId != null) {
     /** Get inventory */
     inventoryData = (await findOneDoc<IInventory>(
       MONGOOSE_MODELS.PRODUCT_INVENTORY,
