@@ -132,6 +132,7 @@ fi
 
 # Test suite
 print_status "Running test suite..."
+npm run test:seed
 npm run test:coverage
 if [ $? -ne 0 ]; then
     print_error "Test suite failed"

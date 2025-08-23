@@ -14,7 +14,7 @@
     "test:seed": "npx tsx test/scripts/index.ts",
     "test": "npm run test:seed && vitest test",
     "test:run": "npm run test:seed && vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "npm run test:seed && vitest run --coverage",
     "lint": "eslint src/**/*.{js,ts} --fix",
     "lint:check": "eslint src/**/*.{js,ts}",
     "prettier": "npx prettier --write src/**/*.{js,ts,json,md}",
