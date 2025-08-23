@@ -141,6 +141,7 @@ fi
 # Integration tests (if they exist)
 if [ -f "vitest.config.js" ]; then
     print_status "Running integration tests..."
+    npm run test:seed
     npm run test:run
     if [ $? -ne 0 ]; then
         print_error "Integration tests failed"
