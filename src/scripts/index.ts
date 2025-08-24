@@ -1,7 +1,8 @@
-const { fetchProducts } = require('./fetchProducts');
-const { dbConnection } = require('../models/dbConnection');
+import dbConnection from '@/plugins/mongoose';
 
-(async () => {
+import { fetchProducts } from './fetchProducts';
+
+await (async (): Promise<void> => {
   try {
     await dbConnection(); // Db connect.
 
