@@ -18,6 +18,16 @@ export default function ratingRoute(fastify: FastifyInstance): void {
   });
 
   route({
+    method: 'DELETE',
+    url: '/delete',
+    schema: ratingValidation.deleteRating,
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
+    description: 'Delete product rating',
+    tags: ['Product Rating'],
+    handler: ratingController.deleteRating,
+  });
+
+  route({
     method: 'GET',
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],

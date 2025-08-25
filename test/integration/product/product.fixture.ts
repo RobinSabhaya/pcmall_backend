@@ -3,10 +3,12 @@ import { faker } from '@faker-js/faker';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { IProductBrand, IProductVariant } from '@/models/product';
 
+import { ICategory } from '../../../src/models/category';
 import { getTestData } from '../../scripts/fixture.seed';
 
 let productVariantData: IProductVariant | null | undefined = null;
 let productBrandData: IProductBrand | null | undefined = null;
+let categoryData: ICategory | null | undefined = null;
 
 await (async (): Promise<void> => {
   productVariantData = await getTestData<IProductVariant>(
@@ -15,6 +17,7 @@ await (async (): Promise<void> => {
   productBrandData = await getTestData<IProductBrand>(
     MONGOOSE_MODELS.PRODUCT_BRAND
   );
+  categoryData = await getTestData<ICategory>(MONGOOSE_MODELS.CATEGORY);
 })();
 
 export const createProductPayload = {
@@ -30,6 +33,7 @@ export const createProductPayload = {
     String((productBrandData as IProductBrand)?._id),
   modelNumber: faker.commerce.product(),
   tags: [faker.commerce.productAdjective(), faker.commerce.productAdjective()],
+  category: categoryData != null && String((categoryData as ICategory)?._id),
 };
 
 export const productSkuPayload = {

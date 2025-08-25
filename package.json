@@ -11,6 +11,7 @@
     "start": "bun dist/server.js",
     "build": "tsup src/server.ts --out-dir dist --clean",
     "dev": "npx tsx watch src/server.ts",
+    "dev:seed": "npx tsx src/scripts/index.ts",
     "test:seed": "npx tsx test/scripts/index.ts",
     "test": "npm run test:seed && vitest test",
     "test:run": "npm run test:seed && vitest run",

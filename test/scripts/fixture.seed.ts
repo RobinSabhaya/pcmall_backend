@@ -31,7 +31,9 @@ import { createUpdateWarehouse } from 'test/integration/warehouse/warehouse.fixt
 import '@/models';
 import { config } from '../../src/config/config';
 import { TOKENTYPES } from '../../src/helpers/constant.helper';
+import { ICategory } from '../../src/models/category';
 import { roleSeeder } from '../../src/seeder/role.seeder';
+import { createUpdateCategory } from '../integration/category/category.fixture';
 
 // eslint-disable-next-line complexity, max-statements
 export async function fixturesSeed(): Promise<void> {
@@ -96,8 +98,15 @@ export async function fixturesSeed(): Promise<void> {
       options
     );
 
-    // seed product
+    // seed category
+    const categoryData = await findOneAndUpdateDoc<ICategory>(
+      MONGOOSE_MODELS.CATEGORY,
+      createUpdateCategory,
+      createUpdateCategory,
+      options
+    );
 
+    // seed product
     const productPayload = {
       title: createProductPayload.title,
       description: createProductPayload.description,
@@ -105,6 +114,7 @@ export async function fixturesSeed(): Promise<void> {
       brand: productBrand?._id,
       modelNumber: createProductPayload.modelNumber,
       tags: createProductPayload.tags,
+      category: categoryData?._id,
     };
     const product = await findOneAndUpdateDoc<IProduct>(
       MONGOOSE_MODELS.PRODUCT,

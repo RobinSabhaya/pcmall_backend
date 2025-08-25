@@ -46,7 +46,7 @@ export const createUpdateRating = async (
     }
   }
 
-  const parsed = ratingValidation.createUpdateRating.safeParse(fields);
+  const parsed = ratingValidation.createUpdateRating.body.safeParse(fields);
   if (!parsed.success) {
     // Remove if anything fails
     delete fields['images'];
@@ -126,6 +126,30 @@ export const getRatingCount = async (
       data: {
         ratingCount: ratingCount[0],
       },
+    });
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error instanceof Error ? error.message : 'Something went wrong'
+    );
+  }
+};
+
+/** Delete rating */
+export const deleteRating = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
+  try {
+    /** Get rating */
+    const ratingData = await ratingService.deleteRating(
+      request.query as ratingValidation.DeleteRatingSchema
+    );
+
+    return reply.code(httpStatus.OK).send({
+      success: true,
+      message: 'Rating deleted successfully',
+      data: ratingData,
     });
   } catch (error) {
     throw new ApiError(

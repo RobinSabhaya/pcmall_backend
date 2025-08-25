@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 
 import { config } from '@/config/config';
 import {
+  findOneAndDeleteDoc,
   findOneAndUpdateDoc,
   findOneDoc,
   IPaginationOptions,
@@ -16,6 +17,7 @@ import { IUser } from '@/models/user';
 import ApiError from '@/utils/apiErrorHandler';
 import {
   CreateUpdateRatingSchema,
+  DeleteRatingSchema,
   GetRatingCountSchema,
   GetRatingListSchema,
 } from '@/validations/rating.validation';
@@ -72,14 +74,15 @@ export const createUpdateRating = async (
   //   );
   // }
 
-  if (ratingId !== null) {
+  if (ratingId != null) {
     ratingData = await findOneAndUpdateDoc<IRating>(
       MONGOOSE_MODELS.RATING,
       { _id: ratingId },
       {
         ...rest,
         product: productData._id,
-        ...(uploadFiles?.length > 0 && { images: uploadFiles }),
+        ...(uploadFiles?.length > 0 ? { images: uploadFiles } : []),
+        user: user?._id,
       },
       {
         upsert: true,
@@ -129,7 +132,7 @@ export const getRatingList = async (
 
   const filter: IGetRatingListFilter = {};
 
-  if (productId !== null) filter.product = new Types.ObjectId(productId);
+  if (productId != null) filter.product = new Types.ObjectId(productId);
 
   if (rating != null) filter.rating = +rating;
   if (user) filter.user = user?._id;
@@ -159,29 +162,31 @@ export const getRatingList = async (
   ])) as IPaginationResponse<IRating>[];
 
   await Promise.all(
-    new Array(ratingData[0]?.results)?.map(async (rating: IUserRating) => {
-      // For rating images
-      rating.images = !rating.images.includes('')
-        ? await Promise.all(
-            rating.images.map(async img =>
-              handleStorage(fileStorageProvider!).getFileLink({
-                fileName: img,
-              })
+    (ratingData[0]?.results as unknown as IRating[])?.map(
+      async (rating: IUserRating) => {
+        // For rating images
+        rating.images = !rating?.images?.includes('')
+          ? await Promise.all(
+              rating?.images?.map(async img =>
+                handleStorage(fileStorageProvider!).getFileLink({
+                  fileName: img,
+                })
+              )
             )
-          )
-        : [];
+          : [];
 
-      // For user profile picture
-      if (rating?.user_profile?.profile_picture != null) {
-        rating.user_profile.profile_picture = await handleStorage(
-          fileStorageProvider!
-        ).getFileLink({
-          fileName: rating.user_profile.profile_picture,
-        });
+        // For user profile picture
+        if (rating?.user_profile?.profile_picture != null) {
+          rating.user_profile.profile_picture = await handleStorage(
+            fileStorageProvider!
+          ).getFileLink({
+            fileName: rating.user_profile.profile_picture,
+          });
+        }
+
+        return rating;
       }
-
-      return rating;
-    })
+    )
   );
 
   return {
@@ -204,10 +209,9 @@ export const getRatingCount = async (
 
   const filter: IGetRatingListFilter = {};
 
-  if (productId !== null)
-    filter.product = new Types.ObjectId(String(productId));
+  if (productId != null) filter.product = new Types.ObjectId(String(productId));
 
-  if (rating !== null && rating !== undefined) filter.rating = +rating;
+  if (rating != null) filter.rating = +rating;
   if (user) filter.user = user?._id;
 
   return Rating.aggregate([
@@ -300,4 +304,21 @@ export const getRatingCount = async (
       },
     },
   ]);
+};
+
+export const deleteRating = async (
+  payload: DeleteRatingSchema
+): Promise<IRating | null> => {
+  const { ratingId } = payload as DeleteRatingSchema;
+
+  const ratingData = await findOneDoc<IRating>(MONGOOSE_MODELS.RATING, {
+    _id: ratingId,
+  });
+
+  if (ratingData == null)
+    throw new ApiError(httpStatus.NOT_FOUND, 'Rating not found');
+
+  return findOneAndDeleteDoc<IRating>(MONGOOSE_MODELS.RATING, {
+    _id: ratingData._id,
+  });
 };

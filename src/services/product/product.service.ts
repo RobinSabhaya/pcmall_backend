@@ -200,7 +200,10 @@ export const createUpdateProduct = async (
   });
 
   let productVariantData: IProductVariant | null = null;
-  productVariantData = await handleVariantOperation(reqBody, { user });
+  productVariantData = await handleVariantOperation(
+    { ...reqBody, productId: String(productData?._id) },
+    { user }
+  );
 
   return {
     message,

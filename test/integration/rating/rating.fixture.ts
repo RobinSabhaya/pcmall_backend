@@ -13,7 +13,7 @@ await (async (): Promise<void> => {
 
 export const createUpdateRating = {
   productId: productData != null && String((productData as IProduct)?._id),
-  rating: faker.number.float(),
+  rating: String(faker.number.float()),
   message: `Great product ${faker.commerce.productName()}`,
   // ratingId: "rating id",
   // images: "image",

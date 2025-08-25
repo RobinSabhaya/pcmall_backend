@@ -9,14 +9,19 @@ import {
   createUpdateProduct,
   deleteProduct,
   DeleteProductSchema,
+  generateProductSku,
 } from '../../../src/validations/product.validation';
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
 import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
-import { createProductPayload } from './product.fixture';
-import { ICreateProductResponse, IGetAllProductResponse } from './product.type';
+import { createProductPayload, productSkuPayload } from './product.fixture';
+import {
+  ICreateProductResponse,
+  IGenerateSkuResponse,
+  IGetAllProductResponse,
+} from './product.type';
 
 describe('Product route Integration Tests', () => {
   let app: FastifyInstance;
@@ -68,27 +73,31 @@ describe('Product route Integration Tests', () => {
   });
 
   // TODO : waiting for category seed
-  // describe('POST /generate-sku', () => {
-  //   test('should return 200 for valid POST request', async() => {
-  //     // Validate the payload
-  //     expect(
-  //       validateReqPayload<typeof productSkuPayload>(
-  //         generateProductSku.body,
-  //         productSkuPayload
-  //       )
-  //     ).toBe(true);
+  describe('POST /generate-sku', () => {
+    test('should return 200 for valid POST request', async () => {
+      // Validate the payload
+      expect(
+        validateReqPayload<typeof productSkuPayload>(
+          generateProductSku.body,
+          productSkuPayload
+        )
+      ).toBe(true);
 
-  //     // make request
-  //     const response = await makeRequest<IGenerateSkuResponse>(app, 'POST', '/v1/product/generate-sku', {
-  //       headers : withAuth(),
-  //       body: productSkuPayload,
-  //     });
-  //     console.log("🚀 ~ response:", response)
+      // make request
+      const response = await makeRequest<IGenerateSkuResponse>(
+        app,
+        'POST',
+        '/v1/product/generate-sku',
+        {
+          headers: withAuth(),
+          body: productSkuPayload,
+        }
+      );
 
-  //     // test cases
-  //     expectSuccessResponse(response, httpStatus.OK);
-  //   });
-  // });
+      // test cases
+      expectSuccessResponse(response, httpStatus.OK);
+    });
+  });
 
   describe('POST /delete', () => {
     test('should return 200 for valid DELETE request', async () => {
