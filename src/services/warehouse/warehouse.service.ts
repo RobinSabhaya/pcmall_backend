@@ -32,7 +32,7 @@ export const createUpdateWarehouse = async (
 
   let warehouseData, sellerData, message;
 
-  if (sellerId !== null) {
+  if (sellerId != null) {
     sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
       _id: sellerId,
     });
@@ -42,7 +42,7 @@ export const createUpdateWarehouse = async (
   }
 
   /** Create and Update Inventory*/
-  if (warehouseId !== null) {
+  if (warehouseId != null) {
     /** Get inventory */
     warehouseData = await findOneDoc<IWarehouse>(MONGOOSE_MODELS.WAREHOUSE, {
       _id: warehouseId,
