@@ -35,7 +35,7 @@ export const register = async (
       request.body as RegisterSchema;
 
     // Match password and confirm password
-    if (password.localeCompare(confirm_password) !== 0)
+    if (password.localeCompare(confirm_password))
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
     let user: Partial<IUser | null> = await findOneDoc<IUser>(
@@ -47,7 +47,7 @@ export const register = async (
       throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
     }
 
-    if (password.localeCompare(confirm_password) !== 0)
+    if (password.localeCompare(confirm_password))
       throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
     // Create User

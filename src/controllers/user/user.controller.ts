@@ -93,7 +93,7 @@ export const deleteAddress = async (
 ): Promise<FastifyReply> => {
   try {
     const { addressData } = await userService.deleteAddress(
-      request.params as DeleteAddressSchema
+      request.query as DeleteAddressSchema
     );
 
     return reply.code(httpStatus.OK).send({

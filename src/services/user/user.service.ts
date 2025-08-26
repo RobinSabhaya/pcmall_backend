@@ -95,10 +95,10 @@ export const getUser = async (
   return Promise.all(
     userData.map(async (user: IUserM) => {
       user.user_profile.profile_picture =
-        user.user_profile?.profile_picture !== null &&
-        user.user_profile.profile_picture !== ''
+        user?.user_profile?.profile_picture != null &&
+        user?.user_profile?.profile_picture != ''
           ? await handleStorage(fileStorageProvider!).getFileLink({
-              fileName: user.user_profile.profile_picture,
+              fileName: user?.user_profile?.profile_picture,
             })
           : null;
 
@@ -258,12 +258,12 @@ export const updateUserDetails = async (
   const { user } = options;
 
   if (
-    first_name !== null ||
-    last_name !== null ||
+    first_name != null ||
+    last_name != null ||
     // dob ||
-    gender !== null ||
+    gender != null ||
     // || reqBody?.profile_picture
-    language !== null
+    language != null
   )
     await findOneAndUpdateDoc<IUserProfile>(
       MONGOOSE_MODELS.USER_PROFILE,

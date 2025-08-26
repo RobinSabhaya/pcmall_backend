@@ -6,7 +6,7 @@ import * as userValidation from '@/validations/user.validation';
 
 import { USERROLE } from '../../../helpers/constant.helper';
 
-export default function cartRoute(fastify: FastifyInstance): void {
+export default function userRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
 
   route({
@@ -41,7 +41,7 @@ export default function cartRoute(fastify: FastifyInstance): void {
 
   route({
     method: 'DELETE',
-    url: '/address/delete/:addressId',
+    url: '/address/delete',
     preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: userValidation.deleteAddress,
     description: 'Delete address',

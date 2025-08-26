@@ -2,6 +2,7 @@ import moment from 'moment';
 import { FilterQuery } from 'mongoose';
 
 import {
+  createDoc,
   findOneAndUpdateDoc,
   findOneDoc,
   IFindOptions,
@@ -14,7 +15,7 @@ import {
   IProductVariant,
 } from '@/models/product';
 import { IAddress } from '@/models/shipment';
-import { ISeller, IUser } from '@/models/user';
+import { ISeller, IUser, IUserProfile } from '@/models/user';
 import { IWarehouse } from '@/models/warehouse';
 import * as tokenService from '@/services/auth/token.service';
 import { disconnectDatabase, setupDatabase } from 'test/helpers/setupDatabase';
@@ -59,12 +60,7 @@ export async function fixturesSeed(): Promise<void> {
     await roleSeeder();
 
     // seed user
-    const user = await findOneAndUpdateDoc<IUser>(
-      MONGOOSE_MODELS.USER,
-      userPayload,
-      userPayload,
-      options
-    );
+    const user = await createDoc<IUser>(MONGOOSE_MODELS.USER, userPayload);
 
     if (user != null) {
       const token = tokenService.generateToken(
@@ -81,6 +77,14 @@ export async function fixturesSeed(): Promise<void> {
         options
       );
     }
+
+    // seed user profile
+    await findOneAndUpdateDoc<IUserProfile>(
+      MONGOOSE_MODELS.USER_PROFILE,
+      { user: user?._id },
+      { user: user?._id },
+      options
+    );
 
     // seed user address
     const userAddress = await findOneAndUpdateDoc<IAddress>(

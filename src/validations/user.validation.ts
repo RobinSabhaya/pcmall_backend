@@ -4,7 +4,7 @@ export type GetUserSchema = z.infer<typeof getUser.query>;
 export type UpdateUserSchema = z.infer<typeof updateUser.body>;
 export type DeleteUserSchema = z.infer<typeof deleteUser.query>;
 export type UpdateAddressSchema = z.infer<typeof updateAddress.body>;
-export type DeleteAddressSchema = z.infer<typeof deleteAddress.params>;
+export type DeleteAddressSchema = z.infer<typeof deleteAddress.query>;
 
 export const getUser = {
   query: z.object({}),
@@ -43,7 +43,7 @@ export const updateAddress = {
 };
 
 export const deleteAddress = {
-  params: z.object({
+  query: z.object({
     addressId: z.string(),
   }),
 };
