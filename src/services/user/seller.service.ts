@@ -33,11 +33,11 @@ export const createUpdateSeller = async (
   let sellerData, userData, message;
 
   // Match password and confirm password
-  if (password != confirm_password)
+  if (password.localeCompare(confirm_password))
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
 
   /** Create and Update Seller */
-  if (sellerId !== null) {
+  if (sellerId != null) {
     /** Get seller */
     sellerData = await findOneDoc<ISeller>(MONGOOSE_MODELS.SELLER, {
       _id: sellerId,
@@ -89,7 +89,6 @@ export const deleteSeller = async (
   sellerData: ISeller | null;
 }> => {
   const { sellerId } = reqQuery;
-  console.log('🚀 ~ deleteSeller ~ sellerId:', sellerId);
 
   let sellerData,
     message = '';

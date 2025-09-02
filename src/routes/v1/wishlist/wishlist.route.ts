@@ -11,7 +11,7 @@ export default function wishlistRoute(fastify: FastifyInstance): void {
 
   route({
     method: 'POST',
-    url: '/',
+    url: '/create-update',
     preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     schema: wishlistValidation.createUpdateWishlist,
     description: 'Create & Update wishlist',

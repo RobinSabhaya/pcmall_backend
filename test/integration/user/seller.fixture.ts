@@ -6,4 +6,6 @@ export const createUpdateSeller = {
   businessEmail: faker.internet.email(),
   businessName: faker.finance.accountName(),
   gstNumber: faker.finance.accountNumber(),
+  password: 'password',
+  confirm_password: 'password',
 };
