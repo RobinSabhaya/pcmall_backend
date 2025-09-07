@@ -5,7 +5,10 @@ import fp from 'fastify-plugin';
 import { z } from 'zod';
 import { JSONSchema } from 'zod/v4/core';
 
-import { getExampleFromSchema, zodToOpenApiSchema } from '@/utils/zod.utils';
+import {
+  transformResponseSchemas,
+  zodToOpenApiSchema,
+} from '@/utils/zod.utils';
 
 import { config } from '../config/config';
 
@@ -17,33 +20,8 @@ const transformSchemaProperty = (
     return schemaProperty;
   }
 
-  const openApiSchema = zodToOpenApiSchema(schemaProperty as z.ZodSchema);
-  return {
-    ...openApiSchema,
-    example: getExampleFromSchema(openApiSchema),
-  };
+  return zodToOpenApiSchema(schemaProperty as z.ZodSchema);
 };
-
-// Helper function to transform response schemas
-// const transformResponseSchemas = (
-//   response: Record<string, any>
-// ): Record<string, any> => {
-//   const transformedResponse: Record<string, any> = {};
-
-//   for (const [statusCode, responseSchema] of Object.entries(response)) {
-//     if (typeof responseSchema === 'object') {
-//       const openApiSchema = zodToOpenApiSchema(responseSchema as z.ZodSchema);
-//       transformedResponse[statusCode] = {
-//         ...openApiSchema,
-//         example: getExampleFromSchema(openApiSchema),
-//       };
-//     } else {
-//       transformedResponse[statusCode] = responseSchema;
-//     }
-//   }
-
-//   return transformedResponse;
-// };
 
 export default fp(async (fastify: FastifyInstance) => {
   await fastify.register(swagger, {
@@ -72,25 +50,25 @@ export default fp(async (fastify: FastifyInstance) => {
     transform: ({ schema, url }) => {
       // Transform body schema
       if (schema?.body != null) {
-        schema.body = transformSchemaProperty(schema.body as z.ZodSchema);
+        schema.body = transformSchemaProperty(schema.body as z.ZodAny);
       }
 
       // Transform params schema
       if (schema?.params != null) {
-        schema.params = transformSchemaProperty(schema.params as z.ZodSchema);
+        schema.params = transformSchemaProperty(schema.params as z.ZodAny);
       }
 
       // Transform querystring schema
       if (schema?.querystring != null) {
         schema.querystring = transformSchemaProperty(
-          schema.querystring as z.ZodSchema
+          schema.querystring as z.ZodAny
         );
       }
 
       // Transform response schemas (commented out in original)
-      // if (schema?.response != null) {
-      //   schema.response = transformResponseSchemas(schema.response);
-      // }
+      if (schema?.response != null) {
+        schema.response = transformResponseSchemas(schema.response as z.ZodAny);
+      }
 
       return { schema, url };
     },
@@ -102,5 +80,6 @@ export default fp(async (fastify: FastifyInstance) => {
       docExpansion: 'list',
       deepLinking: false,
     },
+    staticCSP: `default-src 'self'; connect-src 'self' http://127.0.0.1:${config.port} http://localhost:${config.port}`,
   });
 });

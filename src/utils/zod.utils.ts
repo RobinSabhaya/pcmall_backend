@@ -1,18 +1,5 @@
-import { StatusCodeReply } from 'fastify/types/utils';
 import { z } from 'zod';
 import { JSONSchema } from 'zod/v4/core';
-
-export function getExampleFromSchema(
-  schema: JSONSchema.BaseSchema
-): Record<string, string> {
-  const example: Record<string, string> = {};
-  for (const [key, value] of Object.entries(
-    schema.properties as Record<string, JSONSchema.BaseSchema>
-  )) {
-    example[key] = value.type ?? 'unknown';
-  }
-  return example;
-}
 
 // Helper function to convert Zod schema to proper OpenAPI schema
 export function zodToOpenApiSchema(
@@ -60,40 +47,21 @@ export function zodToOpenApiSchema(
   return cleanSchema(jsonSchema);
 }
 
-export const createSuccessSchema = (): z.ZodSchema =>
-  z.object({
-    success: z.boolean().default(true),
-    message: z.string().optional(),
-    data: z.object(),
-  });
+export const transformResponseSchemas = (
+  response: z.ZodAny
+): JSONSchema.BaseSchema => {
+  const transformedResponse: Record<string, unknown> = {};
 
-export const createErrorSchema = (): z.ZodSchema =>
-  z.object({
-    success: z.boolean().default(false),
-    message: z.string(),
-  });
-
-export const createPaginatedSchema = (): z.ZodSchema =>
-  z.object({
-    success: z.boolean().default(true),
-    data: z.object({
-      results: z
-        .object({
-          page: z.number(),
-          limit: z.number(),
-          total: z.number(),
-          totalPages: z.number(),
-        })
-        .optional(),
-    }),
-  });
-
-export const createStandardResponses = (
-  statusCode: StatusCodeReply
-): z.ZodSchema => {
-  if (statusCode === statusCode[200] || statusCode === statusCode[201]) {
-    return createSuccessSchema();
+  for (const [statusCode, responseSchema] of Object.entries(response)) {
+    if (typeof responseSchema === 'object') {
+      const openApiSchema = zodToOpenApiSchema(responseSchema as z.ZodSchema);
+      transformedResponse[statusCode] = {
+        ...openApiSchema,
+      };
+    } else {
+      transformedResponse[statusCode] = responseSchema;
+    }
   }
 
-  return createErrorSchema();
+  return transformedResponse;
 };
