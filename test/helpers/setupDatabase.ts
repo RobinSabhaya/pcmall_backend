@@ -4,7 +4,7 @@ import { config } from '../../src/config/config';
 
 export const setupDatabase = async (): Promise<Mongoose | Error> => {
   try {
-    const db = await mongoose.connect(config.mongoose.url);
+    const db = await mongoose.connect(`${config.mongoose.url}-test`);
     console.log('Database connected ✅');
     return db;
   } catch (error) {
