@@ -21,7 +21,7 @@ export const createPaymentRefund = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: paymentData,
+      data: { paymentData },
       message,
     });
   } catch (error) {

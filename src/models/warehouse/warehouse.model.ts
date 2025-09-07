@@ -10,7 +10,7 @@ export interface IWarehouse extends Document, IBaseDocumentModel {
   createdBy: Schema.Types.ObjectId;
   updatedBy: Schema.Types.ObjectId;
 }
-const warehouseSchema = new Schema<IWarehouse>(
+export const warehouseSchema = new Schema<IWarehouse>(
   {
     name: String,
     seller: { type: Schema.Types.ObjectId, ref: 'Seller' },

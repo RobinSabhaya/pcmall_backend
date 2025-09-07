@@ -22,8 +22,8 @@ export const addRemoveWishlist = async (
 
     return reply.status(httpStatus.OK).send({
       success: true,
-      data: wishlistData,
       message,
+      data: { wishlistData },
     });
   } catch (error) {
     throw new ApiError(

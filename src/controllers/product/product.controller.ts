@@ -28,7 +28,7 @@ export const getAllProducts = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: productData[0],
+      data: { productData: productData[0] },
     });
   } catch (error) {
     throw new ApiError(
@@ -74,7 +74,7 @@ export const deleteProduct = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: productData,
+      data: { productData },
     });
   } catch (error) {
     throw new ApiError(

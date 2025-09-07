@@ -62,7 +62,7 @@ export const createUpdateRating = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: ratingData,
+      data: { ratingData },
     });
   } catch (error) {
     throw new ApiError(
@@ -149,7 +149,7 @@ export const deleteRating = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message: 'Rating deleted successfully',
-      data: ratingData,
+      data: { ratingData },
     });
   } catch (error) {
     throw new ApiError(

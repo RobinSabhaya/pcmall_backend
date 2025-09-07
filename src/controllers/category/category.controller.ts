@@ -21,6 +21,6 @@ export const getAllCategories = async (
 
   return reply.code(httpStatus.OK).send({
     success: true,
-    data: categoryData,
+    data: { categoryData },
   });
 };

@@ -47,14 +47,14 @@ describe('Cart route Integration Tests', () => {
 
       // make request
       const response = await makeRequest<{
-        data: ICart;
+        data: { cartData: ICart };
       }>(app, 'POST', '/v1/cart/add', {
         headers: withAuth(),
         body: addToCartPayload,
       });
 
       // set cart data
-      cartData = response.body.data;
+      cartData = response?.body?.data?.cartData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

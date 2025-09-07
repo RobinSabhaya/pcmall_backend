@@ -1,5 +1,9 @@
 import z from 'zod';
 
+import { orderSchema } from '../models/orders';
+
+import { baseResponseSchema } from './response.validation';
+
 export type GetOrderListSchema = z.infer<typeof getOrderList.query>;
 
 export const getOrderList = {
@@ -8,4 +12,5 @@ export const getOrderList = {
     limit: z.number().optional().default(10),
     sortBy: z.string().optional(),
   }),
+  response: baseResponseSchema({ data: { ordersData: orderSchema } }),
 };

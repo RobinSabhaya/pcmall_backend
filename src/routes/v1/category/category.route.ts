@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify';
 import * as categoryController from '@/controllers/category/category.controller';
 import { USERROLE } from '@/helpers/constant.helper';
 import { createBaseRoute } from '@/utils/baseRoute';
+import * as categoryValidation from '@/validations/category.validation';
 
 export default function categoryRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
@@ -10,7 +11,7 @@ export default function categoryRoute(fastify: FastifyInstance): void {
     method: 'GET',
     url: '/all',
     preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
-    // schema: categoryValidation.allCategory,
+    schema: categoryValidation.allCategory,
     description: 'Get category',
     tags: ['Category'],
     handler: categoryController.getAllCategories,

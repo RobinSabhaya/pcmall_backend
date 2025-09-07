@@ -2,13 +2,13 @@ import { IAddress, IUser } from '../../../src/models/user';
 import { IUserM } from '../../../src/services/user/users.service.type';
 
 export interface IUpdateUserResponse {
-  data: IUser;
+  data: { userData: IUser };
 }
 
 export interface IGetDetailsResponse {
-  data: IUserM;
+  data: { userData: IUserM };
 }
 
 export interface IAddressUpdateResponse {
-  data: IAddress;
+  data: { addressData: IAddress };
 }

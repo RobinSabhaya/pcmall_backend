@@ -50,7 +50,9 @@ describe('Rating route Integration Tests', () => {
 
       // make request
       const response = await makeRequest<{
-        data: IRating;
+        data: {
+          ratingData: IRating;
+        };
       }>(app, 'POST', '/v1/rating/create-update', {
         headers: withAuth(),
         body: ratingFormData,
@@ -59,7 +61,7 @@ describe('Rating route Integration Tests', () => {
       // TODO: pending update
 
       // set data
-      ratingData = response.body.data;
+      ratingData = response?.body?.data?.ratingData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

@@ -62,7 +62,7 @@ describe('Inventory route Integration Tests', () => {
       // TODO: pending update
 
       // set data
-      inventoryData = response.body.data;
+      inventoryData = response?.body?.data?.inventoryData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

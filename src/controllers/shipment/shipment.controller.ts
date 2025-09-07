@@ -83,7 +83,7 @@ export const track = async (
 
     return reply.status(httpStatus.OK).send({
       success: true,
-      data: tracking,
+      data: { trackingData: tracking },
       message: 'Shipping update successfully!',
     });
   } catch (error) {

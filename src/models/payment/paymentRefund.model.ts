@@ -15,7 +15,7 @@ export interface IPaymentRefund extends Document, IBaseDocumentModel {
   status: string;
 }
 
-const paymentRefundSchema = new Schema<IPaymentRefund>(
+export const paymentRefundSchema = new Schema<IPaymentRefund>(
   {
     paymentId: {
       type: Schema.Types.ObjectId,

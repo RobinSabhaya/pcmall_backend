@@ -13,7 +13,9 @@ export interface ICreateProductResponse {
 }
 
 export interface IGetAllProductResponse {
-  data: IPaginationResponse<IProduct>;
+  data: {
+    productData: IPaginationResponse<IProduct>;
+  };
 }
 
 export interface IGenerateSkuResponse {

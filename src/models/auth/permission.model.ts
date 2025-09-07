@@ -9,7 +9,7 @@ export interface IPermission extends Document, IBaseDocumentModel {
   is_active: boolean;
 }
 
-const permissionSchema = new Schema<IPermission>(
+export const permissionSchema = new Schema<IPermission>(
   {
     module: {
       type: String,

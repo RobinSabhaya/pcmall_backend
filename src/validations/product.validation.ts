@@ -1,5 +1,13 @@
 import z from 'zod';
 
+import { productSchema, sKUSchema, variantSchema } from '../models/product';
+import { mongooseToZod } from '../utils/mongooseToZod';
+
+import {
+  baseResponseSchema,
+  customResponseSchema,
+} from './response.validation';
+
 export type CreateUpdateProductSchema = z.infer<
   typeof createUpdateProduct.body
 >;
@@ -21,12 +29,19 @@ export const createUpdateProduct = {
     modelNumber: z.string().optional(),
     tags: z.array(z.string()),
   }),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      productData: mongooseToZod(productSchema),
+      productVariantData: mongooseToZod(variantSchema),
+    }),
+  }),
 };
 
 export const deleteProduct = {
   query: z.object({
     productId: z.string().optional(),
   }),
+  response: baseResponseSchema({ data: { productData: productSchema } }),
 };
 
 export const getAllProducts = {
@@ -35,6 +50,10 @@ export const getAllProducts = {
     colors: z.array(z.string()).optional(),
     prices: z.object().optional(),
     productId: z.string().optional(),
+  }),
+  response: baseResponseSchema({
+    isPagination: true,
+    data: { productData: productSchema },
   }),
 };
 
@@ -45,5 +64,11 @@ export const generateProductSku = {
     price: z.number().optional(),
     discount: z.number().optional(),
     tax: z.number().optional(),
+  }),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      productData: mongooseToZod(productSchema),
+      productSkuData: mongooseToZod(sKUSchema),
+    }),
   }),
 };

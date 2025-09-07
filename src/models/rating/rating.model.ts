@@ -11,7 +11,7 @@ export interface IRating extends Document, IBaseDocumentModel {
   images: Array<string>;
 }
 
-const ratingSchema = new Schema<IRating>(
+export const ratingSchema = new Schema<IRating>(
   {
     product: {
       type: Schema.Types.ObjectId,

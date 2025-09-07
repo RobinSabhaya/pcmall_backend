@@ -1,5 +1,13 @@
 import z from 'zod';
 
+import { inventorySchema } from '../models/inventory';
+import { mongooseToZod } from '../utils/mongooseToZod';
+
+import {
+  baseResponseSchema,
+  customResponseSchema,
+} from './response.validation';
+
 export type CreateUpdateInventorySchema = z.infer<
   typeof createUpdateInventory.body
 >;
@@ -16,12 +24,21 @@ export const createUpdateInventory = {
     inbound: z.number().optional(),
     outbound: z.number().optional(),
   }),
+  response: baseResponseSchema({ data: { inventoryData: inventorySchema } }),
 };
 
 export const deleteInventory = {
   query: z.object({
     inventoryId: z.string(),
   }),
+  response: baseResponseSchema({ data: { inventoryData: inventorySchema } }),
 };
 
-export const getAllInventory = { query: z.object({}) };
+export const getAllInventory = {
+  query: z.object({}),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      inventoryData: mongooseToZod(inventorySchema),
+    }),
+  }),
+};

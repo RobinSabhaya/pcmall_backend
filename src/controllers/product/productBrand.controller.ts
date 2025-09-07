@@ -19,7 +19,7 @@ export const createUpdateBrand = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: brandData,
+      data: { brandData },
     });
   } catch (error) {
     throw new ApiError(
@@ -43,7 +43,7 @@ export const deleteBrand = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: brandData,
+      data: { brandData },
     });
   } catch (error) {
     throw new ApiError(
@@ -62,7 +62,7 @@ export const getAllBrands = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: brandData,
+      data: { brandData },
     });
   } catch (error) {
     throw new ApiError(

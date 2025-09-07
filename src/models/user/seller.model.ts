@@ -10,7 +10,7 @@ export interface ISeller extends Document, IBaseDocumentModel {
   gstNumber: string;
 }
 
-const sellerSchema = new Schema<ISeller>(
+export const sellerSchema = new Schema<ISeller>(
   {
     user: {
       type: Schema.Types.ObjectId,

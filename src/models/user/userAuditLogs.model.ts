@@ -10,7 +10,7 @@ export interface IUserAuditLog extends Document, IBaseDocumentModel {
   user_agent: string;
 }
 
-const userAuditLogSchema = new Schema<IUserAuditLog>(
+export const userAuditLogSchema = new Schema<IUserAuditLog>(
   {
     user: {
       type: Schema.Types.ObjectId,

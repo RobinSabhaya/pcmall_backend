@@ -1,13 +1,13 @@
 import { ISeller } from '../../../src/models/user';
 
 export interface ICreateUpdateSellerResponse {
-  data: ISeller;
+  data: { sellerData: ISeller };
 }
 
 export interface IDeleteSellerResponse {
-  data: ISeller;
+  data: { sellerData: ISeller };
 }
 
 export interface IGetAllSellersResponse {
-  data: ISeller[];
+  data: { sellerData: ISeller[] };
 }

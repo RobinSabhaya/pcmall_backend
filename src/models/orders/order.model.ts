@@ -26,7 +26,7 @@ export interface IOrder extends Document, IBaseDocumentModel {
   metadata: object;
 }
 
-const orderItemSchema = new Schema<IOrderItem>({
+export const orderItemSchema = new Schema<IOrderItem>({
   variant: {
     type: Schema.Types.ObjectId,
     ref: 'Product_Variant',
@@ -37,7 +37,7 @@ const orderItemSchema = new Schema<IOrderItem>({
   totalPrice: { type: Number, required: true },
 });
 
-const orderSchema = new Schema<IOrder>(
+export const orderSchema = new Schema<IOrder>(
   {
     user: {
       type: Schema.Types.ObjectId,

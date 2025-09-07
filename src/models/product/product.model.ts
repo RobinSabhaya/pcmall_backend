@@ -18,7 +18,7 @@ export interface IProduct extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const productSchema = new Schema<IProduct>(
+export const productSchema = new Schema<IProduct>(
   {
     title: { type: String, trim: true },
     description: { type: String, trim: true },

@@ -56,7 +56,7 @@ describe('Warehouse route Integration Tests', () => {
       );
 
       // set data
-      warehouseData = response.body.data;
+      warehouseData = response?.body?.data?.warehouseData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

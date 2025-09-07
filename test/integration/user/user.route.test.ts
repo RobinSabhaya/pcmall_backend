@@ -105,7 +105,7 @@ describe('User route Integration Tests', () => {
       );
 
       // set data
-      addressData = response.body.data;
+      addressData = response?.body?.data?.addressData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

@@ -15,7 +15,7 @@ export interface IUserSecurity extends Document, IBaseDocumentModel {
   lockout_time: Date;
 }
 
-const loginHistorySchema = new Schema<ILoginHistory>(
+export const loginHistorySchema = new Schema<ILoginHistory>(
   {
     ip_address: {
       type: String,
@@ -29,7 +29,7 @@ const loginHistorySchema = new Schema<ILoginHistory>(
   { _id: false }
 );
 
-const userSecuritySchema = new Schema<IUserSecurity>(
+export const userSecuritySchema = new Schema<IUserSecurity>(
   {
     user: {
       type: Schema.Types.ObjectId,

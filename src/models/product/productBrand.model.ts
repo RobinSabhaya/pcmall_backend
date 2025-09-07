@@ -39,7 +39,7 @@ export interface IProductBrand extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const brandSchema = new Schema<IProductBrand>(
+export const brandSchema = new Schema<IProductBrand>(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, trim: true },

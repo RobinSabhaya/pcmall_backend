@@ -19,7 +19,7 @@ export interface IPayment extends Document, IBaseDocumentModel {
   status: string;
 }
 
-const paymentSchema = new Schema<IPayment>(
+export const paymentSchema = new Schema<IPayment>(
   {
     orderId: {
       type: Schema.Types.ObjectId,

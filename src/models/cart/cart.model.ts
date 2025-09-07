@@ -11,7 +11,7 @@ export interface ICart extends Document, IBaseDocumentModel {
   status: string;
 }
 
-const cartSchema = new Schema<ICart>(
+export const cartSchema = new Schema<ICart>(
   {
     user: {
       type: Schema.Types.ObjectId,

@@ -1,9 +1,9 @@
 import { IInventory } from '../../../src/models/inventory';
 
 export interface ICreateUpdateInventoryResponse {
-  data: IInventory;
+  data: { inventoryData: IInventory };
 }
 
 export interface IGetAllInventoryResponse {
-  data: IInventory[];
+  data: { inventoryData: IInventory[] };
 }

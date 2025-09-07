@@ -72,7 +72,6 @@ describe('Product route Integration Tests', () => {
     });
   });
 
-  // TODO : waiting for category seed
   describe('POST /generate-sku', () => {
     test('should return 200 for valid POST request', async () => {
       // Validate the payload
@@ -139,7 +138,7 @@ describe('Product route Integration Tests', () => {
       expectSuccessResponse(response, httpStatus.OK);
 
       // check at least one item exists
-      expect(response.body.data.results).toBeDefined();
+      expect(response.body.data.productData.results).toBeDefined();
     });
   });
 });

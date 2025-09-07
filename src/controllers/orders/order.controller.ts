@@ -26,7 +26,7 @@ export const getOrderList = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: orderData[0],
+      data: { ordersData: orderData[0] },
     });
   } catch (error) {
     throw new ApiError(

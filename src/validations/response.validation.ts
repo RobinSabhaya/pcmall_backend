@@ -5,27 +5,43 @@ import z from 'zod';
 import { mongooseToZod, ZodFieldsRecord } from '../utils/mongooseToZod';
 
 // types
+export type ResponseDataType = Record<string, z.ZodObject<ZodFieldsRecord>>;
+
 export interface IBaseResponse {
   isPagination?: boolean;
-  mongooseSchema: Schema;
+  data: Record<string, Schema>;
 }
 
-export const createSuccessResponseSchema = (schema: Schema): object => {
+export const createSuccessResponseSchema = (
+  data: Record<string, Schema>
+): object => {
+  const responseData: ResponseDataType = {};
+
+  for (const [keys, values] of Object.entries(data)) {
+    responseData[keys] = mongooseToZod(values);
+  }
+
   return {
     [httpStatus.OK]: z.object({
       success: z.boolean().default(true),
       message: z.string().optional(),
-      data: mongooseToZod(schema),
+      data: z.object(responseData),
     }),
   };
 };
 
-export const createResponseSchema = (schema: Schema): object => {
+export const createResponseSchema = (data: Record<string, Schema>): object => {
+  const responseData: ResponseDataType = {};
+
+  for (const [keys, values] of Object.entries(data)) {
+    responseData[keys] = mongooseToZod(values);
+  }
+
   return {
     [httpStatus.CREATED]: z.object({
       success: z.boolean().default(true),
       message: z.string().optional(),
-      data: mongooseToZod(schema),
+      data: z.object(responseData),
     }),
   };
 };
@@ -62,17 +78,34 @@ export const createPaginatedResponseSchema = (
 
 export const baseResponseSchema = ({
   isPagination = false,
-  mongooseSchema,
-}: IBaseResponse): object => {
+  data,
+}: IBaseResponse): { [statusCode: number]: z.ZodTypeAny } => {
   return {
     // success
-    ...createSuccessResponseSchema(mongooseSchema),
+    ...createSuccessResponseSchema(data),
     // create
-    ...createResponseSchema(mongooseSchema),
+    ...createResponseSchema(data),
     // error
     ...createErrorResponseSchema(),
     // pagination
     ...(isPagination &&
-      createPaginatedResponseSchema(mongooseToZod(mongooseSchema))),
+      createPaginatedResponseSchema(mongooseToZod(Object.values(data)[0]))),
+  };
+};
+
+export const customResponseSchema = ({
+  zodSchema,
+}: {
+  zodSchema: z.ZodSchema;
+}): { [statusCode: number]: z.ZodTypeAny } => {
+  return {
+    // error
+    ...createErrorResponseSchema(),
+    // custom
+    [httpStatus.OK]: z.object({
+      success: z.boolean().default(true),
+      message: z.string().optional(),
+      data: zodSchema,
+    }),
   };
 };

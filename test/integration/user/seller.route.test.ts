@@ -57,7 +57,7 @@ describe('Seller route Integration', () => {
 
       // TODO: update pending
 
-      sellerData = response.body.data;
+      sellerData = response?.body?.data?.sellerData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);

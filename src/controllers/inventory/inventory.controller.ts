@@ -24,7 +24,7 @@ export const createUpdateInventory = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: inventoryData,
+      data: { inventoryData },
     });
   } catch (error) {
     throw new ApiError(
@@ -46,7 +46,7 @@ export const deleteInventory = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: inventoryData,
+      data: { inventoryData },
     });
   } catch (error) {
     throw new ApiError(
@@ -65,7 +65,7 @@ export const getAllInventory = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: inventoryData,
+      data: { inventoryData },
     });
   } catch (error) {
     throw new ApiError(

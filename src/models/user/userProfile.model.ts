@@ -20,7 +20,7 @@ export interface IUserProfile extends Document, IBaseDocumentModel {
   metadata: Schema.Types.Mixed;
 }
 
-const userProfileSchema = new Schema<IUserProfile>(
+export const userProfileSchema = new Schema<IUserProfile>(
   {
     user: {
       type: Schema.Types.ObjectId,

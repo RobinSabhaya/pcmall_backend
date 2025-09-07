@@ -13,7 +13,7 @@ export interface IInventory extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const inventorySchema = new Schema(
+export const inventorySchema = new Schema(
   {
     sku: { type: Schema.Types.ObjectId, ref: 'Product_Sku' },
     warehouse: { type: Schema.Types.ObjectId, ref: 'Warehouse' },

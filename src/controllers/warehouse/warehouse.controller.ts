@@ -21,7 +21,7 @@ export const createUpdateWarehouse = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: warehouseData,
+      data: { warehouseData },
     });
   } catch (error) {
     throw new ApiError(
@@ -43,7 +43,7 @@ export const deleteWarehouse = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: warehouseData,
+      data: { warehouseData },
     });
   } catch (error) {
     throw new ApiError(
@@ -61,7 +61,7 @@ export const getAllWarehouse = async (
     const { warehouseData } = await warehouseService.getAllWarehouse({});
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: warehouseData,
+      data: { warehouseData },
     });
   } catch (error) {
     throw new ApiError(

@@ -19,7 +19,7 @@ export interface IProductSKU extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const sKUSchema = new Schema<IProductSKU>(
+export const sKUSchema = new Schema<IProductSKU>(
   {
     seller: { type: Schema.Types.ObjectId, ref: 'Seller' },
     variant: { type: Schema.Types.ObjectId, ref: 'Variant' },

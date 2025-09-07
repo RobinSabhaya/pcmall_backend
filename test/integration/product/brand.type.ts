@@ -1,9 +1,9 @@
 import { IProductBrand } from '../../../src/models/product';
 
 export interface ICreateProductBrandResponse {
-  data: IProductBrand;
+  data: { brandData: IProductBrand };
 }
 
 export interface IGetAllProductBrandResponse {
-  data: IProductBrand[];
+  data: { brandData: IProductBrand[] };
 }

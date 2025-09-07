@@ -11,7 +11,7 @@ export interface IProductVariant extends Document, IBaseDocumentModel {
   updatedBy: Schema.Types.ObjectId;
 }
 
-const variantSchema = new Schema<IProductVariant>(
+export const variantSchema = new Schema<IProductVariant>(
   {
     product: { type: Schema.Types.ObjectId, ref: 'Product' },
     name: {

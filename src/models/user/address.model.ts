@@ -13,7 +13,7 @@ export interface IAddress extends Document, IBaseDocumentModel {
   isPrimary: boolean;
 }
 
-const addressSchema = new Schema<IAddress>(
+export const addressSchema = new Schema<IAddress>(
   {
     user: {
       type: Schema.Types.ObjectId,

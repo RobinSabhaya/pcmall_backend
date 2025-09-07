@@ -9,7 +9,7 @@ export interface ICategory extends Document, IBaseDocumentModel {
   deletedAt: Date | null;
 }
 
-const categorySchema = new Schema<ICategory>(
+export const categorySchema = new Schema<ICategory>(
   {
     categoryName: {
       type: String,

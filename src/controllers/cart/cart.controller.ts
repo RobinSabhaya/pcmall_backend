@@ -28,7 +28,7 @@ export const addToCart = async (
 
   return reply.code(httpStatus.OK).send({
     success: true,
-    data: cartData,
+    data: { cartData },
     message: 'Cart added successfully',
   });
 };
@@ -49,7 +49,7 @@ export const updateToCart = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: cartData,
+      data: { cartData },
       message: 'Cart updated successfully',
     });
   } catch (error) {

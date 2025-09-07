@@ -5,7 +5,7 @@ export interface IWishlist extends Document {
   product: Schema.Types.ObjectId;
 }
 
-const wishlistSchema = new Schema<IWishlist>(
+export const wishlistSchema = new Schema<IWishlist>(
   {
     user: {
       type: Schema.Types.ObjectId,

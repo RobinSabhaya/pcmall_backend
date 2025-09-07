@@ -27,7 +27,7 @@ export const updateUser = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: userData,
+      data: { userData },
     });
   } catch (error) {
     throw new ApiError(
@@ -55,7 +55,7 @@ export const getUser = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: userData[0],
+      data: { userData: userData[0] },
     });
   } catch (error) {
     throw new ApiError(
@@ -77,7 +77,7 @@ export const updateAddress = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message: 'Address updated successfully!',
-      data: addressData,
+      data: { addressData },
     });
   } catch (error) {
     throw new ApiError(
@@ -99,7 +99,7 @@ export const deleteAddress = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message: 'Address delete successfully',
-      data: addressData,
+      data: { addressData },
     });
   } catch (error) {
     throw new ApiError(

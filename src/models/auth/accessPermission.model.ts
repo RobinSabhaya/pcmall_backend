@@ -7,7 +7,7 @@ export interface IAccessPermission extends Document, IBaseDocumentModel {
   permission: Schema.Types.ObjectId;
 }
 
-const accessPermissionSchema = new Schema<IAccessPermission>(
+export const accessPermissionSchema = new Schema<IAccessPermission>(
   {
     role: {
       type: Schema.Types.ObjectId,

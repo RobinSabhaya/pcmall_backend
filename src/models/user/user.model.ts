@@ -25,7 +25,7 @@ export interface IUserModel extends Model<IUser> {
   isPasswordMatch: (password: string) => Promise<boolean>;
 }
 
-const userSchema = new Schema<IUser>(
+export const userSchema = new Schema<IUser>(
   {
     email: {
       type: String,

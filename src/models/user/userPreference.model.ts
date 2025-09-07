@@ -13,7 +13,7 @@ export interface IUserPreference extends Document, IBaseDocumentModel {
   newsletter_opt_in: boolean;
 }
 
-const userPreferenceSchema = new Schema<IUserPreference>(
+export const userPreferenceSchema = new Schema<IUserPreference>(
   {
     user: {
       type: Schema.Types.ObjectId,

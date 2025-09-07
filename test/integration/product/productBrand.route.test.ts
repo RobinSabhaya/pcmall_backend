@@ -63,7 +63,7 @@ describe('Product Brand route Integration Tests', () => {
 
       // set data
       const { data } = response.body;
-      productBrandData = data;
+      productBrandData = data?.brandData;
 
       // test cases
       expectSuccessResponse(response, httpStatus.OK);
@@ -115,7 +115,7 @@ describe('Product Brand route Integration Tests', () => {
       expectSuccessResponse(response, httpStatus.OK);
 
       // check at least one item exists
-      expect(response.body.data).toBeDefined();
+      expect(response.body.data.brandData).toBeDefined();
     });
   });
 });

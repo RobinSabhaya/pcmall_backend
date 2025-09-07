@@ -20,7 +20,7 @@ export interface IDeviceInfo {
   user_agent: string;
 }
 
-const deviceInfoSchema = new Schema<IDeviceInfo>(
+export const deviceInfoSchema = new Schema<IDeviceInfo>(
   {
     device_id: {
       type: String,
@@ -53,7 +53,7 @@ export interface IToken extends Document, IBaseDocumentModel {
   blacklisted: boolean;
 }
 
-const tokenSchema = new Schema<IToken>(
+export const tokenSchema = new Schema<IToken>(
   {
     token: {
       type: String,

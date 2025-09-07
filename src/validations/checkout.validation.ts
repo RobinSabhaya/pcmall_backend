@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { customResponseSchema } from './response.validation';
+
 export type CheckoutSchema = z.infer<typeof checkout.body>;
 
 export const checkout = {
@@ -17,5 +19,10 @@ export const checkout = {
     shippoShipmentId: z.string(),
     rateObjectId: z.string(),
     cartIds: z.array(z.string()),
+  }),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      checkoutUrl: z.string(),
+    }),
   }),
 };

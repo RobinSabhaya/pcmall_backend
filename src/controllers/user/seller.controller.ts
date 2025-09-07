@@ -21,7 +21,7 @@ export const createUpdateSeller = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: sellerData,
+      data: { sellerData },
     });
   } catch (error) {
     throw new ApiError(
@@ -43,7 +43,7 @@ export const deleteSeller = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       message,
-      data: sellerData,
+      data: { sellerData },
     });
   } catch (error) {
     throw new ApiError(
@@ -62,7 +62,7 @@ export const getAllSellers = async (
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      data: sellerData,
+      data: { sellerData },
     });
   } catch (error) {
     throw new ApiError(

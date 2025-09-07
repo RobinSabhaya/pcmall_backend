@@ -8,7 +8,7 @@ export interface ISubCategory extends Document, IBaseDocumentModel {
   deletedAt: Date | null;
 }
 
-const subCategorySchema = new Schema<ISubCategory>(
+export const subCategorySchema = new Schema<ISubCategory>(
   {
     subCategoryName: {
       type: String,

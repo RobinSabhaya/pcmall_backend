@@ -1,5 +1,13 @@
 import z from 'zod';
 
+import { userSchema } from '../models/user';
+import { mongooseToZod } from '../utils/mongooseToZod';
+
+import {
+  baseResponseSchema,
+  customResponseSchema,
+} from './response.validation';
+
 export type RegisterSchema = z.infer<typeof register.body>;
 export type SignupSchema = z.infer<typeof signup.body>;
 export type LoginSchema = z.infer<typeof login.body>;
@@ -9,6 +17,13 @@ export type ForgotPasswordSchema = z.infer<typeof forgotPassword.query>;
 export type ResetPasswordSchema = z.infer<typeof resetPassword>;
 export type VerifyEmailSchema = z.infer<typeof verifyEmail>;
 
+export const tokenZodSchema = z.object({
+  tokens: z.object({
+    access: z.object({ token: z.string(), expires: z.string() }),
+    refresh: z.object({ token: z.string(), expires: z.string() }),
+  }),
+});
+
 export const register = {
   body: z.object({
     email: z.string().nonempty('Email is required'),
@@ -16,6 +31,7 @@ export const register = {
     confirm_password: z.string(),
     first_name: z.string(),
   }),
+  response: baseResponseSchema({ data: { user: userSchema } }),
 };
 
 export const signup = {
@@ -25,12 +41,21 @@ export const signup = {
     confirm_password: z.string(),
     first_name: z.string(),
   }),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      user: mongooseToZod(userSchema),
+      tokens: tokenZodSchema,
+    }),
+  }),
 };
 
 export const login = {
   body: z.object({
     email: z.string().nonempty('Email is required'),
     password: z.string(),
+  }),
+  response: customResponseSchema({
+    zodSchema: tokenZodSchema,
   }),
 };
 
@@ -43,6 +68,9 @@ export const logout = {
 export const refreshTokens = {
   body: z.object({
     refreshToken: z.string(),
+  }),
+  response: customResponseSchema({
+    zodSchema: tokenZodSchema,
   }),
 };
 

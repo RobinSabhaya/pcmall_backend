@@ -70,7 +70,7 @@ export interface IShipment extends Document, IBaseDocumentModel {
   shippingCarrier: string;
 }
 
-const trackingStatusSchema = new Schema<IShippingTracking>(
+export const trackingStatusSchema = new Schema<IShippingTracking>(
   {
     status: String,
     statusDetails: String,
@@ -79,7 +79,7 @@ const trackingStatusSchema = new Schema<IShippingTracking>(
   { _id: false }
 );
 
-const addressSchema = new Schema<IAddress>(
+export const addressSchema = new Schema<IAddress>(
   {
     name: String,
     street1: String,
@@ -94,7 +94,7 @@ const addressSchema = new Schema<IAddress>(
   { _id: false }
 );
 
-const parcelSchema = new Schema<IShippingParcel>(
+export const parcelSchema = new Schema<IShippingParcel>(
   {
     length: Number,
     width: Number,
@@ -106,7 +106,7 @@ const parcelSchema = new Schema<IShippingParcel>(
   { _id: false }
 );
 
-const rateSchema = new Schema<IShippingRate>(
+export const rateSchema = new Schema<IShippingRate>(
   {
     provider: String,
     serviceLevelName: String,
@@ -118,7 +118,7 @@ const rateSchema = new Schema<IShippingRate>(
   { _id: false }
 );
 
-const labelSchema = new Schema<IShippingLabel>(
+export const labelSchema = new Schema<IShippingLabel>(
   {
     labelUrl: String,
     labelType: String,
@@ -129,7 +129,7 @@ const labelSchema = new Schema<IShippingLabel>(
   { _id: false }
 );
 
-const shipmentSchema = new Schema<IShipment>(
+export const shipmentSchema = new Schema<IShipment>(
   {
     shippoShipmentId: { type: String, unique: true, index: true },
     status: { type: String, default: SHIPPINGSTATUS.PENDING, index: true },

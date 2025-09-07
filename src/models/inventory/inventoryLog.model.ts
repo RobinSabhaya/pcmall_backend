@@ -11,7 +11,7 @@ export interface IInventoryLog extends Document, IBaseDocumentModel {
   reference: string;
 }
 
-const inventoryLogSchema = new Schema<IInventoryLog>(
+export const inventoryLogSchema = new Schema<IInventoryLog>(
   {
     inventory: { type: Schema.Types.ObjectId, ref: 'Inventory' },
     type: { type: String, enum: Object.values(INVENTORYTYPE) },

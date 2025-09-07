@@ -1,5 +1,14 @@
 import z from 'zod';
 
+import { cartSchema } from '../models/cart';
+import { mongooseToZod } from '../utils/mongooseToZod';
+
+import {
+  baseResponseSchema,
+  createPaginatedResponseSchema,
+  customResponseSchema,
+} from './response.validation';
+
 export type AddToCartSchema = z.infer<typeof addToCart.body>;
 export type UpdateToCartSchema = z.infer<typeof updateToCart.body>;
 export type RemoveToCartSchema = z.infer<typeof removeToCart.params>;
@@ -10,6 +19,7 @@ export const addToCart = {
     productVariantId: z.string(),
     quantity: z.number(),
   }),
+  response: baseResponseSchema({ data: { cartData: cartSchema } }),
 };
 
 export const updateToCart = {
@@ -17,14 +27,22 @@ export const updateToCart = {
     cartId: z.string(),
     quantity: z.number(),
   }),
+  response: baseResponseSchema({ data: { cartData: cartSchema } }),
 };
 
 export const removeToCart = {
   params: z.object({
     cartId: z.string(),
   }),
+  response: baseResponseSchema({ data: { cartData: cartSchema } }),
 };
 
 export const getAllCart = {
   query: z.object({}),
+  response: customResponseSchema({
+    zodSchema: z.object({
+      ...createPaginatedResponseSchema(mongooseToZod(cartSchema)),
+      totalQty: z.number(),
+    }),
+  }),
 };

@@ -10,7 +10,7 @@ export interface IRole extends Document, IBaseDocumentModel {
   deletedAt: Date | null;
 }
 
-const roleSchema = new Schema<IRole>(
+export const roleSchema = new Schema<IRole>(
   {
     role: {
       type: String,
