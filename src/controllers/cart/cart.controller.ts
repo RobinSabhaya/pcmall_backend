@@ -21,7 +21,7 @@ export const addToCart = async (
   const user = request.user as IUser;
   const options = { user };
   /** create cart */
-  const cartData = await cartService.createCart(
+  const { cartData, message } = await cartService.createCart(
     request.body as AddToCartSchema,
     options
   );
@@ -29,7 +29,7 @@ export const addToCart = async (
   return reply.code(httpStatus.OK).send({
     success: true,
     data: { cartData },
-    message: 'Cart added successfully',
+    message,
   });
 };
 
@@ -42,7 +42,7 @@ export const updateToCart = async (
     // const options = { user };
 
     /** create cart */
-    const cartData = await cartService.updateToCart(
+    const { cartData, message } = await cartService.updateToCart(
       request.body as UpdateToCartSchema
       // options
     );
@@ -50,7 +50,7 @@ export const updateToCart = async (
     return reply.code(httpStatus.OK).send({
       success: true,
       data: { cartData },
-      message: 'Cart updated successfully',
+      message,
     });
   } catch (error) {
     throw new ApiError(
@@ -68,13 +68,14 @@ export const removeToCart = async (
     const { cartId } = request.params as Partial<UpdateToCartSchema>;
 
     /** create cart */
-    await cartService.removeCart({
+    const { message, cartData } = await cartService.removeCart({
       cartId,
     });
 
     return reply.code(httpStatus.OK).send({
       success: true,
-      message: 'Cart removed successfully',
+      message,
+      data: { cartData },
     });
   } catch (error) {
     throw new ApiError(

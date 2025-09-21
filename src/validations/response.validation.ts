@@ -2,12 +2,17 @@ import httpStatus from 'http-status';
 import { Schema } from 'mongoose';
 import z from 'zod';
 
-import { mongooseToZod, ZodFieldsRecord } from '../utils/mongooseToZod';
+import {
+  createSchemaWithRefs,
+  IRefOptions,
+  mongooseToZod,
+  ZodFieldsRecord,
+} from '../utils/mongooseToZod';
 
 // types
 export type ResponseDataType = Record<string, z.ZodObject<ZodFieldsRecord>>;
 
-export interface IBaseResponse {
+export interface IBaseResponse extends IRefOptions {
   isPagination?: boolean;
   data: Record<string, Schema>;
 }
@@ -60,17 +65,20 @@ export const createErrorResponseSchema = (): object => {
 };
 
 export const createPaginatedResponseSchema = (
-  dataSchema: z.ZodObject<ZodFieldsRecord>
+  dataSchema: z.ZodObject<ZodFieldsRecord>,
+  dataKey: string
 ): object => {
   return {
     [httpStatus.OK]: z.object({
       success: z.boolean().default(true),
       data: z.object({
-        results: z.array(dataSchema),
-        page: z.number(),
-        limit: z.number(),
-        total: z.number(),
-        totalPages: z.number(),
+        [dataKey]: z.object({
+          results: z.array(dataSchema),
+          page: z.number(),
+          limit: z.number(),
+          totalResults: z.number(),
+          totalPages: z.number(),
+        }),
       }),
     }),
   };
@@ -79,7 +87,9 @@ export const createPaginatedResponseSchema = (
 export const baseResponseSchema = ({
   isPagination = false,
   data,
-}: IBaseResponse): { [statusCode: number]: z.ZodTypeAny } => {
+  populatedSchemas = {},
+}: IBaseResponse): { [statusCode: number]: z.ZodAny } => {
+  const [key] = Object.entries(data);
   return {
     // success
     ...createSuccessResponseSchema(data),
@@ -89,7 +99,10 @@ export const baseResponseSchema = ({
     ...createErrorResponseSchema(),
     // pagination
     ...(isPagination &&
-      createPaginatedResponseSchema(mongooseToZod(Object.values(data)[0]))),
+      createPaginatedResponseSchema(
+        createSchemaWithRefs(key[1], populatedSchemas),
+        key[0]
+      )),
   };
 };
 

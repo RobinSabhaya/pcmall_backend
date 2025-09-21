@@ -13,3 +13,7 @@ export const buildPriceFilter = (prices: {
     ? { price: { $gte: prices.min ?? 0, $lte: prices.max ?? 1_000_000 } }
     : undefined;
 };
+
+export const toDeepObject = (data: unknown): unknown => {
+  return JSON.parse(JSON.stringify(data));
+};

@@ -18,6 +18,8 @@ import {
   GetAllInventorySchema,
 } from '@/validations/inventory.validation';
 
+import { toDeepObject } from '../../utils/custom.util';
+
 export interface IOptions {
   user?: IUser;
 }
@@ -103,7 +105,7 @@ export const saveInventory = async (
 
   return {
     message,
-    inventoryData,
+    inventoryData: toDeepObject(inventoryData) as IInventory,
   };
 };
 
@@ -138,12 +140,16 @@ export const deleteInventory = async (
 
   return {
     message,
-    inventoryData,
+    inventoryData: toDeepObject(inventoryData) as IInventory,
   };
 };
 
 export const getAllInventory = async (
   filter: GetAllInventorySchema
 ): Promise<IInventory[]> => {
-  return findDoc<IInventory>(MONGOOSE_MODELS.PRODUCT_INVENTORY, filter);
+  const inventoryData = await findDoc<IInventory>(
+    MONGOOSE_MODELS.PRODUCT_INVENTORY,
+    filter
+  );
+  return toDeepObject(inventoryData) as IInventory[];
 };

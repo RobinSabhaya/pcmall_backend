@@ -1,13 +1,8 @@
 import z from 'zod';
 
 import { cartSchema } from '../models/cart';
-import { mongooseToZod } from '../utils/mongooseToZod';
 
-import {
-  baseResponseSchema,
-  createPaginatedResponseSchema,
-  customResponseSchema,
-} from './response.validation';
+import { baseResponseSchema } from './response.validation';
 
 export type AddToCartSchema = z.infer<typeof addToCart.body>;
 export type UpdateToCartSchema = z.infer<typeof updateToCart.body>;
@@ -39,10 +34,11 @@ export const removeToCart = {
 
 export const getAllCart = {
   query: z.object({}),
-  response: customResponseSchema({
-    zodSchema: z.object({
-      ...createPaginatedResponseSchema(mongooseToZod(cartSchema)),
-      totalQty: z.number(),
-    }),
-  }),
+  // TODO : handle nested schema
+  // response: customResponseSchema({
+  //   zodSchema: z.object({
+  //     ...createPaginatedResponseSchema(mongooseToZod(cartSchema)),
+  //     totalQty: z.number(),
+  //   }),
+  // }),
 };

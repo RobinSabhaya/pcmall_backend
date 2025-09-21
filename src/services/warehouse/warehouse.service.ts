@@ -16,6 +16,8 @@ import {
   GetAllWarehouseSchema,
 } from '@/validations/warehouse.validation';
 
+import { toDeepObject } from '../../utils/custom.util';
+
 interface IOptions {
   user?: IUser;
 }
@@ -91,7 +93,7 @@ export const createUpdateWarehouse = async (
 
   return {
     message,
-    warehouseData,
+    warehouseData: toDeepObject(warehouseData) as IWarehouse,
   };
 };
 
@@ -124,7 +126,7 @@ export const deleteWarehouse = async (
 
   return {
     message,
-    warehouseData,
+    warehouseData: toDeepObject(warehouseData) as IWarehouse,
   };
 };
 
@@ -138,6 +140,6 @@ export const getAllWarehouse = async (
     reqQuery
   );
   return {
-    warehouseData,
+    warehouseData: toDeepObject(warehouseData) as IWarehouse[],
   };
 };

@@ -8,21 +8,99 @@ import {
 } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { token } from '@/models/auth';
-import { IUser, IUserProfile } from '@/models/user';
+import { IUser, IUserModel, IUserProfile } from '@/models/user';
 import ApiError from '@/utils/apiErrorHandler';
-import { SignupSchema } from '@/validations/auth.validation';
+import {
+  LoginSchema,
+  RegisterSchema,
+  SignupSchema,
+} from '@/validations/auth.validation';
+
+import { toDeepObject } from '../../utils/custom.util';
 
 import { deleteToken, generateAuthTokens, verifyToken } from './token.service';
 import { ITokenResponse } from './token.service.type';
 
+export const registerWithEmailAndPassword = async (
+  payload: RegisterSchema
+): Promise<{
+  user: IUser | null;
+  message: string;
+}> => {
+  const { first_name, email, password, confirm_password } = payload;
+  let message = null;
+
+  // Match password and confirm password
+  if (password.localeCompare(confirm_password))
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+
+  let user: Partial<IUser | null> = await findOneDoc<IUser>(
+    MONGOOSE_MODELS.USER,
+    { email }
+  );
+
+  if (user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
+  }
+
+  if (password.localeCompare(confirm_password))
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
+
+  // Create User
+  user = await createDoc<IUser>(MONGOOSE_MODELS.USER, payload);
+
+  // set profile details
+  await findOneAndUpdateDoc(
+    MONGOOSE_MODELS.USER_PROFILE,
+    {
+      user: user._id,
+      first_name,
+    },
+    {
+      user: user._id,
+      first_name,
+    },
+    {
+      upsert: true,
+      new: true,
+    }
+  );
+
+  message = 'User register successfully';
+
+  return {
+    message,
+    user: toDeepObject(user) as IUser,
+  };
+};
+
 export const loginUserWithEmailAndPassword = async (
-  email: string
-  // password: string
-): Promise<IUser | null> => {
-  // if (!user || !(await user?.isPasswordMatch(password))) {
-  //   throw new ApiError(401, 'Incorrect email or password');
-  // }
-  return findOneDoc<IUser>(MONGOOSE_MODELS.USER, { email });
+  payload: LoginSchema
+): Promise<{
+  user: IUser | null;
+  tokens: ITokenResponse;
+}> => {
+  const { email, password } = payload;
+
+  const userData = await findOneDoc<IUserModel>(MONGOOSE_MODELS.USER, {
+    email,
+  });
+
+  const isPasswordMatch = (await userData?.isPasswordMatch(
+    password
+  )) as boolean;
+
+  if (!userData || !isPasswordMatch) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+  }
+
+  // generate tokens
+  const tokens = await generateAuthTokens(userData as unknown as IUser);
+
+  return {
+    user: toDeepObject(userData) as IUser,
+    tokens: toDeepObject(tokens) as ITokenResponse,
+  };
 };
 
 export const signup = async (

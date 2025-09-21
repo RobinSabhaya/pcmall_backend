@@ -25,7 +25,11 @@ import {
   product,
 } from '../../models/product';
 import { IUser } from '../../models/user';
-import { buildArrayFilter, buildPriceFilter } from '../../utils/custom.util';
+import {
+  buildArrayFilter,
+  buildPriceFilter,
+  toDeepObject,
+} from '../../utils/custom.util';
 
 import {
   IGetAllProductsFilter,
@@ -59,129 +63,125 @@ export const getAllProducts = async (
   const filter = generateProductFilter(reqQuery);
 
   const pagination = paginationQuery(options!);
-  return product.aggregate([
-    {
-      $match: {
-        ...(filter?._id && { _id: filter._id }),
+  return toDeepObject(
+    await product.aggregate([
+      {
+        $match: {
+          ...(filter?._id && { _id: filter._id }),
+        },
       },
-    },
-    {
-      $lookup: {
-        from: 'categories',
-        localField: 'category',
-        foreignField: '_id',
-        pipeline: [
-          {
-            $match: {
-              ...(filter?.categories && { categoryName: filter?.categories }),
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          pipeline: [
+            {
+              $match: {
+                ...(filter?.categories && { categoryName: filter?.categories }),
+              },
             },
-          },
-        ],
-        as: 'category',
+          ],
+          as: 'category',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$category',
-        preserveNullAndEmptyArrays: true,
+      {
+        $unwind: {
+          path: '$category',
+          preserveNullAndEmptyArrays: true,
+        },
       },
-    },
-    {
-      $lookup: {
-        from: 'product_brands',
-        localField: 'brand',
-        foreignField: '_id',
-        as: 'brand',
+      {
+        $lookup: {
+          from: 'product_brands',
+          localField: 'brand',
+          foreignField: '_id',
+          as: 'brand',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$brand',
-        preserveNullAndEmptyArrays: true,
+      {
+        $unwind: {
+          path: '$brand',
+          preserveNullAndEmptyArrays: true,
+        },
       },
-    },
-    {
-      $lookup: {
-        from: 'product_variants',
-        localField: '_id',
-        foreignField: 'product',
-        pipeline: [
-          {
-            $lookup: {
-              from: 'product_skus',
-              localField: '_id',
-              foreignField: 'variant',
-              pipeline: [
-                {
-                  $match: {
-                    ...(filter.prices && { ...filter.prices }),
+      {
+        $lookup: {
+          from: 'product_variants',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'product_skus',
+                localField: '_id',
+                foreignField: 'variant',
+                pipeline: [
+                  {
+                    $match: {
+                      ...(filter.prices && { ...filter.prices }),
+                    },
                   },
-                },
-              ],
-              as: 'product_skus',
+                ],
+                as: 'product_skus',
+              },
             },
-          },
-          {
-            $unwind: {
-              path: '$product_skus',
-              preserveNullAndEmptyArrays: true,
+            {
+              $unwind: {
+                path: '$product_skus',
+                preserveNullAndEmptyArrays: true,
+              },
             },
-          },
-        ],
-        as: 'product_variants',
-      },
-    },
-    {
-      $unwind: {
-        path: '$product_variants',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $lookup: {
-        from: 'carts',
-        localField: '_id',
-        foreignField: 'product',
-        pipeline: [
-          {
-            $match: {
-              user: new Schema.Types.ObjectId(String(user?._id)),
-              status: PAYMENTSTATUS.PENDING,
-            },
-          },
-        ],
-        as: 'cartProduct',
-      },
-    },
-    {
-      $lookup: {
-        from: 'wishlists',
-        localField: '_id',
-        foreignField: 'product',
-        pipeline: [
-          {
-            $match: {
-              user,
-            },
-          },
-        ],
-        as: 'wishlistProducts',
-      },
-    },
-    {
-      $addFields: {
-        isInCart: {
-          $cond: [{ $gt: [{ $size: '$cartProduct' }, 0] }, true, false],
+          ],
+          as: 'product_variants',
         },
-        isInWishlist: {
-          $cond: [{ $gt: [{ $size: '$wishlistProducts' }, 0] }, true, false],
-        },
-        cartProduct: null,
-        wishlistProducts: null,
       },
-    },
-    ...pagination,
-  ]);
+      {
+        $lookup: {
+          from: 'carts',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $match: {
+                user: new Schema.Types.ObjectId(String(user?._id)),
+                status: PAYMENTSTATUS.PENDING,
+              },
+            },
+          ],
+          as: 'cartProduct',
+        },
+      },
+      {
+        $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $match: {
+                user,
+              },
+            },
+          ],
+          as: 'wishlistProducts',
+        },
+      },
+      {
+        $addFields: {
+          isInCart: {
+            $cond: [{ $gt: [{ $size: '$cartProduct' }, 0] }, true, false],
+          },
+          isInWishlist: {
+            $cond: [{ $gt: [{ $size: '$wishlistProducts' }, 0] }, true, false],
+          },
+          cartProduct: null,
+          wishlistProducts: null,
+        },
+      },
+      ...pagination,
+    ])
+  ) as IProduct[];
 };
 
 export const createUpdateProduct = async (
@@ -207,8 +207,8 @@ export const createUpdateProduct = async (
 
   return {
     message,
-    productData,
-    productVariantData,
+    productData: toDeepObject(productData) as IProduct,
+    productVariantData: toDeepObject(productVariantData) as IProductVariant,
   };
 };
 
@@ -242,7 +242,7 @@ export const deleteProduct = async (
 
   message = 'product delete successfully';
   return {
-    productData,
+    productData: toDeepObject(productData) as IProduct,
     message,
   };
 };
@@ -298,8 +298,8 @@ export const generateProductSku = async (
 
   return {
     message,
-    productData,
-    productSkuData,
+    productData: toDeepObject(productData) as IProductPopulated,
+    productSkuData: toDeepObject(productSkuData) as IProductSKU,
   };
 };
 
@@ -342,6 +342,7 @@ export const handleProductOperation = async (
   // exclude the field
   delete productPayload.attributeCombination;
   delete productPayload.name;
+  delete productPayload.images;
 
   if (productId != null) {
     // Update existing product
@@ -387,14 +388,13 @@ export const handleVariantOperation = async (
   payload: CreateUpdateProductSchema,
   options: IOptions
 ): Promise<IProductVariant | null> => {
-  const { variantId, productId, name, attributeCombination, images } = payload;
+  const { variantId, productId, name, attributeCombination } = payload;
   const { user } = options;
 
   const productVariantPayload = {
     product: productId,
     name,
     attributeCombination,
-    images,
     createdBy: user?._id,
     updatedBy: user?._id,
   };

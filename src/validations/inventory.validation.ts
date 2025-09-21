@@ -38,7 +38,7 @@ export const getAllInventory = {
   query: z.object({}),
   response: customResponseSchema({
     zodSchema: z.object({
-      inventoryData: mongooseToZod(inventorySchema),
+      inventoryData: z.array(mongooseToZod(inventorySchema)),
     }),
   }),
 };

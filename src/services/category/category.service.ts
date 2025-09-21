@@ -2,6 +2,7 @@ import { findDoc, IFindOptions } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 
 import { ICategory } from '../../models/category';
+import { toDeepObject } from '../../utils/custom.util';
 
 interface IOptions extends IFindOptions {}
 
@@ -14,11 +15,16 @@ interface IOptions extends IFindOptions {}
 export const getAllCategories = async (
   filter: object,
   options: IOptions
-): Promise<ICategory[]> => {
+): Promise<{ categoryData: ICategory[] }> => {
+  let categoryData;
   if (options?.populate != null)
-    return findDoc<ICategory>(MONGOOSE_MODELS.CATEGORY, filter, {
+    categoryData = findDoc<ICategory>(MONGOOSE_MODELS.CATEGORY, filter, {
       populate: options.populate,
     });
 
-  return findDoc(MONGOOSE_MODELS.CATEGORY, filter);
+  categoryData = await findDoc(MONGOOSE_MODELS.CATEGORY, filter);
+
+  return {
+    categoryData: toDeepObject(categoryData) as ICategory[],
+  };
 };

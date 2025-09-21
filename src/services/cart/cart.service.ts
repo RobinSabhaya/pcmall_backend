@@ -18,6 +18,7 @@ import {
   paginationQuery,
 } from '../../helpers/mongoose.helper';
 import { cart, ICart } from '../../models/cart/cart.model';
+import { toDeepObject } from '../../utils/custom.util';
 
 interface IOptions {
   user: IUser;
@@ -26,9 +27,13 @@ interface IOptions {
 export const createCart = async (
   reqBody: AddToCartSchema,
   options: IOptions
-): Promise<ICart | null> => {
+): Promise<{
+  message: string;
+  cartData: ICart | null;
+}> => {
   const { productVariantId, quantity } = reqBody;
   const { user } = options;
+  let message = null;
   /** Check product exists or not */
   const productVariantExists = await findOneDoc(
     MONGOOSE_MODELS.PRODUCT_VARIANT,
@@ -41,7 +46,7 @@ export const createCart = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
   }
 
-  return findOneAndUpdateDoc<ICart>(
+  const cartData = await findOneAndUpdateDoc<ICart>(
     MONGOOSE_MODELS.CART,
     {
       variant: productVariantExists._id,
@@ -59,12 +64,22 @@ export const createCart = async (
       new: true,
     }
   );
+  message = 'Cart added successfully';
+
+  return {
+    message,
+    cartData: toDeepObject(cartData) as ICart,
+  };
 };
 
 export const updateToCart = async (
   reqBody: UpdateToCartSchema
-): Promise<ICart | null> => {
+): Promise<{
+  message: string;
+  cartData: ICart | null;
+}> => {
   const { cartId, quantity } = reqBody;
+  let message = null;
   /** Check product exists or not */
   const cartExists = await findOneDoc<ICart>(MONGOOSE_MODELS.CART, {
     _id: cartId,
@@ -74,7 +89,7 @@ export const updateToCart = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
   }
 
-  return findOneAndUpdateDoc<ICart>(
+  const cartData = await findOneAndUpdateDoc<ICart>(
     MONGOOSE_MODELS.CART,
     {
       _id: cartExists._id,
@@ -87,13 +102,23 @@ export const updateToCart = async (
       new: true,
     }
   );
+  message = 'Cart updated successfully';
+
+  return {
+    message,
+    cartData: toDeepObject(cartData) as ICart,
+  };
 };
 
 export const removeCart = async (
   reqBody: FilterQuery<ICart>,
   options = {}
-): Promise<ICart | null> => {
+): Promise<{
+  cartData: ICart | null;
+  message: string;
+}> => {
   const { cartId } = reqBody as Partial<UpdateToCartSchema>;
+  let message = null;
 
   /** Check cart exists or not */
   const cartExists = await getCart({ _id: cartId });
@@ -102,11 +127,18 @@ export const removeCart = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Cart not found');
   }
 
-  return findOneAndDeleteDoc<ICart>(
+  const cartData = await findOneAndDeleteDoc<ICart>(
     MONGOOSE_MODELS.CART,
     { _id: cartExists._id },
     options
   );
+
+  message = 'Cart removed successfully';
+
+  return {
+    message,
+    cartData: toDeepObject(cartData) as ICart,
+  };
 };
 
 export const getCart = async (

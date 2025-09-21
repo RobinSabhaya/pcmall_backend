@@ -19,8 +19,13 @@ export const variantSchema = new Schema<IProductVariant>(
       trim: true,
       required: true,
     },
-    attributeCombination: { type: Object },
-    images: [String],
+    attributeCombination: {
+      type: Object,
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },

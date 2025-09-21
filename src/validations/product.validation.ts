@@ -28,6 +28,7 @@ export const createUpdateProduct = {
     brand: z.string().optional(),
     modelNumber: z.string().optional(),
     tags: z.array(z.string()),
+    category: z.string(),
   }),
   response: customResponseSchema({
     zodSchema: z.object({
@@ -51,10 +52,16 @@ export const getAllProducts = {
     prices: z.object().optional(),
     productId: z.string().optional(),
   }),
-  response: baseResponseSchema({
-    isPagination: true,
-    data: { productData: productSchema },
-  }),
+  // TODO : need to handle without ref schema and also nested ref schema
+  // response: baseResponseSchema({
+  //   isPagination: true,
+  //   data: { productData: productSchema },
+  //   populatedSchemas : {
+  //     Product_Brand : brandSchema,
+  //     Category : categorySchema,
+  //     Product_Variant : variantSchema
+  //   }
+  // }),
 };
 
 export const generateProductSku = {

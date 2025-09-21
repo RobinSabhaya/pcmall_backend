@@ -8,7 +8,7 @@ export const getAllCategories = async (
   reply: FastifyReply
 ): Promise<FastifyReply> => {
   // get all category
-  const categoryData = await categoryService.getAllCategories(
+  const { categoryData } = await categoryService.getAllCategories(
     {},
     {
       populate: [

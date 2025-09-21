@@ -12,70 +12,27 @@ import {
   VerifyEmailSchema,
 } from '@/validations/auth.validation';
 
-import {
-  createDoc,
-  findOneAndUpdateDoc,
-  findOneDoc,
-} from '../../helpers/mongoose.helper';
-import { MONGOOSE_MODELS } from '../../helpers/mongoose.model.helper';
 import * as authService from '../../services/auth/auth.service';
 import {
-  generateAuthTokens,
   generateResetPasswordToken,
   generateVerifyEmailToken,
 } from '../../services/auth/token.service';
+import { ITokenResponse } from '../../services/auth/token.service.type';
 import ApiError from '../../utils/apiErrorHandler';
+import { toDeepObject } from '../../utils/custom.util';
 
 export const register = async (
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<FastifyReply> => {
   try {
-    const { first_name, email, password, confirm_password } =
-      request.body as RegisterSchema;
-
-    // Match password and confirm password
-    if (password.localeCompare(confirm_password))
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
-
-    let user: Partial<IUser | null> = await findOneDoc<IUser>(
-      MONGOOSE_MODELS.USER,
-      { email }
-    );
-
-    if (user) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken.');
-    }
-
-    if (password.localeCompare(confirm_password))
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials.');
-
-    // Create User
-    user = await createDoc<IUser>(
-      MONGOOSE_MODELS.USER,
+    const { user, message } = await authService.registerWithEmailAndPassword(
       request.body as RegisterSchema
-    );
-
-    // set profile details
-    await findOneAndUpdateDoc(
-      MONGOOSE_MODELS.USER_PROFILE,
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        upsert: true,
-        new: true,
-      }
     );
 
     return reply.code(httpStatus.CREATED).send({
       success: true,
-      message: 'User register successfully',
+      message,
       data: { user },
     });
   } catch (error) {
@@ -98,7 +55,10 @@ export const signup = async (
     return reply.code(httpStatus.CREATED).send({
       success: true,
       message: 'User signup successfully',
-      data: { user, tokens },
+      data: {
+        user: toDeepObject(user) as IUser,
+        tokens: toDeepObject(tokens) as ITokenResponse,
+      },
     });
   } catch (error) {
     throw new ApiError(
@@ -112,28 +72,10 @@ export const login = async (
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<FastifyReply> => {
-  const { email } = request.body as LoginSchema;
   try {
-    const user = await authService.loginUserWithEmailAndPassword(
-      email
-      // password
+    const { tokens } = await authService.loginUserWithEmailAndPassword(
+      request.body as LoginSchema
     );
-
-    // generate tokens
-    const tokens = await generateAuthTokens(user!);
-
-    // if (device_info) {
-    //   // generate device info
-    //   const device_info = parseDeviceInfo(device_info);
-
-    //   // save device info
-    //   await tokenService.saveDeviceInfo(
-    //     {
-    //       _id: tokens.refresh._id,
-    //     },
-    //     { device_info }
-    //   );
-    // }
 
     return reply.code(httpStatus.OK).send({
       success: true,
@@ -175,7 +117,10 @@ export const refreshTokens = async (
   try {
     const { refreshToken } = request.body as RefreshTokensSchema;
     const tokens = await authService.refreshAuth(refreshToken);
-    return reply.code(httpStatus.OK).send({ data: { ...(tokens as object) } });
+    return reply.code(httpStatus.OK).send({
+      success: true,
+      data: { tokens: toDeepObject(tokens) as ITokenResponse },
+    });
   } catch (error: unknown) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,

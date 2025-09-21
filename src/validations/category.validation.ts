@@ -1,12 +1,17 @@
 import z from 'zod';
 
-// import { categorySchema } from '../models/category';
+import { categorySchema } from '../models/category';
+import { mongooseToZod } from '../utils/mongooseToZod';
 
-// import { baseResponseSchema } from './response.validation';
+import { customResponseSchema } from './response.validation';
 
 export type AllCategorySchema = z.infer<typeof allCategory.query>;
 
 export const allCategory = {
   query: z.object({}),
-  // response: baseResponseSchema({data : {categoryData : categorySchema}}) //TODO : Not working
+  response: customResponseSchema({
+    zodSchema: z.object({
+      categoryData: z.array(mongooseToZod(categorySchema)),
+    }),
+  }),
 };
