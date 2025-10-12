@@ -77,6 +77,11 @@ export const login = async (
       request.body as LoginSchema
     );
 
+    // reply.setCookie('t', tokens.access.token,{
+    //   path : '/',
+    //   httpOnly : true
+    // });
+
     return reply.code(httpStatus.OK).send({
       success: true,
       data: { tokens },

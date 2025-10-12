@@ -81,6 +81,9 @@ const envSchema = z.object({
   REDIS_DATABASE_PASSWORD: z.string().optional(),
   REDIS_DATABASE_URL: z.string().optional(),
   REDIS_DATABASE_PORT: z.string().optional(),
+
+  /** cookie */
+  COOKIE_SECRET: z.string(),
 });
 
 // Validate environment variables
@@ -160,6 +163,9 @@ export const config = {
     redisDatabasePassword: env.REDIS_DATABASE_PASSWORD,
     redisDatabaseUrl: env.REDIS_DATABASE_URL,
     redisDatabasePort: env.REDIS_DATABASE_PORT,
+  },
+  cookie: {
+    cookieSecret: env.COOKIE_SECRET,
   },
 } as const;
 

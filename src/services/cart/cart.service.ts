@@ -173,12 +173,6 @@ export const getAllCart = async (
               as: 'product_skus',
             },
           },
-          {
-            $unwind: {
-              path: '$product_skus',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
         ],
         as: 'product_variants',
       },

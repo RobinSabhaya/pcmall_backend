@@ -47,20 +47,34 @@ export const deleteProduct = {
 
 export const getAllProducts = {
   query: z.object({
-    categories: z.array(z.string()).optional(),
-    colors: z.array(z.string()).optional(),
-    prices: z.object().optional(),
+    categories: z.string().optional(),
+    colors: z.string().optional(),
+    prices: z.string().optional(),
+    gender: z.string().optional(),
     productId: z.string().optional(),
   }),
-  // TODO : need to handle without ref schema and also nested ref schema
-  // response: baseResponseSchema({
-  //   isPagination: true,
-  //   data: { productData: productSchema },
-  //   populatedSchemas : {
-  //     Product_Brand : brandSchema,
-  //     Category : categorySchema,
-  //     Product_Variant : variantSchema
-  //   }
+  // response: customResponseSchema({
+  //   zodSchema: z.object({
+  //     productData: z.object({
+  //       results: z.array(
+  //         z.object({
+  //           ...(mongooseToZod(productSchema)),
+  //           brand: mongooseToZod(brandSchema),
+  //           category: mongooseToZod(categorySchema),
+  //           product_variants: z.array(
+  //             z.object({
+  //               ...(mongooseToZod(variantSchema)),
+  //               product_skus: mongooseToZod(sKUSchema),
+  //             })
+  //           ),
+  //         })
+  //       ),
+  //       page: z.number(),
+  //       limit: z.number(),
+  //       totalPages: z.number(),
+  //       totalResults: z.number(),
+  //     }),
+  //   }),
   // }),
 };
 

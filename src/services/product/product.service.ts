@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { FilterQuery, Schema } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import ApiError from '@/utils/apiErrorHandler';
@@ -54,6 +54,7 @@ export const getProduct = async (
  * @param {object} options
  * @returns {Promise<[product]>}
  */
+// eslint-disable-next-line complexity
 export const getAllProducts = async (
   reqQuery: GetAllProductsSchema,
   options?: IOptions
@@ -66,22 +67,10 @@ export const getAllProducts = async (
   return toDeepObject(
     await product.aggregate([
       {
-        $match: {
-          ...(filter?._id && { _id: filter._id }),
-        },
-      },
-      {
         $lookup: {
           from: 'categories',
           localField: 'category',
           foreignField: '_id',
-          pipeline: [
-            {
-              $match: {
-                ...(filter?.categories && { categoryName: filter?.categories }),
-              },
-            },
-          ],
           as: 'category',
         },
       },
@@ -89,6 +78,13 @@ export const getAllProducts = async (
         $unwind: {
           path: '$category',
           preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          ...(filter?.categories && {
+            'category.categoryName': filter?.categories,
+          }),
         },
       },
       {
@@ -113,6 +109,22 @@ export const getAllProducts = async (
           pipeline: [
             {
               $lookup: {
+                from: 'carts',
+                localField: '_id',
+                foreignField: 'variant',
+                pipeline: [
+                  {
+                    $match: {
+                      user: new Types.ObjectId(String(user?._id)),
+                      status: PAYMENTSTATUS.PENDING,
+                    },
+                  },
+                ],
+                as: 'cartProduct',
+              },
+            },
+            {
+              $lookup: {
                 from: 'product_skus',
                 localField: '_id',
                 foreignField: 'variant',
@@ -132,51 +144,21 @@ export const getAllProducts = async (
                 preserveNullAndEmptyArrays: true,
               },
             },
+            {
+              $addFields: {
+                isInCart: {
+                  $cond: [{ $gt: [{ $size: '$cartProduct' }, 0] }, true, false],
+                },
+              },
+            },
           ],
           as: 'product_variants',
         },
       },
       {
-        $lookup: {
-          from: 'carts',
-          localField: '_id',
-          foreignField: 'product',
-          pipeline: [
-            {
-              $match: {
-                user: new Schema.Types.ObjectId(String(user?._id)),
-                status: PAYMENTSTATUS.PENDING,
-              },
-            },
-          ],
-          as: 'cartProduct',
-        },
-      },
-      {
-        $lookup: {
-          from: 'wishlists',
-          localField: '_id',
-          foreignField: 'product',
-          pipeline: [
-            {
-              $match: {
-                user,
-              },
-            },
-          ],
-          as: 'wishlistProducts',
-        },
-      },
-      {
-        $addFields: {
-          isInCart: {
-            $cond: [{ $gt: [{ $size: '$cartProduct' }, 0] }, true, false],
-          },
-          isInWishlist: {
-            $cond: [{ $gt: [{ $size: '$wishlistProducts' }, 0] }, true, false],
-          },
-          cartProduct: null,
-          wishlistProducts: null,
+        $match: {
+          ...(filter?.productId && { _id: filter.productId }),
+          ...(filter?.gender && { 'category.tags': filter?.gender }),
         },
       },
       ...pagination,
@@ -306,22 +288,34 @@ export const generateProductSku = async (
 export const generateProductFilter = (
   reqQuery: GetAllProductsSchema
 ): IGetAllProductsFilter => {
-  let { categories, colors, prices } = reqQuery;
+  let { categories, colors, prices, gender } = reqQuery;
+  const { productId } = reqQuery;
 
-  categories = JSON.parse(String(categories ?? '[]'));
-  colors = JSON.parse(String(colors ?? '[]'));
-  prices = JSON.parse(String(prices ?? '{}'));
+  categories = JSON.parse(JSON.stringify(categories ?? '[]'));
+  colors = JSON.parse(JSON.stringify(colors ?? '[]'));
+  prices = JSON.parse(JSON.stringify(prices ?? '{}'));
+  gender = JSON.parse(JSON.stringify(gender ?? '[]'));
 
   const filter: IGetAllProductsFilter = {};
+  if (categories != null) {
+    filter.categories = buildArrayFilter(JSON.parse(categories));
+  }
 
-  const categoryFilter = buildArrayFilter(categories!);
-  if (categoryFilter) filter.categories = categoryFilter;
+  if (gender != null) {
+    filter.gender = buildArrayFilter(JSON.parse(gender));
+  }
 
-  const colorFilter = buildArrayFilter(colors!);
-  if (colorFilter) filter.colors = colorFilter;
+  if (colors != null) {
+    filter.colors = buildArrayFilter(JSON.parse(colors));
+  }
 
-  const priceFilter = buildPriceFilter(prices!);
-  if (priceFilter) filter.prices = priceFilter;
+  if (prices != null) {
+    filter.prices = buildPriceFilter(
+      prices as unknown as { min: number; max: number }
+    );
+  }
+
+  if (productId != null) filter.productId = new Types.ObjectId(productId);
 
   return filter;
 };

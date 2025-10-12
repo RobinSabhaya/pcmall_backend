@@ -11,7 +11,10 @@ export default function buildApp(): FastifyInstance {
   });
 
   if (config.env != 'test') {
-    fastify.register(import('@fastify/cors'));
+    fastify.register(import('@fastify/cors'), {
+      origin: ['http://localhost:3000'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    });
     fastify.register(import('./plugins/mongoose'));
     fastify.register(import('./plugins/swagger')); // Add Swagger plugin
   }
@@ -19,6 +22,7 @@ export default function buildApp(): FastifyInstance {
   fastify.register(import('./plugins/rateLimit'));
   fastify.register(import('./plugins/helmet'));
   fastify.register(import('./plugins/jwt'));
+  fastify.register(import('./plugins/cookie'));
   fastify.register(webhookRoutes); // This package is @fastify/multipart override the webhooks raw body
   fastify.register(routes, { prefix: '/v1' });
 

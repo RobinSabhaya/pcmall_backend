@@ -19,6 +19,7 @@ import {
 
 import { config } from '../../config/config';
 import { IUser } from '../../models/user/user.model';
+import { toDeepObject } from '../../utils/custom.util';
 import { handleStorage } from '../storage/storageStrategy';
 
 import { IUserM } from './users.service.type';
@@ -60,20 +61,6 @@ export const getUser = async (
             },
           },
         ],
-      },
-    },
-    {
-      $lookup: {
-        from: 'addresses',
-        localField: 'primary_address',
-        foreignField: '_id',
-        as: 'primary_address',
-      },
-    },
-    {
-      $unwind: {
-        preserveNullAndEmptyArrays: true,
-        path: '$primary_address',
       },
     },
     {
@@ -136,8 +123,8 @@ export const updateUser = async (
     country !== null
   ) {
     const updateUserAddressData = await updateUserAddress(reqBody, { user });
-    // eslint-disable-next-line prefer-destructuring
-    userData = updateUserAddressData.userData;
+
+    userData = toDeepObject(updateUserAddressData.userData) as IUser;
   }
 
   // Add or update User Profile

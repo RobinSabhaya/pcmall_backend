@@ -4,7 +4,6 @@ import Stripe from 'stripe';
 
 import { IShipment } from '@/models/shipment';
 import { IUser, IUserProfile } from '@/models/user';
-import * as shippingService from '@/services/shipping/shipping.service';
 import { notificationQueue } from '@/workers/notification';
 
 import { config } from '../config/config';
@@ -55,7 +54,6 @@ export async function handleStripeWebhook(
     case 'checkout.session.completed':
       {
         try {
-          // eslint-disable-next-line complexity
           await runWithTransaction(async () => {
             const { id } = session;
             // create payment
@@ -86,10 +84,11 @@ export async function handleStripeWebhook(
             });
 
             /** Buy Label */
-            await shippingService.generateBuyLabel({
-              rateObjectId: metadata?.rateObjectId!,
-              shippoShipmentId: metadata?.shippoShipmentId!,
-            });
+            // TODO : need to move on Admin side
+            // await shippingService.generateBuyLabel({
+            //   rateObjectId: metadata?.rateObjectId!,
+            //   shippoShipmentId: metadata?.shippoShipmentId!,
+            // });
 
             // send success notifications
             await sendNotifications({

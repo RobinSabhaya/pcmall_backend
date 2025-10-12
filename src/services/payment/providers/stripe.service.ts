@@ -54,8 +54,8 @@ export async function createCheckoutSession(
     shippingAddress,
     items,
     currency,
-    shippoShipmentId,
-    rateObjectId,
+    // shippoShipmentId,
+    // rateObjectId,
     cartIds,
   } = payload;
 
@@ -106,8 +106,8 @@ export async function createCheckoutSession(
       metadata: {
         orderId: order._id.toString(),
         userId: String(user._id),
-        shippoShipmentId,
-        rateObjectId,
+        // shippoShipmentId, // TODO: Remove shipment and move to manually from Admin side
+        // rateObjectId,
         cartIds: JSON.stringify(cartIds),
       },
       customer_email: userData?.email,

@@ -1,11 +1,12 @@
-import { Schema } from 'mongoose';
+import { Types } from 'mongoose';
 
 import { ICategory } from '@/models/category';
 import { IProduct, IProductBrand, IProductVariant } from '@/models/product';
 
 export interface IGetAllProductsFilter {
-  _id?: Schema.Types.ObjectId;
+  productId?: Types.ObjectId;
   categories?: object;
+  gender?: object;
   colors?: object;
   prices?: object;
   $or?: Array<object>;

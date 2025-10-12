@@ -22,11 +22,12 @@ export const checkout = async (
       shippingAddress,
       currency,
       items,
-      shippoShipmentId,
-      rateObjectId,
+      // shippoShipmentId,
+      // rateObjectId,
       cartIds,
     } = request.body as CheckoutSchema;
-
+    // Start
+    // TODO : Move logic into service layer
     const productVariantData = await findDoc<IProductVariant>(
       MONGOOSE_MODELS.PRODUCT_VARIANT,
       {
@@ -36,6 +37,7 @@ export const checkout = async (
 
     if (!productVariantData?.length)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Product variant not valid');
+    // End
 
     const checkoutUrl = await handlePayment(
       config.paymentGateway.paymentProvider!
@@ -44,8 +46,8 @@ export const checkout = async (
       items,
       shippingAddress,
       currency,
-      shippoShipmentId,
-      rateObjectId,
+      // shippoShipmentId,
+      // rateObjectId,
       cartIds,
     });
 

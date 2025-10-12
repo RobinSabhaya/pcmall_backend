@@ -1,6 +1,6 @@
 export const buildArrayFilter = (
-  array: unknown[]
-): { $in: unknown[] } | undefined => {
+  array: string[]
+): { $in: unknown } | undefined => {
   return array?.length > 0 ? { $in: array } : undefined;
 };
 

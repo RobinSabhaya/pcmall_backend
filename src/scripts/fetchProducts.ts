@@ -41,13 +41,12 @@ export async function fetchProducts(): Promise<void> {
 
       const categoryPayload = {
         categoryName: product?.category,
-        tags: product?.tags,
       };
 
       const productCategoryData = await findOneAndUpdateDoc<ICategory>(
         MONGOOSE_MODELS.CATEGORY,
         categoryPayload,
-        categoryPayload,
+        { ...categoryPayload, tags: product?.tags },
         {
           new: true,
           upsert: true,

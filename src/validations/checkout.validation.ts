@@ -16,8 +16,8 @@ export const checkout = {
     ),
     currency: z.string(),
     shippingAddress: z.string(),
-    shippoShipmentId: z.string(),
-    rateObjectId: z.string(),
+    // shippoShipmentId: z.string(),
+    // rateObjectId: z.string(),
     cartIds: z.array(z.string()),
   }),
   response: customResponseSchema({
