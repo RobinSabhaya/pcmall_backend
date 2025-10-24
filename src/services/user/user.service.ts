@@ -116,25 +116,25 @@ export const updateUser = async (
 
   // Add or Update Address
   if (
-    line1 !== null ||
-    line2 !== null ||
-    state !== null ||
-    city !== null ||
-    country !== null
+    line1 != null ||
+    line2 != null ||
+    state != null ||
+    city != null ||
+    country != null
   ) {
     const updateUserAddressData = await updateUserAddress(reqBody, { user });
 
     userData = toDeepObject(updateUserAddressData.userData) as IUser;
+  } else {
+    // Add or update User Profile
+    userData = await updateUserDetails(reqBody, { user });
   }
-
-  // Add or update User Profile
-  await updateUserDetails(reqBody, { user });
 
   message = 'User updated successfully';
 
   return {
     message,
-    userData,
+    userData: toDeepObject(userData) as IUser,
   };
 };
 
@@ -240,7 +240,7 @@ export const updateUserAddress = async (
 export const updateUserDetails = async (
   payload: UpdateUserSchema,
   options: IOptions
-): Promise<void> => {
+): Promise<IUserProfile | null | undefined> => {
   const { first_name, last_name, gender, language } = payload;
   const { user } = options;
 
@@ -252,7 +252,7 @@ export const updateUserDetails = async (
     // || reqBody?.profile_picture
     language != null
   )
-    await findOneAndUpdateDoc<IUserProfile>(
+    return findOneAndUpdateDoc<IUserProfile>(
       MONGOOSE_MODELS.USER_PROFILE,
       {
         user: user?._id,

@@ -52,14 +52,20 @@ export const signup = async (
       request.body as SignupSchema
     );
 
-    return reply.code(httpStatus.CREATED).send({
-      success: true,
-      message: 'User signup successfully',
-      data: {
-        user: toDeepObject(user) as IUser,
-        tokens: toDeepObject(tokens) as ITokenResponse,
-      },
-    });
+    return reply
+      .setCookie('t', tokens.access.token, {
+        path: '/',
+        httpOnly: true,
+      })
+      .code(httpStatus.CREATED)
+      .send({
+        success: true,
+        message: 'User signup successfully',
+        data: {
+          user: toDeepObject(user) as IUser,
+          tokens: toDeepObject(tokens) as ITokenResponse,
+        },
+      });
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
@@ -77,16 +83,17 @@ export const login = async (
       request.body as LoginSchema
     );
 
-    // reply.setCookie('t', tokens.access.token,{
-    //   path : '/',
-    //   httpOnly : true
-    // });
-
-    return reply.code(httpStatus.OK).send({
-      success: true,
-      data: { tokens },
-      message: 'User login successfully',
-    });
+    return reply
+      .setCookie('t', tokens.access.token, {
+        path: '/',
+        httpOnly: true,
+      })
+      .code(httpStatus.OK)
+      .send({
+        success: true,
+        data: { tokens },
+        message: 'User login successfully',
+      });
   } catch (error: unknown) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
@@ -103,7 +110,7 @@ export const logout = async (
     const { refreshToken } = request.body as RefreshTokensSchema;
     await authService.logout(refreshToken);
 
-    return reply.code(httpStatus.OK).send({
+    return reply.clearCookie('t').code(httpStatus.OK).send({
       success: true,
       message: 'User logged out successfully',
     });

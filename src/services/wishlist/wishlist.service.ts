@@ -12,6 +12,8 @@ import { IWishlist } from '@/models/wishlist';
 import ApiError from '@/utils/apiErrorHandler';
 import { CreateUpdateWishlistSchema } from '@/validations/wishlist.validation';
 
+import { toDeepObject } from '../../utils/custom.util';
+
 interface IOptions {
   user?: IUser;
 }
@@ -74,6 +76,6 @@ export const createUpdateWishlist = async (
   }
   return {
     message,
-    wishlistData,
+    wishlistData: toDeepObject(wishlistData) as IWishlist,
   };
 };

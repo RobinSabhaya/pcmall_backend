@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import httpStatus from 'http-status';
+import jwt from 'jsonwebtoken';
 
 import { TOKENTYPES } from '@/helpers/constant.helper';
 import { findOneDoc } from '@/helpers/mongoose.helper';
@@ -62,7 +63,11 @@ const checkAccessPermission = async (
 
 // Authentication functions
 const authenticateUser = async (request: FastifyRequest): Promise<IUser> => {
-  const token = await verifyJwtToken(request);
+  const t = request?.cookies['t'];
+
+  const token = (
+    t != null ? jwt.verify(t, config.jwt.secret) : await verifyJwtToken(request)
+  ) as IJwtPayload;
 
   if (!isValidTokenType(token.type)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token type');

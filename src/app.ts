@@ -12,15 +12,19 @@ export default function buildApp(): FastifyInstance {
 
   if (config.env != 'test') {
     fastify.register(import('@fastify/cors'), {
-      origin: ['http://localhost:3000'],
+      origin: ['http://localhost:3000', 'https://pcmall-web.vercel.app'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      credentials: true,
     });
     fastify.register(import('./plugins/mongoose'));
     fastify.register(import('./plugins/swagger')); // Add Swagger plugin
   }
 
-  fastify.register(import('./plugins/rateLimit'));
-  fastify.register(import('./plugins/helmet'));
+  if (config.env == 'production') {
+    fastify.register(import('./plugins/rateLimit'));
+    fastify.register(import('./plugins/helmet'));
+  }
+
   fastify.register(import('./plugins/jwt'));
   fastify.register(import('./plugins/cookie'));
   fastify.register(webhookRoutes); // This package is @fastify/multipart override the webhooks raw body

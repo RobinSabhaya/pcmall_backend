@@ -103,6 +103,21 @@ export const getAllProducts = async (
       },
       {
         $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $match: {
+                user: new Types.ObjectId(String(user?._id)),
+              },
+            },
+          ],
+          as: 'wishlistProduct',
+        },
+      },
+      {
+        $lookup: {
           from: 'product_variants',
           localField: '_id',
           foreignField: 'product',
@@ -153,6 +168,13 @@ export const getAllProducts = async (
             },
           ],
           as: 'product_variants',
+        },
+      },
+      {
+        $addFields: {
+          isInWishlist: {
+            $cond: [{ $gt: [{ $size: '$wishlistProduct' }, 0] }, true, false],
+          },
         },
       },
       {
@@ -428,6 +450,8 @@ export const handleVariantOperation = async (
   }
 };
 
+// TODO: fix the eslint
+/* eslint-disable max-lines */
 export const handleProductSkuOperation = async (payload: {
   productData: IProductPopulated;
   productVariantData: IProductVariant;

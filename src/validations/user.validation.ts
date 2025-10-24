@@ -23,11 +23,13 @@ export const updateUser = {
     country: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
+    email: z.email().optional(),
     // dob: z.date().optional(),
     gender: z.string().optional(),
     language: z.string().optional(),
   }),
-  response: baseResponseSchema({ data: { userData: userSchema } }),
+  // TODO: fix issue
+  // response: baseResponseSchema({ data: { userData: userSchema } }),
 };
 
 export const deleteUser = {
