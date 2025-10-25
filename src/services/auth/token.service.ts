@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import jwt from 'jsonwebtoken';
 import moment, { Moment } from 'moment';
 import { Schema } from 'mongoose';

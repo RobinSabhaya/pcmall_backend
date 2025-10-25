@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import buildApp from '../../../src/app';

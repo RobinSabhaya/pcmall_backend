@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import { ParcelCreateRequest, Shipment } from 'shippo';
 
 import { config } from '@/config/config';

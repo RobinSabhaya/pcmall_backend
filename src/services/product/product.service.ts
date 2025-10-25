@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import { FilterQuery, Types } from 'mongoose';
 
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';

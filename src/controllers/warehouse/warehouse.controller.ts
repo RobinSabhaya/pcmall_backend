@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 
 import * as warehouseService from '@/services/warehouse/warehouse.service';
 import ApiError from '@/utils/apiErrorHandler';

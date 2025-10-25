@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import jwt from 'jsonwebtoken';
 
 import { TOKENTYPES } from '@/helpers/constant.helper';

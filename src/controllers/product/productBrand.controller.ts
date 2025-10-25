@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 
 import { IUser } from '@/models/user';
 import * as productBrandService from '@/services/product/productBrand.service';

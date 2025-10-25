@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 
 import { IProductVariant } from '@/models/product';
 import { IUser } from '@/models/user';

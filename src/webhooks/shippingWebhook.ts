@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 
 import { findOneAndUpdateDoc } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';

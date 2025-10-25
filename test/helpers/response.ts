@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import { expect } from 'vitest';
 
 import { ITestResponse } from './request.helper';

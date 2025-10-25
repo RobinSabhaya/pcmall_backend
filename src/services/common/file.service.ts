@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 
 import { FILESFOLDER } from '@/helpers/constant.helper';
 import ApiError from '@/utils/apiErrorHandler';

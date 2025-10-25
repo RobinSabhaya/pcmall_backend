@@ -1,6 +1,6 @@
 import path from 'path';
 
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import moment from 'moment';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 

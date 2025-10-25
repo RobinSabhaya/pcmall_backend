@@ -1,4 +1,4 @@
-import httpStatus from 'http-status';
+import { status as httpStatus } from 'http-status';
 import { FilterQuery } from 'mongoose';
 
 import { PAYMENTSTATUS } from '@/helpers/constant.helper';
