@@ -1,4 +1,3 @@
-import httpStatus from 'http-status';
 import { Schema } from 'mongoose';
 import z from 'zod';
 
@@ -27,11 +26,13 @@ export const createSuccessResponseSchema = (
   }
 
   return {
-    [httpStatus.OK]: z.object({
-      success: z.boolean().default(true),
-      message: z.string().optional(),
-      data: z.object(responseData),
-    }),
+    200: z.toJSONSchema(
+      z.object({
+        success: z.boolean().default(true),
+        message: z.string().optional(),
+        data: z.object(responseData),
+      })
+    ),
   };
 };
 
@@ -43,7 +44,7 @@ export const createResponseSchema = (data: Record<string, Schema>): object => {
   }
 
   return {
-    [httpStatus.CREATED]: z.object({
+    201: z.object({
       success: z.boolean().default(true),
       message: z.string().optional(),
       data: z.object(responseData),
@@ -57,10 +58,10 @@ export const createErrorResponseSchema = (): object => {
     message: z.string(),
   });
   return {
-    [httpStatus.BAD_REQUEST]: errorZodSchema,
-    [httpStatus.NOT_FOUND]: errorZodSchema,
-    [httpStatus.INTERNAL_SERVER_ERROR]: errorZodSchema,
-    [httpStatus.UNAUTHORIZED]: errorZodSchema,
+    400: errorZodSchema,
+    404: errorZodSchema,
+    500: errorZodSchema,
+    401: errorZodSchema,
   };
 };
 
@@ -69,7 +70,7 @@ export const createPaginatedResponseSchema = (
   dataKey: string
 ): object => {
   return {
-    [httpStatus.OK]: z.object({
+    200: z.object({
       success: z.boolean().default(true),
       data: z.object({
         [dataKey]: z.object({
@@ -115,7 +116,7 @@ export const customResponseSchema = ({
     // error
     ...createErrorResponseSchema(),
     // custom
-    [httpStatus.OK]: z.object({
+    200: z.object({
       success: z.boolean().default(true),
       message: z.string().optional(),
       data: zodSchema,
