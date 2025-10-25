@@ -58,7 +58,6 @@ export const signup = async (
         path: '/',
         httpOnly: true,
         secure: config.env === 'production',
-        sameSite: 'none',
         maxAge: 60 * 60 * 24 * 7,
       })
       .code(httpStatus.CREATED)
@@ -92,7 +91,6 @@ export const login = async (
         path: '/',
         httpOnly: true,
         secure: config.env === 'production',
-        sameSite: 'none',
         maxAge: 60 * 60 * 24 * 7,
       })
       .code(httpStatus.OK)
