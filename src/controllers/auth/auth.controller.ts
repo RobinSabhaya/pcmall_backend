@@ -12,6 +12,7 @@ import {
   VerifyEmailSchema,
 } from '@/validations/auth.validation';
 
+import { config } from '../../config/config';
 import * as authService from '../../services/auth/auth.service';
 import {
   generateResetPasswordToken,
@@ -56,6 +57,9 @@ export const signup = async (
       .setCookie('t', tokens.access.token, {
         path: '/',
         httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: 'none',
+        maxAge: 60 * 60 * 24 * 7,
       })
       .code(httpStatus.CREATED)
       .send({
@@ -87,6 +91,9 @@ export const login = async (
       .setCookie('t', tokens.access.token, {
         path: '/',
         httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: 'none',
+        maxAge: 60 * 60 * 24 * 7,
       })
       .code(httpStatus.OK)
       .send({
