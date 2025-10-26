@@ -84,6 +84,10 @@ const envSchema = z.object({
 
   /** cookie */
   COOKIE_SECRET: z.string(),
+
+  /** client */
+  BASE_APP_URL: z.string(),
+  BASE_APP_DOMAIN: z.string(),
 });
 
 // Validate environment variables
@@ -166,6 +170,10 @@ export const config = {
   },
   cookie: {
     cookieSecret: env.COOKIE_SECRET,
+  },
+  client: {
+    baseAppUrl: env.BASE_APP_URL,
+    baseAppDomain: env.BASE_APP_DOMAIN,
   },
 } as const;
 

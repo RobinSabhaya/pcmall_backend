@@ -58,7 +58,8 @@ export const signup = async (
         path: '/',
         httpOnly: true,
         secure: config.env === 'production',
-        maxAge: 60 * 60 * 24 * 7,
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        domain: config.client.baseAppDomain,
       })
       .code(httpStatus.CREATED)
       .send({
@@ -91,7 +92,8 @@ export const login = async (
         path: '/',
         httpOnly: true,
         secure: config.env === 'production',
-        maxAge: 60 * 60 * 24 * 7,
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        domain: config.client.baseAppDomain,
       })
       .code(httpStatus.OK)
       .send({
