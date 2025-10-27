@@ -22,6 +22,8 @@ export const cleanupDatabase = async (): Promise<void> => {
     throw error instanceof Error
       ? new Error(`Database cleanup error: ${error.message}`)
       : new Error('Unknown database cleanup error');
+  } finally {
+    await mongoose.disconnect();
   }
 };
 
