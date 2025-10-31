@@ -14,17 +14,13 @@ import {
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { setupDatabase } from '../../helpers/setupDatabase';
 
 import { loginPayload, registerPayload, signupPayload } from './auth.fixture';
 
 describe('Auth route Integration Tests', () => {
   let app: FastifyInstance;
   let accessToken: string, refreshToken: string;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 

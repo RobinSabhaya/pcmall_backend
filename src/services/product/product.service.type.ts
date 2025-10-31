@@ -9,6 +9,7 @@ export interface IGetAllProductsFilter {
   gender?: object;
   colors?: object;
   prices?: object;
+  slug?: string;
   $or?: Array<object>;
 }
 

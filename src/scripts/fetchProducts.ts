@@ -14,6 +14,7 @@ import {
   IProductSKU,
   IProductVariant,
 } from '../models/product';
+import { generateSlug } from '../utils/custom.util';
 
 // eslint-disable-next-line complexity
 export async function fetchProducts(): Promise<void> {
@@ -26,7 +27,7 @@ export async function fetchProducts(): Promise<void> {
     try {
       const brandPayload = {
         name: product?.brand,
-        slug: product?.brand,
+        slug: generateSlug(product?.brand ?? 'Brand'),
       };
 
       const brandData = await findOneAndUpdateDoc<IProductBrand>(
@@ -55,7 +56,7 @@ export async function fetchProducts(): Promise<void> {
 
       const payload = {
         title: product?.title,
-        slug: product?.title,
+        slug: generateSlug(product?.title ?? 'Product'),
         description: product?.description,
         category: productCategoryData?._id,
         brand: brandData?._id,

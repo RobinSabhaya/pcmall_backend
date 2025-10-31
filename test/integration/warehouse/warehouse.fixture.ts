@@ -3,19 +3,18 @@ import { faker } from '@faker-js/faker';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
 import { IAddress, ISeller } from '@/models/user';
 
+import { CreateUpdateWarehouseSchema } from '../../../src/validations/warehouse.validation';
 import { getTestData } from '../../scripts/fixture.seed';
 
-let sellerData: ISeller | null | undefined = null;
-let addressData: IAddress | null | undefined = null;
+export const createUpdateWarehouse =
+  async (): Promise<CreateUpdateWarehouseSchema> => {
+    const sellerData = await getTestData<ISeller>(MONGOOSE_MODELS.SELLER);
+    const addressData = await getTestData<IAddress>(MONGOOSE_MODELS.ADDRESS);
 
-await (async (): Promise<void> => {
-  sellerData = await getTestData<ISeller>(MONGOOSE_MODELS.SELLER);
-  addressData = await getTestData<IAddress>(MONGOOSE_MODELS.ADDRESS);
-})();
-
-export const createUpdateWarehouse = {
-  name: faker.company.name(),
-  //   warehouseId : "warehouse id",
-  seller: sellerData != null && String((sellerData as IAddress)?._id),
-  address: addressData != null && String((addressData as IAddress)?._id),
-};
+    return {
+      name: faker.company.name(),
+      //   warehouseId : "warehouse id",
+      sellerId: String(sellerData?._id ?? ''),
+      addressId: String(addressData?._id ?? ''),
+    };
+  };

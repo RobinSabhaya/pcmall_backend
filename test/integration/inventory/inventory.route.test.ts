@@ -13,7 +13,6 @@ import {
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createUpdateInventoryPayload } from './inventory.fixture';
 import {
@@ -24,27 +23,24 @@ import {
 describe('Inventory route Integration Tests', () => {
   let app: FastifyInstance;
   let inventoryData: IInventory | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
 
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
+      const createUpdateInventoryPayloadData =
+        await createUpdateInventoryPayload();
       // Validate the payload
       expect(
-        validateReqPayload<typeof createUpdateInventoryPayload>(
+        validateReqPayload<typeof createUpdateInventoryPayloadData>(
           createUpdateInventory.body,
-          createUpdateInventoryPayload
+          createUpdateInventoryPayloadData
         )
       ).toBe(true);
 
@@ -55,7 +51,7 @@ describe('Inventory route Integration Tests', () => {
         '/v1/inventory/create-update',
         {
           headers: withAuth(),
-          body: createUpdateInventoryPayload,
+          body: createUpdateInventoryPayloadData,
         }
       );
 
@@ -69,7 +65,7 @@ describe('Inventory route Integration Tests', () => {
     });
   });
 
-  describe('POST /delete', () => {
+  describe('DELETE /delete', () => {
     test('should return 200 for valid DELETE request', async () => {
       const deleteInventoryPayload: DeleteInventorySchema = {
         inventoryId: String(inventoryData?._id),

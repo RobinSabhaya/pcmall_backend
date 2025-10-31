@@ -52,6 +52,7 @@ export const getAllProducts = {
     prices: z.string().optional(),
     gender: z.string().optional(),
     productId: z.string().optional(),
+    slug: z.string().optional(),
   }),
   // response: customResponseSchema({
   //   zodSchema: z.object({

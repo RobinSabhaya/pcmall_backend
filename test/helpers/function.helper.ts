@@ -4,15 +4,12 @@ import { MONGOOSE_MODELS } from '../../src/helpers/mongoose.model.helper';
 import { IToken } from '../../src/models/auth';
 import { getTestData } from '../scripts/fixture.seed';
 
-// import { disconnectDatabase } from './setupDatabase';
-
 let tokenData: IToken | null | undefined = null;
 
 await (async (): Promise<void> => {
   tokenData = await getTestData<IToken>(MONGOOSE_MODELS.TOKEN, {
     type: 'access',
   });
-  // await disconnectDatabase();
 })();
 
 export function withAuth(

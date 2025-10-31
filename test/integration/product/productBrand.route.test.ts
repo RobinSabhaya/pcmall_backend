@@ -13,7 +13,6 @@ import {
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import {
   ICreateProductBrandResponse,
@@ -24,27 +23,22 @@ import { createUpdateProductBrand } from './productBrand.fixture';
 describe('Product Brand route Integration Tests', () => {
   let app: FastifyInstance;
   let productBrandData: IProductBrand | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
+      const createUpdateProductBrandData = await createUpdateProductBrand();
       // Validate the payload
       expect(
-        validateReqPayload<typeof createUpdateProductBrand>(
+        validateReqPayload<typeof createUpdateProductBrandData>(
           createUpdateBrand.body,
-          createUpdateProductBrand
+          createUpdateProductBrandData
         )
       ).toBe(true);
 
@@ -55,7 +49,7 @@ describe('Product Brand route Integration Tests', () => {
         '/v1/product-brand/create-update',
         {
           headers: withAuth(),
-          body: createUpdateProductBrand,
+          body: createUpdateProductBrandData,
         }
       );
 

@@ -14,34 +14,28 @@ import {
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { addToCartPayload } from './cart.fixtures';
 
 describe('Cart route Integration Tests', () => {
   let app: FastifyInstance;
   let cartData: ICart | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /add', () => {
     test('should return 200 for valid POST request', async () => {
+      const addToCartPayloadData = await addToCartPayload();
       // Validate the payload
       expect(
-        validateReqPayload<typeof addToCartPayload>(
+        validateReqPayload<typeof addToCartPayloadData>(
           addToCart.body,
-          addToCartPayload
+          addToCartPayloadData
         )
       ).toBe(true);
 
@@ -50,7 +44,7 @@ describe('Cart route Integration Tests', () => {
         data: { cartData: ICart };
       }>(app, 'POST', '/v1/cart/add', {
         headers: withAuth(),
-        body: addToCartPayload,
+        body: addToCartPayloadData,
       });
 
       // set cart data

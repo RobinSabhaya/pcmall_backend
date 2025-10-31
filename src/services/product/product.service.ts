@@ -109,7 +109,9 @@ export const getAllProducts = async (
           pipeline: [
             {
               $match: {
-                user: new Types.ObjectId(String(user?._id)),
+                ...(user && {
+                  user: new Types.ObjectId(String(user?._id)),
+                }),
               },
             },
           ],
@@ -130,7 +132,9 @@ export const getAllProducts = async (
                 pipeline: [
                   {
                     $match: {
-                      user: new Types.ObjectId(String(user?._id)),
+                      ...(user && {
+                        user: new Types.ObjectId(String(user?._id)),
+                      }),
                       status: PAYMENTSTATUS.PENDING,
                     },
                   },
@@ -180,6 +184,7 @@ export const getAllProducts = async (
       {
         $match: {
           ...(filter?.productId && { _id: filter.productId }),
+          ...(filter?.slug != null && { slug: filter.slug }),
           ...(filter?.gender && { 'category.tags': filter?.gender }),
         },
       },
@@ -310,11 +315,16 @@ export const generateProductSku = async (
 export const generateProductFilter = (
   reqQuery: GetAllProductsSchema
 ): IGetAllProductsFilter => {
-  let { categories, colors, prices, gender } = reqQuery;
-  const { productId } = reqQuery;
+  let {
+    categories,
+    // colors,
+    prices,
+    gender,
+  } = reqQuery;
+  const { productId, slug } = reqQuery;
 
   categories = JSON.parse(JSON.stringify(categories ?? '[]'));
-  colors = JSON.parse(JSON.stringify(colors ?? '[]'));
+  // colors = JSON.parse(JSON.stringify(colors ?? '[]'));
   prices = JSON.parse(JSON.stringify(prices ?? '{}'));
   gender = JSON.parse(JSON.stringify(gender ?? '[]'));
 
@@ -327,9 +337,9 @@ export const generateProductFilter = (
     filter.gender = buildArrayFilter(JSON.parse(gender));
   }
 
-  if (colors != null) {
-    filter.colors = buildArrayFilter(JSON.parse(colors));
-  }
+  // if (colors != null) {
+  //   filter.colors = buildArrayFilter(JSON.parse(colors));
+  // }
 
   if (prices != null) {
     filter.prices = buildPriceFilter(
@@ -338,6 +348,8 @@ export const generateProductFilter = (
   }
 
   if (productId != null) filter.productId = new Types.ObjectId(productId);
+
+  if (slug != null) filter.slug = slug;
 
   return filter;
 };

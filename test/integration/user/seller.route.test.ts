@@ -8,7 +8,6 @@ import * as sellerValidation from '../../../src/validations/seller.validation';
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createUpdateSeller } from './seller.fixture';
 import {
@@ -20,18 +19,12 @@ import {
 describe('Seller route Integration', () => {
   let app: FastifyInstance;
   let sellerData: ISeller | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {

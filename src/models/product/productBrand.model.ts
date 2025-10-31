@@ -11,7 +11,6 @@ export interface IProductBrand extends Document, IBaseDocumentModel {
   mission: string;
   vision: string;
   logo: string;
-  weboste: string;
   bannerImage: string;
   website: string;
   contactEmail: string;

@@ -14,7 +14,6 @@ import {
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createProductPayload, productSkuPayload } from './product.fixture';
 import {
@@ -26,27 +25,22 @@ import {
 describe('Product route Integration Tests', () => {
   let app: FastifyInstance;
   let productResponseData: IProduct | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
+      const createProductPayloadData = await createProductPayload();
       // Validate the payload
       expect(
-        validateReqPayload<typeof createProductPayload>(
+        validateReqPayload<typeof createProductPayloadData>(
           createUpdateProduct.body,
-          createProductPayload
+          createProductPayloadData
         )
       ).toBe(true);
 
@@ -57,7 +51,7 @@ describe('Product route Integration Tests', () => {
         '/v1/product/create-update',
         {
           headers: withAuth(),
-          body: createProductPayload,
+          body: createProductPayloadData,
         }
       );
 
@@ -74,11 +68,12 @@ describe('Product route Integration Tests', () => {
 
   describe('POST /generate-sku', () => {
     test('should return 200 for valid POST request', async () => {
+      const productSkuPayloadData = await productSkuPayload();
       // Validate the payload
       expect(
-        validateReqPayload<typeof productSkuPayload>(
+        validateReqPayload<typeof productSkuPayloadData>(
           generateProductSku.body,
-          productSkuPayload
+          productSkuPayloadData
         )
       ).toBe(true);
 
@@ -89,7 +84,7 @@ describe('Product route Integration Tests', () => {
         '/v1/product/generate-sku',
         {
           headers: withAuth(),
-          body: productSkuPayload,
+          body: productSkuPayloadData,
         }
       );
 

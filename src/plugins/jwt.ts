@@ -33,8 +33,8 @@ const removeOptionalFromRights = (rights: string[]): string[] =>
   rights.filter(right => right !== 'optional');
 
 // Database operation functions
-const verifyJwtToken = async (request: FastifyRequest): Promise<IJwtPayload> =>
-  request.jwtVerify<IJwtPayload>();
+// const verifyJwtToken = async (request: FastifyRequest): Promise<IJwtPayload> =>
+//   request.jwtVerify<IJwtPayload>();
 
 const findUserById = async (userId: string): Promise<IUser | null> =>
   findOneDoc<IUser>(MONGOOSE_MODELS.USER, { _id: userId });
@@ -62,12 +62,26 @@ const checkAccessPermission = async (
 };
 
 // Authentication functions
-const authenticateUser = async (request: FastifyRequest): Promise<IUser> => {
-  const t = request?.cookies['t'];
+const authenticateUser = async (
+  request: FastifyRequest
+): Promise<IUser | undefined> => {
+  let t = '';
+  const cookieToken = request?.cookies['t'];
+  const authorizationToken = request.headers.authorization?.split(' ')[1];
 
-  const token = (
-    t != null ? jwt.verify(t, config.jwt.secret) : await verifyJwtToken(request)
-  ) as IJwtPayload;
+  if (authorizationToken == null) {
+    return;
+  }
+
+  if (cookieToken != null) {
+    t = cookieToken;
+  }
+
+  if (authorizationToken != null) {
+    t = authorizationToken;
+  }
+
+  const token = jwt.verify(t, config.jwt.secret) as IJwtPayload;
 
   if (!isValidTokenType(token.type)) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token type');
@@ -173,7 +187,7 @@ const createAuthorizationMiddleware = (...requiredRights: string[]) => {
         const user = await authenticateUser(request);
         request.user = user;
 
-        if (rights.length > 0) {
+        if (user != null && rights.length > 0) {
           await authorizeUser(user, rights);
         }
       }
@@ -183,10 +197,6 @@ const createAuthorizationMiddleware = (...requiredRights: string[]) => {
   };
 };
 
-export default fp(async (fastify: FastifyInstance) => {
-  await fastify.register(import('@fastify/jwt'), {
-    secret: config.jwt.secret!,
-  });
-
+export default fp((fastify: FastifyInstance) => {
   fastify.decorate('authorizeV1', createAuthorizationMiddleware);
 });

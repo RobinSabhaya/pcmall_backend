@@ -7,7 +7,6 @@ import { createUpdateWishlist } from '../../../src/validations/wishlist.validati
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createUpdateWishlistPayload } from './wishlist.fixture';
 import { ICreateUpdateWishlistResponse } from './wishlist.type';
@@ -15,26 +14,23 @@ import { ICreateUpdateWishlistResponse } from './wishlist.type';
 describe('Wishlist route Integration', () => {
   let app: FastifyInstance;
 
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
+      const createUpdateWishlistPayloadData =
+        await createUpdateWishlistPayload();
+
       expect(
         validateReqPayload(
           createUpdateWishlist.body,
-          createUpdateWishlistPayload
+          createUpdateWishlistPayloadData
         )
       ).toBe(true);
 
@@ -45,7 +41,7 @@ describe('Wishlist route Integration', () => {
         `/v1/wishlist/create-update`,
         {
           headers: withAuth(),
-          body: createUpdateWishlistPayload,
+          body: createUpdateWishlistPayloadData,
         }
       );
 

@@ -9,7 +9,6 @@ import * as warehouseValidation from '../../../src/validations/warehouse.validat
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createUpdateWarehouse } from './warehouse.fixture';
 import {
@@ -20,27 +19,22 @@ import {
 describe('Warehouse route Integration Tests', () => {
   let app: FastifyInstance;
   let warehouseData: IWarehouse | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
+      const createUpdateWarehouseData = await createUpdateWarehouse();
       // Validate the payload
       expect(
-        validateReqPayload<typeof createUpdateWarehouse>(
+        validateReqPayload<typeof createUpdateWarehouseData>(
           warehouseValidation.createUpdateWarehouse.body,
-          createUpdateWarehouse
+          createUpdateWarehouseData
         )
       ).toBe(true);
 
@@ -51,7 +45,7 @@ describe('Warehouse route Integration Tests', () => {
         '/v1/warehouse/create-update',
         {
           headers: withAuth(),
-          body: createUpdateWarehouse,
+          body: createUpdateWarehouseData,
         }
       );
 

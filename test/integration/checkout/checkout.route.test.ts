@@ -3,22 +3,14 @@ import { afterAll, beforeAll, describe, test } from 'vitest';
 
 import buildApp from '@/app';
 
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
-
 describe('Checkout route Integration Tests', () => {
   let app: FastifyInstance;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /', () => {

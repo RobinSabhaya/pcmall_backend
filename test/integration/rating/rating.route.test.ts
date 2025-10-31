@@ -9,7 +9,6 @@ import * as ratingValidation from '../../../src/validations/rating.validation';
 import { validateReqPayload, withAuth } from '../../helpers/function.helper';
 import { makeRequest } from '../../helpers/request.helper';
 import { expectSuccessResponse } from '../../helpers/response';
-import { disconnectDatabase, setupDatabase } from '../../helpers/setupDatabase';
 
 import { createUpdateRating } from './rating.fixture';
 import { IGetAllRatings, IRatingCount } from './rating.type';
@@ -17,34 +16,29 @@ import { IGetAllRatings, IRatingCount } from './rating.type';
 describe('Rating route Integration Tests', () => {
   let app: FastifyInstance;
   let ratingData: IRating | null = null;
-  beforeAll(async () => {
-    // setup database
-    await setupDatabase();
-
+  beforeAll(() => {
     app = buildApp();
   });
 
   afterAll(async () => {
     await app?.close();
-
-    // disconnect database
-    await disconnectDatabase();
   });
 
   describe('POST /create-update', () => {
     test('should return 200 for valid POST request', async () => {
       // Convert payload into equivalent multi-part form data
+      const createUpdateRatingData = await createUpdateRating();
       const ratingFormData = new FormData();
 
-      ratingFormData.append('productId', createUpdateRating.productId);
-      ratingFormData.append('rating', createUpdateRating.rating);
-      ratingFormData.append('message', createUpdateRating.message);
+      ratingFormData.append('productId', createUpdateRatingData.productId);
+      ratingFormData.append('rating', createUpdateRatingData.rating);
+      ratingFormData.append('message', createUpdateRatingData.message);
 
       // Validate the payload
       expect(
-        validateReqPayload<typeof createUpdateRating>(
+        validateReqPayload<typeof createUpdateRatingData>(
           ratingValidation.createUpdateRating.body,
-          createUpdateRating
+          createUpdateRatingData
         )
       ).toBe(true);
 

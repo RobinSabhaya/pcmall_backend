@@ -14,16 +14,23 @@ export const setupDatabase = async (): Promise<Mongoose | Error> => {
 
 export const cleanupDatabase = async (): Promise<void> => {
   try {
-    await mongoose.connection.dropDatabase();
-
-    console.log('Database cleanup completed 🧹');
+    // Check if connection exists and is ready
+    if (mongoose.connection.readyState !== 0) {
+      // Drop database only if connected
+      if (mongoose.connection.readyState === 1) {
+        await mongoose.connection.dropDatabase();
+      }
+      console.log('Database cleanup completed 🧹');
+    }
   } catch (error) {
-    console.error('Database cleanup failed ❌', error);
     throw error instanceof Error
-      ? new Error(`Database cleanup error: ${error.message}`)
+      ? new Error(`Database cleanup failed ❌: ${error.message}`)
       : new Error('Unknown database cleanup error');
   } finally {
-    await mongoose.disconnect();
+    // Force close connection if still open
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close(true);
+    }
   }
 };
 

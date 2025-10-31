@@ -17,3 +17,13 @@ export const buildPriceFilter = (prices: {
 export const toDeepObject = (data: unknown): unknown => {
   return JSON.parse(JSON.stringify(data));
 };
+
+export function generateSlug(title: string): string {
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .replace(/[^\w\u0590-\u06FF]+/g, '-') // allow unicode letters
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+    .toLowerCase();
+}

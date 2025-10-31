@@ -41,6 +41,9 @@ export async function fixturesSeed(): Promise<void> {
   try {
     await setupDatabase();
 
+    const createProductPayloadData = await createProductPayload();
+    const productSkuPayloadData = await productSkuPayload();
+
     const options = {
       upsert: true,
       new: true,
@@ -112,12 +115,12 @@ export async function fixturesSeed(): Promise<void> {
 
     // seed product
     const productPayload = {
-      title: createProductPayload.title,
-      description: createProductPayload.description,
-      slug: createProductPayload.slug,
+      title: createProductPayloadData.title,
+      description: createProductPayloadData.description,
+      slug: createProductPayloadData.slug,
       brand: productBrand?._id,
-      modelNumber: createProductPayload.modelNumber,
-      tags: createProductPayload.tags,
+      modelNumber: createProductPayloadData.modelNumber,
+      tags: createProductPayloadData.tags,
       category: categoryData?._id,
     };
     const product = await findOneAndUpdateDoc<IProduct>(
@@ -131,7 +134,7 @@ export async function fixturesSeed(): Promise<void> {
     const productVariantPayload = {
       name: createProductPayload.name,
       product: product?._id,
-      attributeCombination: createProductPayload.attributeCombination,
+      attributeCombination: createProductPayloadData.attributeCombination,
       images: [],
     };
 
@@ -145,9 +148,9 @@ export async function fixturesSeed(): Promise<void> {
     // seed product sku
     const createProductSkuPayload = {
       variant: productVariant?._id,
-      price: productSkuPayload.price,
-      discount: productSkuPayload.discount,
-      tax: productSkuPayload.tax,
+      price: productSkuPayloadData.price,
+      discount: productSkuPayloadData.discount,
+      tax: productSkuPayloadData.tax,
     };
     await findOneAndUpdateDoc<IProductSKU>(
       MONGOOSE_MODELS.PRODUCT_SKU,

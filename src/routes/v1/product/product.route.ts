@@ -12,7 +12,7 @@ export default function productRoute(fastify: FastifyInstance): void {
   route({
     method: 'GET',
     url: '/all',
-    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1('optional')],
     schema: productValidation.getAllProducts,
     description: 'Get all products',
     tags: ['Product'],
