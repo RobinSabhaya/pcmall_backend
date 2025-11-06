@@ -12,7 +12,7 @@ export const createUpdateRating =
 
     return {
       productId: String(productData?._id ?? ''),
-      rating: String(faker.number.float()),
+      rating: faker.number.float(),
       message: `Great product ${faker.commerce.productName()}`,
       // ratingId: "rating id",
       // images: "image",

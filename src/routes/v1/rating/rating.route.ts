@@ -7,10 +7,10 @@ import * as ratingValidation from '@/validations/rating.validation';
 
 export default function ratingRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
-  fastify.register(import('@/plugins/upload'));
   route({
     method: 'POST',
     url: '/create-update',
+    schema: ratingValidation.createUpdateRating,
     preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
     description: 'Create & Update product rating',
     tags: ['Product Rating'],

@@ -9,15 +9,16 @@ export type GetRatingListSchema = z.infer<typeof getRatingList.query>;
 export type GetRatingCountSchema = z.infer<typeof getRatingCount.query>;
 export type DeleteRatingSchema = z.infer<typeof deleteRating.query>;
 
+// TODO: need to check response validation
 export const createUpdateRating = {
   body: z.object({
     productId: z.string().optional(),
-    rating: z.string().optional(),
+    rating: z.number().optional(),
     message: z.string().optional(),
     ratingId: z.string().optional(),
     images: z.array(z.string().optional()).optional(),
   }),
-  response: baseResponseSchema({ data: { ratingData: ratingSchema } }),
+  // response: baseResponseSchema({ data: { ratingData: ratingSchema } }),
 };
 
 export const deleteRating = {
@@ -32,10 +33,10 @@ export const getRatingList = {
     productId: z.string().optional(),
     rating: z.string().optional(),
   }),
-  response: baseResponseSchema({
-    isPagination: true,
-    data: { ratingData: ratingSchema },
-  }),
+  // response: baseResponseSchema({
+  //   isPagination: true,
+  //   data: { ratingData: ratingSchema },
+  // }),
 };
 
 export const getRatingCount = {
@@ -43,5 +44,5 @@ export const getRatingCount = {
     productId: z.string().optional(),
     rating: z.string().optional(),
   }),
-  response: baseResponseSchema({ data: { ratingCount: ratingSchema } }),
+  // response: baseResponseSchema({ data: { ratingCount: ratingSchema } }),
 };

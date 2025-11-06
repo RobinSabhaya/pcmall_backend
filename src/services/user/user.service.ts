@@ -241,7 +241,7 @@ export const updateUserDetails = async (
   payload: UpdateUserSchema,
   options: IOptions
 ): Promise<IUserProfile | null | undefined> => {
-  const { first_name, last_name, gender, language } = payload;
+  const { first_name, last_name, gender, language, profile_picture } = payload;
   const { user } = options;
 
   if (
@@ -249,7 +249,7 @@ export const updateUserDetails = async (
     last_name != null ||
     // dob ||
     gender != null ||
-    // || reqBody?.profile_picture
+    profile_picture != null ||
     language != null
   )
     return findOneAndUpdateDoc<IUserProfile>(
@@ -259,6 +259,7 @@ export const updateUserDetails = async (
       },
       payload,
       {
+        new: true,
         upsert: true,
       }
     );

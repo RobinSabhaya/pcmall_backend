@@ -28,11 +28,6 @@ describe('Rating route Integration Tests', () => {
     test('should return 200 for valid POST request', async () => {
       // Convert payload into equivalent multi-part form data
       const createUpdateRatingData = await createUpdateRating();
-      const ratingFormData = new FormData();
-
-      ratingFormData.append('productId', createUpdateRatingData.productId);
-      ratingFormData.append('rating', createUpdateRatingData.rating);
-      ratingFormData.append('message', createUpdateRatingData.message);
 
       // Validate the payload
       expect(
@@ -49,7 +44,7 @@ describe('Rating route Integration Tests', () => {
         };
       }>(app, 'POST', '/v1/rating/create-update', {
         headers: withAuth(),
-        body: ratingFormData,
+        body: createUpdateRatingData,
       });
 
       // TODO: pending update

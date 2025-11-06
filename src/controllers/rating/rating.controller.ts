@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { status as httpStatus } from 'http-status';
 
 import { IUser } from '@/models/user';
-import * as fileService from '@/services/common/file.service';
 import * as ratingService from '@/services/rating/rating.service';
 import ApiError from '@/utils/apiErrorHandler';
 import * as ratingValidation from '@/validations/rating.validation';
@@ -19,43 +18,11 @@ export const createUpdateRating = async (
 ): Promise<FastifyReply> => {
   const user = request.user as IUser;
   const options = { user };
-
-  const parts = request.parts();
-
-  const fields: Record<string, unknown> = {};
-
-  for await (const part of parts) {
-    if (part.type === 'file') {
-      const fileName = fileService.generateFileName({
-        originalname: part.filename,
-      });
-
-      const isPromise = fileService.saveFiles([
-        {
-          fileUploadType: 'single',
-          fileBuffer: await part.toBuffer(),
-          fileMimeType: part.mimetype as string,
-          fileName,
-          fileSize: 1111,
-        },
-      ]);
-
-      if (isPromise != null) fields['images'] = [fileName];
-    } else {
-      fields[part.fieldname] = part.value;
-    }
-  }
-
-  const parsed = ratingValidation.createUpdateRating.body.safeParse(fields);
-  if (!parsed.success) {
-    // Remove if anything fails
-    delete fields['images'];
-    throw new ApiError(httpStatus.BAD_REQUEST, String(parsed.error.message));
-  }
+  const reqBody = request.body as ratingValidation.CreateUpdateRatingSchema;
 
   try {
     const { message, ratingData } = await ratingService.createUpdateRating(
-      fields,
+      reqBody,
       options
     );
 

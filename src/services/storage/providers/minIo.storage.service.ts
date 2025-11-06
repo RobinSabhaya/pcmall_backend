@@ -14,6 +14,14 @@ const minioClient = new Client({
   secretKey: minIOSecretKey!,
 });
 
+export const checkBucketExists = async (): Promise<void> => {
+  // Check/create bucket once before uploading
+  const bucketExists = await minioClient.bucketExists(minIOBucket!);
+  if (!bucketExists) {
+    await minioClient.makeBucket(minIOBucket!);
+  }
+};
+
 /**
  * Get file link
  * @param {string} fileName
@@ -46,11 +54,7 @@ export const uploadFileToMinio = async (
   // Return array since we're processing multiple files
   const bucketName = minIOBucket;
 
-  // Check/create bucket once before uploading
-  const bucketExists = await minioClient.bucketExists(bucketName!);
-  if (!bucketExists) {
-    await minioClient.makeBucket(bucketName!);
-  }
+  await checkBucketExists();
 
   // Process all files concurrently
   const uploadPromises = files.map(async file => {
@@ -65,4 +69,12 @@ export const uploadFileToMinio = async (
   });
 
   return Promise.all(uploadPromises);
+};
+
+export const generatePresignedPutURL = async ({
+  fileName,
+}: {
+  fileName: string;
+}): Promise<string> => {
+  return minioClient.presignedPutObject(minIOBucket!, fileName);
 };

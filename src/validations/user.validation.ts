@@ -27,6 +27,7 @@ export const updateUser = {
     // dob: z.date().optional(),
     gender: z.string().optional(),
     language: z.string().optional(),
+    profile_picture: z.string().optional(),
   }),
   // TODO: fix issue
   // response: baseResponseSchema({ data: { userData: userSchema } }),

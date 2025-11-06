@@ -4,6 +4,7 @@ import authRoute from './auth';
 import cartRoute from './cart';
 import categoryRoute from './category';
 import checkoutRoute from './checkout';
+import fileRoute from './file';
 import inventoryRoute from './inventory';
 import orderRoute from './orders';
 import paymentRoute from './payment';
@@ -28,6 +29,7 @@ const routes = [
   { route: warehouseRoute },
   { route: ratingRoute },
   { route: paymentRoute },
+  { route: fileRoute },
 ] as const;
 
 export default async function indexRoutes(

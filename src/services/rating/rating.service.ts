@@ -95,7 +95,7 @@ export const createUpdateRating = async (
       ...rest,
       product: productData._id,
       user: user?._id,
-      ...(uploadFiles?.length > 0 && { images: uploadFiles }),
+      // ...(uploadFiles?.length > 0 && { images: uploadFiles }),
     };
     ratingData = await findOneAndUpdateDoc<IRating>(
       MONGOOSE_MODELS.RATING,
