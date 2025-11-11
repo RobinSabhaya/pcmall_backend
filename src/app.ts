@@ -3,7 +3,7 @@ import Fastify, { FastifyInstance } from 'fastify';
 import '@/models';
 import { config } from './config/config';
 import routes from './routes/v1';
-import webhookRoutes from './routes/v1/webhooks';
+import { cronJobs } from './services/cron/cron.service';
 
 export default function buildApp(): FastifyInstance {
   const fastify: FastifyInstance = Fastify({
@@ -12,11 +12,7 @@ export default function buildApp(): FastifyInstance {
 
   if (config.env != 'test') {
     fastify.register(import('@fastify/cors'), {
-      origin: [
-        'http://localhost:3000',
-        'https://pcmall-web.vercel.app',
-        'https://pcmall-1thn.onrender.com',
-      ],
+      origin: ['http://localhost:3000', 'https://pcmall-web.vercel.app'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       credentials: true,
     });
@@ -27,11 +23,12 @@ export default function buildApp(): FastifyInstance {
   if (config.env == 'production') {
     fastify.register(import('./plugins/rateLimit'));
     fastify.register(import('./plugins/helmet'));
+    cronJobs(); // Crons
   }
 
   fastify.register(import('./plugins/jwt'));
   fastify.register(import('./plugins/cookie'));
-  fastify.register(webhookRoutes); // This package is @fastify/multipart override the webhooks raw body
+  // fastify.register(webhookRoutes); // This package is @fastify/multipart override the webhooks raw body
   fastify.register(routes, { prefix: '/v1' });
 
   return fastify;

@@ -22,6 +22,7 @@ import {
   GetRatingListSchema,
 } from '@/validations/rating.validation';
 
+import { toDeepObject } from '../../utils/custom.util';
 import { handleStorage } from '../storage/storageStrategy';
 
 import { IGetRatingListFilter, IUserRating } from './rating.service.type';
@@ -111,7 +112,7 @@ export const createUpdateRating = async (
 
   return {
     message,
-    ratingData,
+    ratingData: toDeepObject(ratingData) as IRating,
   };
 };
 

@@ -111,8 +111,8 @@ export const baseResponseSchema = ({
 export const customResponseSchema = ({
   zodSchema,
 }: {
-  zodSchema: z.ZodSchema;
-}): { [statusCode: number]: z.ZodTypeAny } => {
+  zodSchema: z.ZodType;
+}): { [statusCode: number]: z.ZodType } => {
   return {
     // error
     ...createErrorResponseSchema(),

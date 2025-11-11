@@ -30,7 +30,7 @@ export default function ratingRoute(fastify: FastifyInstance): void {
   route({
     method: 'GET',
     url: '/all',
-    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1('optional')],
     schema: ratingValidation.getRatingList,
     description: 'Get all product rating',
     tags: ['Product Rating'],
@@ -40,7 +40,7 @@ export default function ratingRoute(fastify: FastifyInstance): void {
   route({
     method: 'GET',
     url: '/count',
-    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
+    preHandlerHookHandler: [fastify.authorizeV1('optional')],
     schema: ratingValidation.getRatingCount,
     description: 'Get product rating count',
     tags: ['Product Rating'],
