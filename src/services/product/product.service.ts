@@ -109,9 +109,13 @@ export const getAllProducts = async (
           pipeline: [
             {
               $match: {
-                ...(user && {
-                  user: new Types.ObjectId(String(user?._id)),
-                }),
+                ...(user
+                  ? {
+                      user: new Types.ObjectId(String(user?._id)),
+                    }
+                  : {
+                      user: new Types.ObjectId(),
+                    }),
               },
             },
           ],
@@ -132,9 +136,13 @@ export const getAllProducts = async (
                 pipeline: [
                   {
                     $match: {
-                      ...(user && {
-                        user: new Types.ObjectId(String(user?._id)),
-                      }),
+                      ...(user
+                        ? {
+                            user: new Types.ObjectId(String(user?._id)),
+                          }
+                        : {
+                            user: new Types.ObjectId(),
+                          }),
                       status: PAYMENTSTATUS.PENDING,
                     },
                   },
@@ -147,13 +155,6 @@ export const getAllProducts = async (
                 from: 'product_skus',
                 localField: '_id',
                 foreignField: 'variant',
-                pipeline: [
-                  {
-                    $match: {
-                      ...(filter.prices && { ...filter.prices }),
-                    },
-                  },
-                ],
                 as: 'product_skus',
               },
             },
@@ -186,6 +187,9 @@ export const getAllProducts = async (
           ...(filter?.productId && { _id: filter.productId }),
           ...(filter?.slug != null && { slug: filter.slug }),
           ...(filter?.gender && { 'category.tags': filter?.gender }),
+          ...(filter?.prices && {
+            'product_variants.product_skus.price': filter?.prices?.price,
+          }),
         },
       },
       ...pagination,
@@ -342,9 +346,7 @@ export const generateProductFilter = (
   // }
 
   if (prices != null) {
-    filter.prices = buildPriceFilter(
-      prices as unknown as { min: number; max: number }
-    );
+    filter.prices = buildPriceFilter(JSON.parse(prices));
   }
 
   if (productId != null) filter.productId = new Types.ObjectId(productId);

@@ -10,7 +10,12 @@ export const buildPriceFilter = (prices: {
 }): { price: { $gte: number; $lte: number } } | undefined => {
   const hasMinOrMax = prices?.min !== undefined || prices?.max !== undefined;
   return hasMinOrMax
-    ? { price: { $gte: prices.min ?? 0, $lte: prices.max ?? 1_000_000 } }
+    ? {
+        price: {
+          $gte: Number(prices.min ?? 0),
+          $lte: Number(prices.max ?? 1_000_000),
+        },
+      }
     : undefined;
 };
 

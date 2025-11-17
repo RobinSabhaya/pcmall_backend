@@ -8,6 +8,7 @@ import { cronJobs } from './services/cron/cron.service';
 export default function buildApp(): FastifyInstance {
   const fastify: FastifyInstance = Fastify({
     logger: false,
+    trustProxy: true,
   });
 
   if (config.env != 'test') {
