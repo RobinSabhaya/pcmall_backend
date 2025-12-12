@@ -6,8 +6,6 @@ import buildApp from '@/app';
 
 import {
   login,
-  logout,
-  refreshTokens,
   register,
   signup,
 } from '../../../src/validations/auth.validation';
@@ -98,26 +96,15 @@ describe('Auth route Integration Tests', () => {
 
   describe('POST /refresh-token', () => {
     test('Should return 200 for valid POST request', async () => {
-      const refreshTokenPayload = {
-        refreshToken,
-      };
-
-      // Validate the payload
-      expect(
-        validateReqPayload<typeof refreshTokenPayload>(
-          refreshTokens.body,
-          refreshTokenPayload
-        )
-      ).toBe(true);
-
       // make request
       const response = await makeRequest(
         app,
         'POST',
         '/v1/auth/refresh-tokens',
         {
-          // headers: withAuth(accessToken),
-          body: refreshTokenPayload,
+          headers: {
+            cookie: `rt=${refreshToken}`,
+          },
         }
       );
 
@@ -128,19 +115,12 @@ describe('Auth route Integration Tests', () => {
 
   describe('POST /logout', () => {
     test('Should return 200 for valid POST request', async () => {
-      const logoutPayload = {
-        refreshToken,
-      };
-
-      // Validate the payload
-      expect(
-        validateReqPayload<typeof logoutPayload>(logout.body, logoutPayload)
-      ).toBe(true);
-
       // make request
       const response = await makeRequest(app, 'POST', '/v1/auth/logout', {
-        headers: withAuth(accessToken),
-        body: logoutPayload,
+        headers: {
+          ...withAuth(accessToken),
+          cookie: `rt=${refreshToken}`,
+        },
       });
 
       // test cases

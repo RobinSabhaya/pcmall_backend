@@ -40,7 +40,6 @@ export default function authRoute(fastify: FastifyInstance): void {
   route({
     method: 'POST',
     url: '/logout',
-    schema: authValidation.logout,
     description: 'Logout a user',
     tags: ['Authentication'],
     handler: logout,
@@ -48,7 +47,6 @@ export default function authRoute(fastify: FastifyInstance): void {
   route({
     method: 'POST',
     url: '/refresh-tokens',
-    schema: authValidation.refreshTokens,
     description: 'Refresh authentication tokens',
     tags: ['Authentication'],
     handler: refreshTokens,

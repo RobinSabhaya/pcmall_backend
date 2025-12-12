@@ -7,7 +7,7 @@ import {
   findOneDoc,
 } from '@/helpers/mongoose.helper';
 import { MONGOOSE_MODELS } from '@/helpers/mongoose.model.helper';
-import { token } from '@/models/auth';
+import { IToken, token } from '@/models/auth';
 import { IUser, IUserModel, IUserProfile } from '@/models/user';
 import ApiError from '@/utils/apiErrorHandler';
 import {
@@ -91,7 +91,7 @@ export const loginUserWithEmailAndPassword = async (
   )) as boolean;
 
   if (!userData || !isPasswordMatch) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Incorrect email or password');
   }
 
   // generate tokens
@@ -159,18 +159,21 @@ export const signup = async (
  * @returns {Promise}
  */
 export const logout = async (refreshToken: string): Promise<void> => {
-  const refreshTokenDoc = await token.findOne({
+  const refreshTokenDoc = await findOneDoc<IToken>(MONGOOSE_MODELS.TOKEN, {
     token: refreshToken,
     type: TOKENTYPES.REFRESH,
     blacklisted: false,
   });
+
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
   }
   await deleteToken({ _id: refreshTokenDoc._id });
 };
 
-export const refreshAuth = async (refreshToken: string): Promise<unknown> => {
+export const refreshAuth = async (
+  refreshToken: string
+): Promise<ITokenResponse> => {
   try {
     const refreshTokenDoc = await verifyToken(refreshToken, TOKENTYPES.REFRESH);
     const user = await findOneDoc<IUser>(MONGOOSE_MODELS.USER, {

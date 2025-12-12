@@ -18,10 +18,12 @@ export const errorHandler = (
 
     return reply.code(httpStatus.BAD_REQUEST).send({
       success: false,
-      details: formattedErrors,
+      message: formattedErrors,
     });
   }
-  return reply
-    .code(httpStatus.INTERNAL_SERVER_ERROR)
-    .send({ success: false, message: error.message });
+
+  return reply.code(error.statusCode ?? httpStatus.INTERNAL_SERVER_ERROR).send({
+    success: false,
+    message: error.message,
+  });
 };

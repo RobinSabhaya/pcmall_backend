@@ -7,6 +7,7 @@ import * as paymentValidation from '@/validations/payment.validation';
 
 export default function checkoutRoute(fastify: FastifyInstance): void {
   const route = createBaseRoute(fastify);
+
   route({
     method: 'POST',
     url: '/create-refund',
@@ -15,5 +16,15 @@ export default function checkoutRoute(fastify: FastifyInstance): void {
     description: 'Create Refund',
     tags: ['Payment'],
     handler: paymentController.createPaymentRefund,
+  });
+
+  route({
+    method: 'GET',
+    url: '/details',
+    preHandlerHookHandler: [fastify.authorizeV1(USERROLE.BUYER)],
+    schema: paymentValidation.getPaymentDetails,
+    description: 'Get Payment Details',
+    tags: ['Payment'],
+    handler: paymentController.getPaymentDetails,
   });
 }

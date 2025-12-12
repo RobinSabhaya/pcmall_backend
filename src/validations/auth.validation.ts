@@ -67,7 +67,7 @@ export const logout = {
 
 export const refreshTokens = {
   body: z.object({
-    refreshToken: z.string(),
+    // refreshToken: z.string(),
   }),
   response: customResponseSchema({
     zodSchema: tokenZodSchema,

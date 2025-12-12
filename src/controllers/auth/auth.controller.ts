@@ -5,7 +5,6 @@ import { IUser } from '@/models/user';
 import {
   ForgotPasswordSchema,
   LoginSchema,
-  RefreshTokensSchema,
   RegisterSchema,
   ResetPasswordSchema,
   SignupSchema,
@@ -59,7 +58,18 @@ export const signup = async (
         httpOnly: true,
         secure: config.env === 'production',
         sameSite: config.env === 'production' ? 'none' : 'lax',
-        domain: config.client.baseAppDomain,
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
+      })
+      .setCookie('rt', tokens.refresh.token, {
+        path: '/',
+        httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
       })
       .code(httpStatus.CREATED)
       .send({
@@ -93,7 +103,18 @@ export const login = async (
         httpOnly: true,
         secure: config.env === 'production',
         sameSite: config.env === 'production' ? 'none' : 'lax',
-        domain: config.client.baseAppDomain,
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
+      })
+      .setCookie('rt', tokens.refresh.token, {
+        path: '/',
+        httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
       })
       .code(httpStatus.OK)
       .send({
@@ -114,10 +135,11 @@ export const logout = async (
   reply: FastifyReply
 ): Promise<FastifyReply> => {
   try {
-    const { refreshToken } = request.body as RefreshTokensSchema;
+    // const { refreshToken } = request.body as RefreshTokensSchema;
+    const refreshToken = request.cookies['rt']!;
     await authService.logout(refreshToken);
 
-    return reply.clearCookie('t').code(httpStatus.OK).send({
+    return reply.clearCookie('t').clearCookie('rt').code(httpStatus.OK).send({
       success: true,
       message: 'User logged out successfully',
     });
@@ -134,12 +156,32 @@ export const refreshTokens = async (
   reply: FastifyReply
 ): Promise<FastifyReply> => {
   try {
-    const { refreshToken } = request.body as RefreshTokensSchema;
+    const refreshToken = request.cookies['rt']!;
     const tokens = await authService.refreshAuth(refreshToken);
-    return reply.code(httpStatus.OK).send({
-      success: true,
-      data: { tokens: toDeepObject(tokens) as ITokenResponse },
-    });
+    return reply
+      .setCookie('t', tokens.access.token, {
+        path: '/',
+        httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
+      })
+      .setCookie('rt', tokens.refresh.token, {
+        path: '/',
+        httpOnly: true,
+        secure: config.env === 'production',
+        sameSite: config.env === 'production' ? 'none' : 'lax',
+        ...(config.env === 'production' && {
+          domain: config.client.baseAppDomain,
+        }),
+      })
+      .code(httpStatus.OK)
+      .send({
+        success: true,
+        data: { tokens: toDeepObject(tokens) as ITokenResponse },
+      });
   } catch (error: unknown) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,

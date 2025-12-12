@@ -12,11 +12,14 @@ export interface IGetAllProductsFilter {
     price: { $gte: number; $lte: number };
   };
   slug?: string;
-  $or?: Array<object>;
+  $or?: object[];
+  search?: string;
 }
 
-export interface IProductPopulated
-  extends Omit<IProduct, 'brand' | 'category'> {
+export interface IProductPopulated extends Omit<
+  IProduct,
+  'brand' | 'category'
+> {
   brand: Pick<IProductBrand, '_id' | 'name'>;
   category: Pick<ICategory, '_id' | 'categoryName'>;
 }

@@ -8,6 +8,8 @@ export type CreatePaymentRefundSchema = z.infer<
   typeof createPaymentRefund.body
 >;
 
+export type GetPaymentDetailsSchema = z.infer<typeof getPaymentDetails.query>;
+
 export const createPaymentRefund = {
   body: z.object({
     transactionId: z.string(),
@@ -15,4 +17,10 @@ export const createPaymentRefund = {
     partial_amount: z.number().optional(),
   }),
   response: baseResponseSchema({ data: { paymentData: paymentSchema } }),
+};
+
+export const getPaymentDetails = {
+  query: z.object({
+    sessionId: z.string(),
+  }),
 };

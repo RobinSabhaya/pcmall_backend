@@ -7,10 +7,13 @@ import mongoose, {
   UpdateQuery,
 } from 'mongoose';
 
+import { str2regex } from '../utils/custom.util';
+
 export interface IPaginationOptions {
   sortBy?: string;
   limit?: number;
   page?: number;
+  search?: string;
 }
 
 export interface IFindOptions {
@@ -33,10 +36,13 @@ export const paginationQuery = (
   options: IPaginationOptions,
   stages: Record<string, object>[] = []
 ): Array<PipelineStage> => {
-  //
-  const { page = 1, limit = 10, sortBy } = options;
+  // options
+  const { page = 1, limit = 10, sortBy, search } = options;
 
   const sort: Record<string, 1 | -1> = {};
+  const searchQuery: Record<string, string> = {};
+
+  // Sort
   if (sortBy != null) {
     sortBy.split(',').forEach(sortOption => {
       const [key, order] = sortOption.split(':');
@@ -46,8 +52,22 @@ export const paginationQuery = (
     sort._id = -1;
   }
 
+  // Search
+  if (search != '' && search != null) {
+    const [key, value] = search.split(':');
+    Object.assign(searchQuery, {
+      [key]: {
+        $regex: str2regex(value),
+        $options: 'i',
+      },
+    });
+  }
+
   return [
     { $sort: sort },
+    {
+      $match: searchQuery,
+    },
     {
       $facet: {
         pagination: [
@@ -80,7 +100,7 @@ export const paginationQuery = (
         },
       },
     },
-  ] as Array<PipelineStage>;
+  ] as PipelineStage[];
 };
 
 /**

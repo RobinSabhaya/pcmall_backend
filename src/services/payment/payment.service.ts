@@ -26,6 +26,7 @@ import ApiError from '@/utils/apiErrorHandler';
 import { INVENTORYTYPE, PAYMENTSTATUS } from '../../helpers/constant.helper';
 import { formatAddress } from '../../helpers/function.helper';
 import { IOrder } from '../../models/orders';
+import { GetPaymentDetailsSchema } from '../../validations/payment.validation';
 import { handleEmail } from '../email/emailStrategy';
 import { handleSMS } from '../sms/smsStrategy';
 
@@ -309,4 +310,12 @@ export const generateOrderList = async (
       };
     })
   );
+};
+
+export const getPaymentDetails = async (
+  filter: GetPaymentDetailsSchema
+): Promise<IPayment | null> => {
+  return findOneDoc<IPayment>(MONGOOSE_MODELS.PAYMENT, {
+    ...filter,
+  });
 };

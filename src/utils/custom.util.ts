@@ -32,3 +32,36 @@ export function generateSlug(title: string): string {
     .replace(/-{2,}/g, '-')
     .toLowerCase();
 }
+
+export const str2regex = (searchStr: string): string => {
+  const regexStr = [...searchStr];
+
+  regexStr.forEach((ele, ind) => {
+    if (
+      [
+        '.',
+        '+',
+        '*',
+        '?',
+        '^',
+        '$',
+        '(',
+        ')',
+        '[',
+        ']',
+        '{',
+        '}',
+        '|',
+        '\\',
+      ].includes(ele)
+    )
+      regexStr[ind] = `\\${regexStr[ind]}`;
+  });
+
+  return regexStr.join('');
+};
+
+export const formatPrice = (
+  price: number,
+  fractionDigits: number = 2
+): number => +price.toFixed(fractionDigits);

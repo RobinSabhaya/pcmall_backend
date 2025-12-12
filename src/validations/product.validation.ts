@@ -53,6 +53,10 @@ export const getAllProducts = {
     gender: z.string().optional(),
     productId: z.string().optional(),
     slug: z.string().optional(),
+    search: z.string().optional(),
+    page: z.string().default('1').optional(),
+    limit: z.string().default('10').optional(),
+    sortBy: z.string().optional(),
   }),
   // response: customResponseSchema({
   //   zodSchema: z.object({

@@ -33,7 +33,7 @@ export default fp(async (fastify: FastifyInstance) => {
       },
       servers: [
         {
-          url: `http://${config.host || 'localhost'}:${config.port || 3000}`,
+          url: `http://${config.host}:${config.port}`,
           description: 'Development Server',
         },
       ],
@@ -46,6 +46,7 @@ export default fp(async (fastify: FastifyInstance) => {
           },
         },
       },
+      security: [{ bearerAuth: [] }],
     },
     transform: ({ schema, url }) => {
       // Transform body schema
@@ -80,6 +81,6 @@ export default fp(async (fastify: FastifyInstance) => {
       docExpansion: 'list',
       deepLinking: false,
     },
-    staticCSP: `default-src 'self'; connect-src 'self' http://127.0.0.1:${config.port} http://localhost:${config.port}`,
+    staticCSP: `http://127.0.0.1:${config.port} http://localhost:${config.port}`,
   });
 });

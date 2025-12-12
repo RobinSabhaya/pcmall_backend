@@ -52,7 +52,7 @@ export const transformResponseSchemas = (
 
   for (const [statusCode, responseSchema] of Object.entries(response)) {
     if (typeof responseSchema === 'object') {
-      const openApiSchema = zodToOpenApiSchema(responseSchema as z.ZodSchema);
+      const openApiSchema = zodToOpenApiSchema(responseSchema);
       transformedResponse[statusCode] = {
         ...openApiSchema,
       };

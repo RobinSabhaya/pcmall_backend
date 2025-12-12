@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { status as httpStatus } from 'http-status';
 import { FilterQuery, Types } from 'mongoose';
 
@@ -10,7 +11,7 @@ import {
   GetAllProductsSchema,
 } from '@/validations/product.validation';
 
-import { PAYMENTSTATUS } from '../../helpers/constant.helper';
+import { PAYMENTSTATUS, USERROLE } from '../../helpers/constant.helper';
 import {
   findOneAndDeleteDoc,
   findOneAndUpdateDoc,
@@ -57,13 +58,25 @@ export const getProduct = async (
 // eslint-disable-next-line complexity
 export const getAllProducts = async (
   reqQuery: GetAllProductsSchema,
-  options?: IOptions
+  options: IOptions
 ): Promise<IProduct[]> => {
   const user = options?.user;
 
   const filter = generateProductFilter(reqQuery);
 
-  const pagination = paginationQuery(options!);
+  const pagination = paginationQuery({
+    page: Number(reqQuery.page ?? 1),
+    limit: Number(reqQuery.limit ?? 10),
+    ...(reqQuery?.sortBy != '' && { sortBy: reqQuery.sortBy }),
+    ...(reqQuery?.search != '' && { search: reqQuery.search }),
+    ...(user &&
+      user?.roles.length > 0 &&
+      user?.roles.includes(USERROLE.SELLER) === true && {
+        createdBy: new Types.ObjectId(String(user?._id)),
+        updatedBy: new Types.ObjectId(String(user?._id)),
+      }),
+  });
+
   return toDeepObject(
     await product.aggregate([
       {
@@ -464,8 +477,6 @@ export const handleVariantOperation = async (
   }
 };
 
-// TODO: fix the eslint
-/* eslint-disable max-lines */
 export const handleProductSkuOperation = async (payload: {
   productData: IProductPopulated;
   productVariantData: IProductVariant;

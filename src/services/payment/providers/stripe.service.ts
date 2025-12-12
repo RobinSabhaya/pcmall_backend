@@ -13,6 +13,7 @@ import { CheckoutSchema } from '@/validations/checkout.validation';
 import { CreatePaymentRefundSchema } from '@/validations/payment.validation';
 
 import { config } from '../../../config/config';
+import { formatPrice } from '../../../utils/custom.util';
 import * as orderService from '../../orders/order.service';
 import * as paymentService from '../payment.service';
 
@@ -231,7 +232,7 @@ export const calculateCost = async (
         product_data: {
           name: item.product_name,
         },
-        unit_amount: productSkuData.price * 100,
+        unit_amount: formatPrice(productSkuData.price * 100, 2),
       },
       quantity: item?.quantity || 1,
     };
@@ -239,8 +240,11 @@ export const calculateCost = async (
     const itemData = {
       variant: item.productVariantId,
       quantity: item?.quantity || 1,
-      unitPrice: productSkuData.price * 100,
-      totalPrice: productSkuData.price * 100 * (item?.quantity || 1),
+      unitPrice: formatPrice(productSkuData.price * 100, 2),
+      totalPrice: formatPrice(
+        productSkuData.price * 100 * (item?.quantity || 1),
+        2
+      ),
     };
 
     return { lineItem, itemData };
@@ -258,7 +262,7 @@ export const calculateCost = async (
   const tax = subtotal * 0.1;
   const shippingCost = 1000;
 
-  const totalAmount = subtotal + tax + shippingCost;
+  const totalAmount = formatPrice(subtotal + tax + shippingCost, 2);
 
   return {
     totalAmount,

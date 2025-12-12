@@ -32,10 +32,6 @@ const isOptionalAuth = (rights: string[]): boolean =>
 const removeOptionalFromRights = (rights: string[]): string[] =>
   rights.filter(right => right !== 'optional');
 
-// Database operation functions
-// const verifyJwtToken = async (request: FastifyRequest): Promise<IJwtPayload> =>
-//   request.jwtVerify<IJwtPayload>();
-
 const findUserById = async (userId: string): Promise<IUser | null> =>
   findOneDoc<IUser>(MONGOOSE_MODELS.USER, { _id: userId });
 
@@ -65,39 +61,32 @@ const checkAccessPermission = async (
 const authenticateUser = async (
   request: FastifyRequest
 ): Promise<IUser | undefined> => {
-  let t = '';
   const cookieToken = request?.cookies['t'];
   const authorizationToken = request.headers.authorization?.split(' ')[1];
 
-  if (authorizationToken == null) {
+  if (cookieToken != null || authorizationToken != null) {
+    const t = cookieToken ?? authorizationToken;
+
+    const token = jwt.verify(t!, config.jwt.secret) as IJwtPayload;
+
+    if (!isValidTokenType(token.type)) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token type');
+    }
+
+    const user = await findUserById(token.sub);
+
+    if (!user) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'User not found');
+    }
+
+    if (!isActiveUser(user)) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'User is not active');
+    }
+
+    return user;
+  } else {
     return;
   }
-
-  if (cookieToken != null) {
-    t = cookieToken;
-  }
-
-  if (authorizationToken != null) {
-    t = authorizationToken;
-  }
-
-  const token = jwt.verify(t, config.jwt.secret) as IJwtPayload;
-
-  if (!isValidTokenType(token.type)) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token type');
-  }
-
-  const user = await findUserById(token.sub);
-
-  if (!user) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'User not found');
-  }
-
-  if (!isActiveUser(user)) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'User is not active');
-  }
-
-  return user;
 };
 
 const handleOptionalAuthentication = async (
@@ -165,7 +154,7 @@ const handleAuthError = (error: unknown): never => {
 
   const message =
     error instanceof Error ? error.message : 'Authentication failed';
-  throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, message);
+  throw new ApiError(httpStatus.UNAUTHORIZED, message);
 };
 
 // Main authorization middleware

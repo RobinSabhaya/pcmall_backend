@@ -13,7 +13,11 @@ export default function buildApp(): FastifyInstance {
 
   if (config.env != 'test') {
     fastify.register(import('@fastify/cors'), {
-      origin: ['http://localhost:3000', 'https://pcmall-web.vercel.app'],
+      origin: [
+        'http://localhost:3000',
+        'https://pcmall-web.vercel.app',
+        'http://localhost:5000',
+      ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       credentials: true,
     });

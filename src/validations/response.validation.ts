@@ -27,13 +27,11 @@ export const createSuccessResponseSchema = (
   }
 
   return {
-    [httpStatus.OK]: z.toJSONSchema(
-      z.object({
-        success: z.boolean().default(true),
-        message: z.string().optional(),
-        data: z.object(responseData),
-      })
-    ),
+    [httpStatus.OK]: z.object({
+      success: z.boolean().default(true),
+      message: z.string().optional(),
+      data: z.object(responseData),
+    }),
   };
 };
 
