@@ -1,0 +1,15 @@
+export enum PaymentStatus {
+  SUCCESS = 'SUCCESS',
+  PAID = 'PAID',
+  FAILED = 'FAILED',
+  EXPIRED = 'EXPIRED',
+  PENDING = 'PENDING',
+  REFUND_SUCCESS = 'REFUND_SUCCESS',
+  REFUND_FAILED = 'REFUND_FAILED',
+}
+
+export enum ConfirmationType {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}

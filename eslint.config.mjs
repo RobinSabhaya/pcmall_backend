@@ -172,7 +172,7 @@ export default [
         'error',
         {
           selector: 'variableLike',
-          format: ['camelCase', 'UPPER_CASE',"snake_case"],
+          format: ['camelCase', 'UPPER_CASE',"snake_case", "PascalCase"],
         },
         {
           selector: 'typeLike',
@@ -294,7 +294,7 @@ export default [
       'unicorn/escape-case': 'error',
       'unicorn/expiring-todo-comments': 'error',
       'unicorn/explicit-length-check': 'error',
-      'unicorn/filename-case': ['error', { case: 'camelCase' }],
+      'unicorn/filename-case': ['error', { case: 'kebabCase' }],
       'unicorn/new-for-builtins': 'error',
       'unicorn/no-abusive-eslint-disable': 'error',
       // 'unicorn/no-array-instanceof': 'error',

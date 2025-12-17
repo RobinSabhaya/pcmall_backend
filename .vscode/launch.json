@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Fastify (tsx)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "--inspect",
+        "--require",
+        "tsx",
+        // "src/server.ts", // for dev
+        // "test/scripts/index.ts", // for test
+        "src/scripts/index.ts" // for dev seed
+      ],
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  ]
+}
