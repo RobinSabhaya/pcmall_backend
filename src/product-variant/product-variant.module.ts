@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { ProductVariantController } from './product-variant.controller';
 import { ProductVariantService } from './product-variant.service';
 import {
   ProductVariant,
@@ -17,8 +16,7 @@ import {
       },
     ]),
   ],
-  controllers: [ProductVariantController],
   providers: [ProductVariantService],
-  exports: [MongooseModule],
+  exports: [ProductVariantService],
 })
 export class ProductVariantModule {}

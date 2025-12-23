@@ -1,17 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, QueryFilter, QueryOptions, Types } from 'mongoose';
 
+import { PaymentStatus } from '../common/enums/constants.enum';
 import { IOption } from '../common/interfaces/common.interface';
+import {
+  buildArrayFilter,
+  buildPriceFilter,
+} from '../common/utils/common.util';
+import {
+  findOneAndDeleteDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
+  paginationQuery,
+} from '../common/utils/mongoose.utils';
+import { ProductVariantService } from '../product-variant/product-variant.service';
+import { UserRole } from '../user/enums/user.enum';
 
-import { CreateUpdateProductDto } from './dto/product.dto';
-import { ICreateUpdateProduct } from './product.interface';
+import {
+  CreateUpdateProductDto,
+  DeleteProductDto,
+  GetAllProductsDto,
+} from './dto/product.dto';
+import {
+  ICreateUpdateProduct,
+  IDeleteProduct,
+  IGetAllProducts,
+  IGetAllProductsFilter,
+} from './product.interface';
 import { Product } from './schema/product.schema';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    private readonly productVariantService: ProductVariantService,
   ) {}
 
   async createUpdateProduct(
@@ -28,10 +51,11 @@ export class ProductService {
       },
     );
 
-    const { productVariantData } = await this.handleVariantOperation(
-      { ...createUpdateProductDto },
-      { user },
-    );
+    const productVariantData =
+      await this.productVariantService.handleVariantOperation(
+        { ...createUpdateProductDto, productId: productData?._id?.toString() },
+        { user },
+      );
 
     return {
       message,
@@ -61,7 +85,7 @@ export class ProductService {
 
     if (productId != null) {
       // Update existing product
-      const existingProduct = await this.productModel.findOne({
+      const existingProduct = await findOneDoc(this.productModel, {
         _id: productId,
       });
 
@@ -69,7 +93,8 @@ export class ProductService {
         throw new NotFoundException('product not found');
       }
 
-      productData = await this.productModel.findOneAndUpdate(
+      productData = await findOneAndUpdateDoc(
+        this.productModel,
         { _id: productId },
         { ...productPayload, updatedBy: user?._id },
         {
@@ -96,112 +121,237 @@ export class ProductService {
     return { productData, message };
   }
 
-  handleVariantOperation = async (
-    createUpdateProductDto: CreateUpdateProductDto,
-    options: IOption,
-  ): Promise<Omit<ICreateUpdateProduct, 'productData'>> => {
-    const { variantId, productId, name, attributeCombination } =
-      createUpdateProductDto;
-    const { user } = options;
+  async deleteProduct(
+    deleteProductDto: DeleteProductDto,
+  ): Promise<IDeleteProduct> {
+    const { productId } = deleteProductDto;
+    let productData,
+      message = '';
 
-    const productVariantPayload = {
+    /** Get product */
+    productData = await findOneDoc(this.productModel, {
+      _id: productId,
+    });
+
+    if (!productData) throw new NotFoundException('product not found');
+
+    productData = await findOneAndDeleteDoc(this.productModel, {
+      _id: productId,
+    });
+    await this.productVariantService.findOneAndDelete({
       product: productId,
-      name,
-      attributeCombination,
-      createdBy: user?._id,
-      updatedBy: user?._id,
+    });
+
+    // TODO: need to solve with better approach (Without depending to sku module circular dependency)
+    // await this.productSkuService.findOneAndDelete({
+    //   product: productId,
+    // });
+
+    message = 'product delete successfully';
+    return {
+      productData,
+      message,
     };
+  }
 
-    if (variantId != null) {
-      // Update existing variant
-      const existingVariant = await this.productModel.findOne({
-        _id: variantId,
-      });
+  // eslint-disable-next-line complexity
+  async getAllProducts(
+    getAllProductsDto: GetAllProductsDto,
+    options: IOption,
+  ): Promise<IGetAllProducts> {
+    const user = options?.user;
+    const { page, limit, sortBy, search } = getAllProductsDto;
 
-      if (!existingVariant) {
-        throw new NotFoundException('product variant not found');
-      }
+    const filter = this.generateProductFilter(getAllProductsDto);
 
-      return this.productModel.findOneAndUpdate(
-        { _id: variantId },
-        { ...productVariantPayload, updatedBy: user?._id },
-        {
-          upsert: true,
-          new: true,
+    const pagination = paginationQuery({
+      page: Number(page ?? 1),
+      limit: Number(limit ?? 10),
+      ...(sortBy != '' && { sortBy }),
+      ...(search != '' && { search }),
+      ...(user != null &&
+        user?.roles?.length > 0 &&
+        user?.roles?.includes(UserRole.SELLER) === true && {
+          createdBy: new Types.ObjectId(String(user?._id)),
+          updatedBy: new Types.ObjectId(String(user?._id)),
+        }),
+    });
+
+    return this.productModel.aggregate([
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category',
         },
-      );
-    } else {
-      return this.productModel.findOneAndUpdate(
-        productVariantPayload,
-        productVariantPayload,
-        {
-          upsert: true,
-          new: true,
+      },
+      {
+        $unwind: {
+          path: '$category',
+          preserveNullAndEmptyArrays: true,
         },
-      );
+      },
+      {
+        $match: {
+          ...(filter?.categories && {
+            'category.categoryName': filter?.categories,
+          }),
+        },
+      },
+      {
+        $lookup: {
+          from: 'product_brands',
+          localField: 'brand',
+          foreignField: '_id',
+          as: 'brand',
+        },
+      },
+      {
+        $unwind: {
+          path: '$brand',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $match: {
+                ...(user != null
+                  ? {
+                      user: new Types.ObjectId(String(user?._id)),
+                    }
+                  : {
+                      user: new Types.ObjectId(),
+                    }),
+              },
+            },
+          ],
+          as: 'wishlistProduct',
+        },
+      },
+      {
+        $lookup: {
+          from: 'product_variants',
+          localField: '_id',
+          foreignField: 'product',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'carts',
+                localField: '_id',
+                foreignField: 'variant',
+                pipeline: [
+                  {
+                    $match: {
+                      ...(user != null
+                        ? {
+                            user: new Types.ObjectId(String(user?._id)),
+                          }
+                        : {
+                            user: new Types.ObjectId(),
+                          }),
+                      status: PaymentStatus.PENDING,
+                    },
+                  },
+                ],
+                as: 'cartProduct',
+              },
+            },
+            {
+              $lookup: {
+                from: 'product_skus',
+                localField: '_id',
+                foreignField: 'variant',
+                as: 'product_skus',
+              },
+            },
+            {
+              $unwind: {
+                path: '$product_skus',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $addFields: {
+                isInCart: {
+                  $cond: [{ $gt: [{ $size: '$cartProduct' }, 0] }, true, false],
+                },
+              },
+            },
+          ],
+          as: 'product_variants',
+        },
+      },
+      {
+        $addFields: {
+          isInWishlist: {
+            $cond: [{ $gt: [{ $size: '$wishlistProduct' }, 0] }, true, false],
+          },
+        },
+      },
+      {
+        $match: {
+          ...(filter?.productId && { _id: filter.productId }),
+          ...(filter?.slug != null && { slug: filter.slug }),
+          ...(filter?.gender && { 'category.tags': filter?.gender }),
+          ...(filter?.prices && {
+            'product_variants.product_skus.price': filter?.prices?.price,
+          }),
+        },
+      },
+      ...pagination,
+    ]);
+  }
+
+  generateProductFilter(
+    getAllProductDto: GetAllProductsDto,
+  ): IGetAllProductsFilter {
+    let {
+      categories,
+      // colors,
+      prices,
+      gender,
+    } = getAllProductDto;
+    const { productId, slug } = getAllProductDto;
+
+    categories = JSON.parse(JSON.stringify(categories ?? '[]'));
+    // colors = JSON.parse(JSON.stringify(colors ?? '[]'));
+    prices = JSON.parse(JSON.stringify(prices ?? '{}'));
+    gender = JSON.parse(JSON.stringify(gender ?? '[]'));
+
+    const filter: IGetAllProductsFilter = {};
+    if (categories != null) {
+      filter.categories = buildArrayFilter(JSON.parse(categories));
     }
-  };
 
-  // handleProductSkuOperation = async (payload: {
-  //   productData: IProductPopulated;
-  //   productVariantData: IProductVariant;
-  //   reqBody: GenerateProductSkuSchema;
-  //   options: IOptions;
-  // }): Promise<{
-  //   productSkuData: IProductSKU | null;
-  //   message: string;
-  // }> => {
-  //   const {
-  //     productData,
-  //     productVariantData,
-  //     reqBody: { productSkuId, price, discount, tax },
-  //     options,
-  //   } = payload;
-  //   const { user } = options;
-  //   let productSkuData, message;
+    if (gender != null) {
+      filter.gender = buildArrayFilter(JSON.parse(gender));
+    }
 
-  //   const productSKUPayload = generateSKUPayload({
-  //     productData,
-  //     productVariantData,
-  //     price,
-  //     discount,
-  //     tax,
-  //   });
+    // if (colors != null) {
+    //   filter.colors = buildArrayFilter(JSON.parse(colors));
+    // }
 
-  //   const productSKUPayloadData = Object.assign(
-  //     {
-  //       createdBy: user?._id,
-  //       updatedBy: user?._id,
-  //     },
-  //     productSKUPayload,
-  //   ) as IProductSKU;
+    if (prices != null) {
+      filter.prices = buildPriceFilter(JSON.parse(prices));
+    }
 
-  //   if (productSkuId != null) {
-  //     productSkuData = await findOneAndUpdateDoc<IProductSKU>(
-  //       MONGOOSE_MODELS.PRODUCT_SKU,
-  //       { _id: productSkuId },
-  //       { ...productSKUPayloadData },
-  //       {
-  //         upsert: true,
-  //         new: true,
-  //       },
-  //     );
-  //     message = 'product Sku update successfully';
-  //   } else {
-  //     productSkuData = await findOneAndUpdateDoc<IProductSKU>(
-  //       MONGOOSE_MODELS.PRODUCT_SKU,
-  //       {},
-  //       { ...productSKUPayloadData, updatedBy: user?._id } as IProductSKU,
-  //       {
-  //         upsert: true,
-  //         new: true,
-  //       },
-  //     );
-  //     message = 'Generate product Sku successfully';
-  //   }
-  //   return {
-  //     productSkuData,
-  //     message,
-  //   };
-  // };
+    if (productId != null) filter.productId = new Types.ObjectId(productId);
+
+    if (slug != null) filter.slug = slug;
+
+    return filter;
+  }
+
+  async findOne(
+    filter: QueryFilter<Product>,
+    options: QueryOptions = {},
+  ): Promise<Product | null> {
+    return findOneDoc(this.productModel, filter, options);
+  }
 }

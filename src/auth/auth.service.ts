@@ -4,13 +4,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import bcrypt from 'bcryptjs';
-import { Model } from 'mongoose';
 
 import { TokenService } from '../token/token.service';
-import { UserProfile } from '../user/schema/user-profile.schema';
-import { User } from '../user/schema/user.schema';
+import { UserService } from '../user/user.service';
 
 import { ILogin, IRegister, ISignupResponse } from './auth.interface';
 import { LoginDto, RegisterDto, SignupDto } from './dto/auth.dto';
@@ -18,10 +15,8 @@ import { LoginDto, RegisterDto, SignupDto } from './dto/auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(UserProfile.name)
-    private readonly userProfileModel: Model<UserProfile>,
     private readonly tokenService: TokenService,
+    private readonly userService: UserService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<IRegister> {
@@ -34,7 +29,7 @@ export class AuthService {
         `Password and Confirm password doesn't match`,
       );
 
-    let user: User | null = await this.userModel.findOne({ email });
+    let user = await this.userService.findOne({ email });
 
     if (user) {
       throw new ConflictException('Email is already taken.');
@@ -43,26 +38,27 @@ export class AuthService {
     const hashPassword = await bcrypt.hash(password, salt);
 
     // Create User
-    user = await this.userModel.create({
+    user = await this.userService.create({
       ...registerDto,
       password: hashPassword,
     });
 
     // set profile details
-    await this.userProfileModel.findOneAndUpdate(
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
+    if (user)
+      await this.userService.createUpdateUserProfile(
+        {
+          user: user._id,
+          first_name,
+        },
+        {
+          user: user._id,
+          first_name,
+        },
+        {
+          upsert: true,
+          new: true,
+        },
+      );
 
     const message = 'User register successfully';
 
@@ -74,12 +70,13 @@ export class AuthService {
 
   async signup(signupDto: SignupDto): Promise<ISignupResponse> {
     const { first_name, email, password, confirm_password } = signupDto;
+    let tokens;
 
     // Match password and confirm password
     if (password.localeCompare(confirm_password))
       throw new BadRequestException('Invalid credentials.');
 
-    let user = await this.userModel.findOne({
+    let user = await this.userService.findOne({
       email,
     });
 
@@ -88,26 +85,27 @@ export class AuthService {
     }
 
     // Create User
-    user = await this.userModel.create(signupDto);
+    user = await this.userService.create(signupDto);
 
     // set profile details
-    await this.userProfileModel.findOneAndUpdate(
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        user: user._id,
-        first_name,
-      },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
-    // generate tokens
-    const tokens = await this.tokenService.generateAuthTokens(user);
+    if (user) {
+      await this.userService.createUpdateUserProfile(
+        {
+          user: user._id,
+          first_name,
+        },
+        {
+          user: user._id,
+          first_name,
+        },
+        {
+          upsert: true,
+          new: true,
+        },
+      );
+      // generate tokens
+      tokens = await this.tokenService.generateAuthTokens(user);
+    }
 
     return {
       message: 'User signup successfully',
@@ -119,7 +117,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<ILogin> {
     const { email, password } = loginDto;
     let tokens;
-    const userData = await this.userModel.findOne({
+    const userData = await this.userService.findOne({
       email,
     });
 

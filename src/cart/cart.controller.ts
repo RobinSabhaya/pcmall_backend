@@ -8,10 +8,8 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 
-import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PaymentStatus } from '../common/enums/constants.enum';
 import { User } from '../user/schema/user.schema';
@@ -32,7 +30,6 @@ import { AddToCartDto, RemoveCartDto, UpdateCartDto } from './dto/cart.dto';
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/add')
   async addToCart(
@@ -47,11 +44,10 @@ export class CartController {
     return {
       success: true,
       message,
-      data: { cartData },
+      data: { cartData: cartData ?? null },
     };
   }
 
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Put('/update')
   async updateCart(
@@ -63,11 +59,10 @@ export class CartController {
     return {
       success: true,
       message,
-      data: { cartData },
+      data: { cartData: cartData ?? null },
     };
   }
 
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Delete('/remove')
   async removeCart(
@@ -82,7 +77,6 @@ export class CartController {
     };
   }
 
-  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('/all')
   async getAllCart(@CurrentUser() user: User): Promise<IGetAllCartResponse> {

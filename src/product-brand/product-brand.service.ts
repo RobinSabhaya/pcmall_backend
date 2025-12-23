@@ -3,6 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { IOption } from '../common/interfaces/common.interface';
+import {
+  findDoc,
+  findOneAndDeleteDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
+} from '../common/utils/mongoose.utils';
 
 import { CreateUpdateBrandDto, DeleteBrandDto } from './dto/product-brand.dto';
 import {
@@ -31,14 +37,15 @@ export class ProductBrandService {
     /** Create and Update Brand */
     if (brandId != null) {
       /** Get brand */
-      productBrandData = await this.productBrandModel.findOne({
+      productBrandData = await findOneDoc(this.productBrandModel, {
         _id: brandId,
       });
 
       if (!productBrandData)
         throw new NotFoundException('Product Brand not found');
 
-      productBrandData = await this.productBrandModel.findOneAndUpdate(
+      productBrandData = await findOneAndUpdateDoc(
+        this.productBrandModel,
         { _id: brandId },
         { ...rest, updatedBy: user?._id },
         {
@@ -48,7 +55,8 @@ export class ProductBrandService {
       );
       message = 'Product Brand update successfully';
     } else {
-      productBrandData = await this.productBrandModel.findOneAndUpdate(
+      productBrandData = await findOneAndUpdateDoc(
+        this.productBrandModel,
         { ...rest },
         { ...rest, createdBy: user?._id, updatedBy: user?._id },
         {
@@ -74,14 +82,14 @@ export class ProductBrandService {
       message = '';
 
     /** Get brand */
-    productBrandData = await this.productBrandModel.findOne({
+    productBrandData = await findOneDoc(this.productBrandModel, {
       _id: brandId,
     });
 
     if (!productBrandData)
       throw new NotFoundException('Product Brand not found');
 
-    productBrandData = await this.productBrandModel.findOneAndDelete({
+    productBrandData = await findOneAndDeleteDoc(this.productBrandModel, {
       _id: brandId,
     });
     message = 'Product Brand delete successfully';
@@ -94,7 +102,8 @@ export class ProductBrandService {
 
   async getAllProductBrands(): Promise<IGetAllProductBrand> {
     return {
-      productBrandData: await this.productBrandModel.find(
+      productBrandData: await findDoc(
+        this.productBrandModel,
         {},
         {
           sort: { name: 1 },

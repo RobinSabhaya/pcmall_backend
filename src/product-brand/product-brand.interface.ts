@@ -4,13 +4,13 @@ export interface ICreateUpdateProductBrandResponse {
   success: boolean;
   message: string;
   data: {
-    productBrandData: ProductBrand;
+    productBrandData: ProductBrand | null;
   };
 }
 
 export interface ICreateUpdateProductBrand {
   message: string;
-  productBrandData: ProductBrand;
+  productBrandData: ProductBrand | null;
 }
 
 export interface IDeleteProductBrandResponse {

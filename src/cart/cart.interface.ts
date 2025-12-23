@@ -1,12 +1,12 @@
 import { Cart } from './schema/cart.schema';
 
 export interface ICreateCart {
-  cartData: Cart;
+  cartData: Cart | null;
   message: string;
 }
 
 export interface IUpdateCart {
-  cartData: Cart;
+  cartData: Cart | null;
   message: string;
 }
 
@@ -24,7 +24,7 @@ export interface IAddToCartResponse {
   success: boolean;
   message: string;
   data: {
-    cartData: Cart;
+    cartData: Cart | null;
   };
 }
 
@@ -32,7 +32,7 @@ export interface IUpdateCartResponse {
   success: boolean;
   message: string;
   data: {
-    cartData: Cart;
+    cartData: Cart | null;
   };
 }
 

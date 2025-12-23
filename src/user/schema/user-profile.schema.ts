@@ -1,15 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
-import { UserGender, UserLanguage, UserTimeZones } from '../enums/user-enum';
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
+import { UserGender, UserLanguage, UserTimeZones } from '../enums/user.enum';
 
 import { User } from './user.schema';
 
 export type UserProfileDocument = HydratedDocument<UserProfile>;
 
-@Schema({ timestamps: true, versionKey: false })
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  collection: MONGOOSE_MODELS.USER_PROFILE,
+})
 export class UserProfile {
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
   user: Types.ObjectId | User;
 
   @Prop({ trim: true })

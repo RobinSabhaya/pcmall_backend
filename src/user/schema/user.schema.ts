@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { Document, HydratedDocument } from 'mongoose';
 
-import { AccountStatus, AuthProvider, UserRole } from '../enums/user-enum';
+import { AccountStatus, AuthProvider, UserRole } from '../enums/user.enum';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -9,10 +9,7 @@ export type UserDocument = HydratedDocument<User>;
   versionKey: false,
   timestamps: true,
 })
-export class User {
-  @Prop({ type: Types.ObjectId })
-  _id: Types.ObjectId;
-
+export class User extends Document {
   @Prop({
     type: String,
     required: true,

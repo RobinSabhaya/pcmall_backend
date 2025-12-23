@@ -1,14 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
-import { User } from './user.schema';
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 
 export type UserAuditLogDocument = HydratedDocument<UserAuditLog>;
 
-@Schema({ timestamps: true, versionKey: false })
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  collection: MONGOOSE_MODELS.USER_AUDIT_LOG,
+})
 export class UserAuditLog {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
-  user: User;
+  @Prop({
+    type: mongoose.Schema.ObjectId,
+    ref: MONGOOSE_MODELS.USER,
+    required: true,
+    index: true,
+  })
+  user: Types.ObjectId;
 
   @Prop()
   action: string;

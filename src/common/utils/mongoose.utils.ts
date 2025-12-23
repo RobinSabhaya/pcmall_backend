@@ -1,4 +1,14 @@
-import { PipelineStage, PopulateOptions } from 'mongoose';
+import mongoose, {
+  ApplyBasicCreateCasting,
+  DeepPartial,
+  Model,
+  PipelineStage,
+  PopulateOptions,
+  QueryFilter,
+  QueryOptions,
+  Require_id,
+  UpdateQuery,
+} from 'mongoose';
 
 import { str2regex } from './common.util';
 
@@ -28,7 +38,7 @@ export interface IPaginationResponse<T> {
 export const paginationQuery = (
   options: IPaginationOptions,
   stages: Record<string, object>[] = [],
-): Array<PipelineStage> => {
+): PipelineStage[] => {
   // options
   const { page = 1, limit = 10, sortBy, search } = options;
 
@@ -94,4 +104,86 @@ export const paginationQuery = (
       },
     },
   ] as PipelineStage[];
+};
+
+/**
+ * Create document
+ */
+export const createDoc = async <T>(
+  model: Model<T>,
+  payload: DeepPartial<ApplyBasicCreateCasting<Require_id<T>>>,
+): Promise<T> => {
+  return model.create(payload);
+};
+
+/**
+ * Find one and update document
+ */
+export const findOneAndUpdateDoc = async <T>(
+  model: Model<T>,
+  filter: QueryFilter<T>,
+  reqBody: UpdateQuery<T>,
+  options: QueryOptions = {},
+): Promise<T | null> => {
+  return model.findOneAndUpdate(filter, reqBody, options);
+};
+
+/**
+ * Find one and delete document
+ */
+export const findOneAndDeleteDoc = async <T>(
+  model: Model<T>,
+  filter: QueryFilter<T>,
+  options: QueryOptions = {},
+): Promise<T | null> => {
+  return model.findOneAndDelete(filter, options).exec();
+};
+
+/**
+ * Find one document
+ */
+export const findOneDoc = async <T>(
+  model: Model<T>,
+  filter: QueryFilter<T>,
+  options: IFindOptions = {},
+): Promise<T | null> => {
+  return model
+    .findOne(filter)
+    .populate((options.populate as string[]) ?? [])
+    .sort(options.sort ?? {});
+};
+
+/**
+ * Find documents
+ */
+export const findDoc = async <T>(
+  model: Model<T>,
+  filter: QueryFilter<T>,
+  options: IFindOptions = {},
+): Promise<T[]> => {
+  return model
+    .find(filter)
+    .populate((options.populate as string[]) ?? [])
+    .sort(options.sort ?? {});
+};
+
+/**
+ * Update many documents
+ */
+export const updateManyDoc = async <T>(
+  model: Model<T>,
+  filter: QueryFilter<T>,
+  reqBody: UpdateQuery<T>,
+): Promise<mongoose.UpdateWriteOpResult> => {
+  return model.updateMany(filter, reqBody);
+};
+
+/**
+ * Insert many documents
+ */
+export const insertManyDoc = async <T>(
+  model: Model<T>,
+  reqBody: Record<string, unknown>[],
+): Promise<T[]> => {
+  return (await model.insertMany(reqBody)) as T[];
 };

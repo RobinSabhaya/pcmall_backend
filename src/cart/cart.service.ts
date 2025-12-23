@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, QueryFilter } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 
 import { PaymentStatus } from '../common/enums/constants.enum';
 import { IOption } from '../common/interfaces/common.interface';
 import {
+  findOneAndDeleteDoc,
+  findOneAndUpdateDoc,
+  findOneDoc,
   IPaginationOptions,
   paginationQuery,
 } from '../common/utils/mongoose.utils';
-import { ProductVariant } from '../product_variant/schema/product-variant.schema';
+import { ProductVariantService } from '../product-variant/product-variant.service';
 
 import {
   ICreateCart,
@@ -23,8 +26,7 @@ import { Cart } from './schema/cart.schema';
 export class CartService {
   constructor(
     @InjectModel(Cart.name) private readonly cartModel: Model<Cart>,
-    @InjectModel(ProductVariant.name)
-    private readonly productVariantModel: Model<ProductVariant>,
+    private readonly productVariantService: ProductVariantService,
   ) {}
 
   async createCart(
@@ -37,7 +39,7 @@ export class CartService {
     let message = null;
 
     /** Check product exists or not */
-    const productVariantExists = await this.productVariantModel.findOne({
+    const productVariantExists = await this.productVariantService.findOne({
       _id: productVariantId,
     });
 
@@ -45,7 +47,8 @@ export class CartService {
       throw new NotFoundException('Product variant not found');
     }
 
-    const cartData = await this.cartModel.findOneAndUpdate(
+    const cartData = await findOneAndUpdateDoc(
+      this.cartModel,
       {
         variant: productVariantExists._id,
         user: user._id,
@@ -75,7 +78,7 @@ export class CartService {
     let message = null;
 
     /** Check product exists or not */
-    const cartExists = await this.cartModel.findOne({
+    const cartExists = await findOneDoc(this.cartModel, {
       _id: cartId,
     });
 
@@ -83,7 +86,8 @@ export class CartService {
       throw new NotFoundException('Cart not found');
     }
 
-    const cartData = await this.cartModel.findOneAndUpdate(
+    const cartData = await findOneAndUpdateDoc(
+      this.cartModel,
       {
         _id: cartExists._id,
       },
@@ -108,13 +112,13 @@ export class CartService {
     let message = null;
 
     /** Check cart exists or not */
-    const cartExists = await this.cartModel.findOne({ _id: cartId });
+    const cartExists = await findOneDoc(this.cartModel, { _id: cartId });
 
     if (!cartExists) {
       throw new NotFoundException('Cart not found');
     }
 
-    const cartData = await this.cartModel.findOneAndDelete({
+    const cartData = await findOneAndDeleteDoc(this.cartModel, {
       _id: cartExists._id,
     });
 
@@ -127,12 +131,12 @@ export class CartService {
   }
 
   async getAllCart(
-    filter: QueryFilter<Cart>,
+    filter: Record<string, unknown>,
     options: IPaginationOptions,
   ): Promise<IGetAllCart> {
     const pagination = paginationQuery(options);
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $match: {
           ...filter,

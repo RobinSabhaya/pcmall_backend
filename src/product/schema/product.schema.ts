@@ -1,13 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types, Document } from 'mongoose';
 
+import { Category } from '../../category/schema/category.schema';
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 import { ConfirmationType } from '../../common/enums/constants.enum';
-import { ProductBrand } from '../../product_brand/schema/product-brand.schema';
+import { ProductBrand } from '../../product-brand/schema/product-brand.schema';
 
 export type ProductDocument = HydratedDocument<Product>;
 
-@Schema({ timestamps: true, versionKey: false })
-export class Product {
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  collection: MONGOOSE_MODELS.PRODUCT,
+})
+export class Product extends Document {
   @Prop({ type: String, trim: true })
   title: string;
 
@@ -18,8 +24,8 @@ export class Product {
   slug: string;
 
   @Prop({
-    type: Types.ObjectId,
-    ref: 'Product_Brand',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ProductBrand.name,
     required: true,
   })
   brand: Types.ObjectId | ProductBrand;
@@ -44,17 +50,16 @@ export class Product {
   })
   approvalStatus: string;
 
-  // TODO: need to define Category model class
   @Prop({
-    type: Types.ObjectId,
-    ref: 'Category',
+    type: mongoose.Schema.ObjectId,
+    ref: Category.name,
   })
-  category: Types.ObjectId;
+  category: Types.ObjectId | Category;
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
   createdBy: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
   updatedBy: Types.ObjectId;
 }
 

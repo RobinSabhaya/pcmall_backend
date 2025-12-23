@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { ProductVariantModule } from '../product_variant/product-variant.module';
+import { ProductVariantModule } from '../product-variant/product-variant.module';
 
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';

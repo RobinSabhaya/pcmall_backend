@@ -1,15 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { Document, HydratedDocument, Types } from 'mongoose';
 
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 import { Product } from '../../product/schema/product.schema';
 
 export type ProductVariantDocument = HydratedDocument<ProductVariant>;
 
-@Schema({ timestamps: true, versionKey: false })
-export class ProductVariant {
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  collection: MONGOOSE_MODELS.PRODUCT_VARIANT,
+})
+export class ProductVariant extends Document {
   @Prop({
-    type: Types.ObjectId,
-    ref: 'Product',
+    type: mongoose.Schema.ObjectId,
+    ref: MONGOOSE_MODELS.PRODUCT_VARIANT,
   })
   product: Types.ObjectId | Product;
 
@@ -31,10 +36,10 @@ export class ProductVariant {
   })
   images: string[];
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
   createdBy: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
   updatedBy: Types.ObjectId;
 }
 

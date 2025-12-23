@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 import { User } from '../../user/schema/user.schema';
 import { TokenTypes } from '../enums/token-enum';
 
@@ -55,6 +56,7 @@ export const DeviceInfoSchema = SchemaFactory.createForClass(DeviceInfo);
 @Schema({
   versionKey: false,
   timestamps: true,
+  collection: MONGOOSE_MODELS.TOKEN,
 })
 export class Token {
   @Prop({
@@ -65,8 +67,8 @@ export class Token {
   token: string;
 
   @Prop({
-    type: Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.ObjectId,
+    ref: MONGOOSE_MODELS.USER,
     required: true,
   })
   user: Types.ObjectId | User;

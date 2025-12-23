@@ -4,6 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import dayjs, { Dayjs } from 'dayjs';
 import { Model, Types } from 'mongoose';
 
+import {
+  findOneAndUpdateDoc,
+  findOneDoc,
+} from '../common/utils/mongoose.utils';
 import configuration from '../config/configuration';
 import { User } from '../user/schema/user.schema';
 
@@ -93,7 +97,8 @@ export class TokenService {
     type: TokenTypes,
     options: object,
   ): Promise<Token | null> {
-    return this.tokenModel.findOneAndUpdate(
+    return findOneAndUpdateDoc(
+      this.tokenModel,
       {
         type,
         user: userId,
@@ -115,7 +120,7 @@ export class TokenService {
     } = await this.jwtService.verify(token, {
       secret: configuration().jwt.secret,
     });
-    const tokenDoc = await this.tokenModel.findOne({
+    const tokenDoc = await findOneDoc(this.tokenModel, {
       token,
       type,
       user: payload.sub,

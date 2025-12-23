@@ -1,16 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { Document, HydratedDocument, Types } from 'mongoose';
 
 import { Address } from '../../address/schema/address.schema';
-import { AccountStatus } from '../../user/enums/user-enum';
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
+import { AccountStatus } from '../../user/enums/user.enum';
+import { User } from '../../user/schema/user.schema';
 
 export type ProductBrandDocument = HydratedDocument<ProductBrand>;
 
 @Schema({
   versionKey: false,
   timestamps: true,
+  collection: MONGOOSE_MODELS.PRODUCT_BRAND,
 })
-export class ProductBrand {
+export class ProductBrand extends Document {
   @Prop({ type: String, required: true, trim: true })
   name: string;
   @Prop({ type: String, required: true, trim: true })
@@ -32,7 +35,7 @@ export class ProductBrand {
   @Prop({ type: String, trim: true })
   contactPhone: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Address' })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.ADDRESS })
   headquarters: Types.ObjectId | Address;
 
   @Prop({ type: Number })
@@ -84,11 +87,11 @@ export class ProductBrand {
 
   // Audit & control
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  createdBy: Types.ObjectId;
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
+  createdBy: Types.ObjectId | User;
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  updatedBy: Types.ObjectId;
+  @Prop({ type: mongoose.Schema.ObjectId, ref: MONGOOSE_MODELS.USER })
+  updatedBy: Types.ObjectId | User;
 }
 
 export const ProductBrandSchema = SchemaFactory.createForClass(ProductBrand);

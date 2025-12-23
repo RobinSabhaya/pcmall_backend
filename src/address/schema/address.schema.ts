@@ -1,14 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import mongoose, { Document, HydratedDocument, Types } from 'mongoose';
 
+import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 import { User } from '../../user/schema/user.schema';
 
 export type AddressDocument = HydratedDocument<Address>;
 
-@Schema({ timestamps: true, versionKey: false })
-export class Address {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
-  user: User;
+@Schema({
+  timestamps: true,
+  versionKey: false,
+  collection: MONGOOSE_MODELS.ADDRESS,
+})
+export class Address extends Document {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: MONGOOSE_MODELS.USER,
+    required: true,
+    index: true,
+  })
+  user: Types.ObjectId | User;
 
   @Prop({ required: true })
   line1: string;

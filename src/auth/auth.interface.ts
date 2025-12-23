@@ -30,17 +30,17 @@ export interface IRegisterResponse {
   success: boolean;
   message: string;
   data: {
-    user: User;
+    user: User | null;
   };
 }
 
 export interface IRegister {
   message: string;
-  user: User;
+  user: User | null;
 }
 
 export interface ISignupResponse {
   message: string;
-  user: User;
-  tokens: ITokenResponse;
+  user: User | null;
+  tokens: ITokenResponse | undefined;
 }

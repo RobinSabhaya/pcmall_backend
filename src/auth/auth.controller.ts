@@ -32,7 +32,7 @@ export class AuthController {
       success: true,
       message,
       data: {
-        user,
+        user: user ?? null,
       },
     };
   }
@@ -46,31 +46,32 @@ export class AuthController {
   ): Promise<IRegisterResponse> {
     const { tokens, message, user } = await this.authService.signup(signupDto);
 
-    reply
-      .setCookie('t', tokens.access.token, {
-        path: '/',
-        httpOnly: true,
-        secure: configuration().env === 'production',
-        sameSite: configuration().env === 'production' ? 'none' : 'lax',
-        ...(configuration().env === 'production' && {
-          domain: configuration().client.baseAppDomain,
-        }),
-      })
-      .setCookie('rt', tokens.refresh.token, {
-        path: '/',
-        httpOnly: true,
-        secure: configuration().env === 'production',
-        sameSite: configuration().env === 'production' ? 'none' : 'lax',
-        ...(configuration().env === 'production' && {
-          domain: configuration().client.baseAppDomain,
-        }),
-      });
+    if (tokens)
+      reply
+        .setCookie('t', tokens.access.token, {
+          path: '/',
+          httpOnly: true,
+          secure: configuration().env === 'production',
+          sameSite: configuration().env === 'production' ? 'none' : 'lax',
+          ...(configuration().env === 'production' && {
+            domain: configuration().client.baseAppDomain,
+          }),
+        })
+        .setCookie('rt', tokens.refresh.token, {
+          path: '/',
+          httpOnly: true,
+          secure: configuration().env === 'production',
+          sameSite: configuration().env === 'production' ? 'none' : 'lax',
+          ...(configuration().env === 'production' && {
+            domain: configuration().client.baseAppDomain,
+          }),
+        });
 
     return {
       success: true,
       message,
       data: {
-        user,
+        user: user ?? null,
       },
     };
   }
@@ -109,8 +110,8 @@ export class AuthController {
       success: true,
       message,
       data: {
-        user,
-        tokens,
+        user: user ?? null,
+        tokens: tokens ?? undefined,
       },
     };
   }

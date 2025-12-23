@@ -11,10 +11,14 @@ import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
+import { CategoryModule } from './category/category.module';
 import configuration from './config/configuration';
+import { OrderModule } from './order/order.module';
+import { PaymentModule } from './payment/payment.module';
 import { ProductModule } from './product/product.module';
-import { ProductBrandModule } from './product_brand/product-brand.module';
-import { ProductVariantModule } from './product_variant/product-variant.module';
+import { ProductBrandModule } from './product-brand/product-brand.module';
+import { ProductSkuModule } from './product-sku/product-sku.module';
+import { ProductVariantModule } from './product-variant/product-variant.module';
 import { RoleModule } from './role/role.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
@@ -23,6 +27,7 @@ import { UserModule } from './user/user.module';
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
     }),
     MongooseModule.forRoot(configuration().mongoose.url!),
     ThrottlerModule.forRoot({
@@ -53,6 +58,10 @@ import { UserModule } from './user/user.module';
     ProductModule,
     ProductBrandModule,
     TokenModule,
+    ProductSkuModule,
+    CategoryModule,
+    PaymentModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

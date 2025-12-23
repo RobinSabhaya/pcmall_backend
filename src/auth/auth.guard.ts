@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { FastifyRequest } from 'fastify';
 
 import configuration from '../config/configuration';
 
@@ -38,17 +39,16 @@ export class AuthGuard implements CanActivate {
         secret: configuration().jwt.secret,
       });
 
-      request['user'] = payload;
+      request['user'] = {
+        _id: payload.sub,
+      };
     } catch {
       throw new UnauthorizedException('Unauthorized');
     }
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | null {
-    const [type, token] =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (request.headers as any).authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : null;
+  private extractTokenFromHeader(request: FastifyRequest): string | null {
+    return request.cookies['t'] ?? null;
   }
 }

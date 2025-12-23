@@ -13,3 +13,8 @@ export enum ConfirmationType {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
+
+export enum ProductSkuStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
