@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -13,7 +14,6 @@ import {
   findOneAndUpdateDoc,
   findOneDoc,
 } from '../common/utils/mongoose.utils';
-import configuration from '../config/configuration';
 import { OrderService } from '../order/order.service';
 import { ProductSkuService } from '../product-sku/product-sku.service';
 import { ProductVariantService } from '../product-variant/product-variant.service';
@@ -43,10 +43,12 @@ export class PaymentService {
     private readonly orderService: OrderService,
     private readonly paymentStrategy: PaymentStrategy,
     private readonly productSkuService: ProductSkuService,
+    private readonly configService: ConfigService,
   ) {
-    this.strategy = this.paymentStrategy.getPaymentStrategy(
-      configuration().paymentGateway.paymentProvider,
+    const paymentProvider = this.configService.get(
+      'paymentGateway.paymentProvider',
     );
+    this.strategy = this.paymentStrategy.getPaymentStrategy(paymentProvider);
   }
 
   async createCheckout(
@@ -101,7 +103,7 @@ export class PaymentService {
 
       const paymentPayload = {
         orderId: order._id,
-        provider: configuration().paymentGateway.paymentProvider,
+        provider: this.configService.get('paymentGateway.paymentProvider'),
         sessionId: paymentResponse.sessionId,
         amount: totalAmount,
         currency: createCheckoutDto.currency,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 
-import configuration from '../../config/configuration';
 import { CreateRefundDto } from '../dto/payment.dto';
 
 import { IPaymentStrategy } from './payment.strategy';
@@ -14,8 +14,9 @@ import {
 @Injectable()
 export class StripeStrategy implements IPaymentStrategy {
   private readonly stripe: Stripe;
-  constructor() {
-    this.stripe = new Stripe(configuration().paymentGateway.paymentSecretKey);
+  constructor(private readonly configService: ConfigService) {
+    const secretKey = this.configService.get('paymentGateway.paymentSecretKey');
+    this.stripe = new Stripe(secretKey);
   }
 
   async createCheckoutSession(
@@ -27,8 +28,8 @@ export class StripeStrategy implements IPaymentStrategy {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${configuration().paymentGateway.paymentSuccessUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: configuration().paymentGateway.paymentCancelUrl,
+      success_url: `${this.configService.get('paymentGateway.paymentSuccessUrl')}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: this.configService.get('paymentGateway.paymentCancelUrl'),
       metadata: {
         orderId: orderId.toString(),
         userId: String(userId),

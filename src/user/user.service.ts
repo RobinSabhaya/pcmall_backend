@@ -12,6 +12,7 @@ import {
 
 import {
   createDoc,
+  findOneAndDeleteDoc,
   findOneAndUpdateDoc,
   findOneDoc,
 } from '../common/utils/mongoose.utils';
@@ -43,5 +44,9 @@ export class UserService {
     options: QueryOptions = {},
   ): Promise<UserProfile | null> {
     return findOneAndUpdateDoc(this.userProfileModel, filter, payload, options);
+  }
+
+  async deleteUser(filter: QueryFilter<User>): Promise<User | null> {
+    return findOneAndDeleteDoc(this.userModel, filter);
   }
 }

@@ -3,7 +3,6 @@ import mongoose, { Document, HydratedDocument, Types } from 'mongoose';
 
 import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
 import { PaymentStatus } from '../../common/enums/constants.enum';
-import configuration from '../../config/configuration';
 import { UserCurrency } from '../../user/enums/user.enum';
 import { PaymentProvider } from '../enums/payment.enum';
 
@@ -26,7 +25,7 @@ export class Payment extends Document {
     type: String,
     enum: Object.values(PaymentProvider),
     required: true,
-    default: configuration().paymentGateway.paymentProvider,
+    default: PaymentProvider.STRIPE,
   })
   provider: string;
 

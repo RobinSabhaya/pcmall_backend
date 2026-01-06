@@ -5,6 +5,7 @@ import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant'
 import { ProductSkuStatus } from '../../common/enums/constants.enum';
 import { Product } from '../../product/schema/product.schema';
 import { ProductVariant } from '../../product-variant/schema/product-variant.schema';
+import { Seller } from '../../seller/schema/seller.schema';
 
 export type ProductSkuDocument = HydratedDocument<ProductSku>;
 
@@ -14,10 +15,9 @@ export type ProductSkuDocument = HydratedDocument<ProductSku>;
   collection: MONGOOSE_MODELS.PRODUCT_SKU,
 })
 export class ProductSku extends Document {
-  // TODO: define ref of seller while seller module
   @Prop({
     type: mongoose.Schema.ObjectId,
-    ref: MONGOOSE_MODELS.SELLER,
+    ref: Seller.name,
     required: true,
   })
   seller: Types.ObjectId;

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -20,16 +20,26 @@ import { ProductBrandModule } from './product-brand/product-brand.module';
 import { ProductSkuModule } from './product-sku/product-sku.module';
 import { ProductVariantModule } from './product-variant/product-variant.module';
 import { RoleModule } from './role/role.module';
+import { SellerModule } from './seller/seller.module';
+import { SubCategoryModule } from './sub-category/sub-category.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
+import { WarehouseModule } from './warehouse/warehouse.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
+      cache: true,
     }),
-    MongooseModule.forRoot(configuration().mongoose.url!),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('mongoose.url'),
+      }),
+      inject: [ConfigService],
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -62,6 +72,9 @@ import { UserModule } from './user/user.module';
     CategoryModule,
     PaymentModule,
     OrderModule,
+    WarehouseModule,
+    SellerModule,
+    SubCategoryModule,
   ],
   controllers: [AppController],
   providers: [

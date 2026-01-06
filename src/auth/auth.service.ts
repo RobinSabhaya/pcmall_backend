@@ -4,7 +4,9 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
+import { FastifyReply } from 'fastify';
 
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/user.service';
@@ -17,6 +19,7 @@ export class AuthService {
   constructor(
     private readonly tokenService: TokenService,
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<IRegister> {
@@ -68,9 +71,14 @@ export class AuthService {
     };
   }
 
-  async signup(signupDto: SignupDto): Promise<ISignupResponse> {
+  async signup(
+    signupDto: SignupDto,
+    reply: FastifyReply,
+  ): Promise<ISignupResponse> {
     const { first_name, email, password, confirm_password } = signupDto;
     let tokens;
+    const env = this.configService.get('env');
+    const domain = this.configService.get('client.baseAppDomain');
 
     // Match password and confirm password
     if (password.localeCompare(confirm_password))
@@ -107,6 +115,27 @@ export class AuthService {
       tokens = await this.tokenService.generateAuthTokens(user);
     }
 
+    if (tokens)
+      reply
+        .setCookie('t', tokens.access.token, {
+          path: '/',
+          httpOnly: true,
+          secure: env === 'production',
+          sameSite: env === 'production' ? 'none' : 'lax',
+          ...(env === 'production' && {
+            domain,
+          }),
+        })
+        .setCookie('rt', tokens.refresh.token, {
+          path: '/',
+          httpOnly: true,
+          secure: env === 'production',
+          sameSite: env === 'production' ? 'none' : 'lax',
+          ...(env === 'production' && {
+            domain,
+          }),
+        });
+
     return {
       message: 'User signup successfully',
       user,
@@ -114,9 +143,12 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto): Promise<ILogin> {
+  async login(loginDto: LoginDto, reply: FastifyReply): Promise<ILogin> {
     const { email, password } = loginDto;
     let tokens;
+    const env = this.configService.get('env');
+    const domain = this.configService.get('client.baseAppDomain');
+
     const userData = await this.userService.findOne({
       email,
     });
@@ -132,6 +164,27 @@ export class AuthService {
     if (userData != null)
       // generate tokens
       tokens = await this.tokenService.generateAuthTokens(userData);
+
+    if (tokens)
+      reply
+        .setCookie('t', tokens.access.token, {
+          path: '/',
+          httpOnly: true,
+          secure: env === 'production',
+          sameSite: env === 'production' ? 'none' : 'lax',
+          ...(env === 'production' && {
+            domain,
+          }),
+        })
+        .setCookie('rt', tokens.refresh.token, {
+          path: '/',
+          httpOnly: true,
+          secure: env === 'production',
+          sameSite: env === 'production' ? 'none' : 'lax',
+          ...(env === 'production' && {
+            domain,
+          }),
+        });
 
     return {
       user: userData,

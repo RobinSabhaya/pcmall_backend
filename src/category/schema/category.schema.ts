@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
 import { MONGOOSE_MODELS } from '../../common/constants/mongoose-model.constant';
+import { SubCategory } from '../../sub-category/schema/sub-category.schema';
 
 export type CategoryDocument = HydratedDocument<Category>;
 
@@ -17,16 +18,15 @@ export class Category {
   })
   categoryName: string;
 
-  // TODO: add ref of sub category while implement Sub category module
-  // @Prop({
-  //   type: [
-  //     {
-  //       type: mongoose.Schema.ObjectId,
-  //       ref: MONGOOSE_MODELS.SUB_CATEGORY,
-  //     },
-  //   ],
-  // })
-  // subCategory: [Types.ObjectId];
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: SubCategory.name,
+      },
+    ],
+  })
+  subCategory: [Types.ObjectId];
 
   @Prop({
     type: [String],

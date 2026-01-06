@@ -19,6 +19,7 @@ async function bootstrap(): Promise<void> {
   );
 
   // Cookie
+  // TODO: need to check with config service
   await app.register(fastifyCookie, {
     secret: configuration().cookie.cookieSecret,
   });

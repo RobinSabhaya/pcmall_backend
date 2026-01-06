@@ -8,8 +8,6 @@ import {
 } from '@nestjs/common';
 import { type FastifyReply } from 'fastify';
 
-import configuration from '../config/configuration';
-
 import { Public } from './auth.decorator';
 import { ILoginResponse, IRegisterResponse } from './auth.interface';
 import { AuthService } from './auth.service';
@@ -44,28 +42,7 @@ export class AuthController {
     @Body() signupDto: RegisterDto,
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<IRegisterResponse> {
-    const { tokens, message, user } = await this.authService.signup(signupDto);
-
-    if (tokens)
-      reply
-        .setCookie('t', tokens.access.token, {
-          path: '/',
-          httpOnly: true,
-          secure: configuration().env === 'production',
-          sameSite: configuration().env === 'production' ? 'none' : 'lax',
-          ...(configuration().env === 'production' && {
-            domain: configuration().client.baseAppDomain,
-          }),
-        })
-        .setCookie('rt', tokens.refresh.token, {
-          path: '/',
-          httpOnly: true,
-          secure: configuration().env === 'production',
-          sameSite: configuration().env === 'production' ? 'none' : 'lax',
-          ...(configuration().env === 'production' && {
-            domain: configuration().client.baseAppDomain,
-          }),
-        });
+    const { message, user } = await this.authService.signup(signupDto, reply);
 
     return {
       success: true,
@@ -83,28 +60,10 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<ILoginResponse> {
-    const { tokens, message, user } = await this.authService.login(loginDto);
-
-    if (tokens)
-      reply
-        .setCookie('t', tokens.access.token, {
-          path: '/',
-          httpOnly: true,
-          secure: configuration().env === 'production',
-          sameSite: configuration().env === 'production' ? 'none' : 'lax',
-          ...(configuration().env === 'production' && {
-            domain: configuration().client.baseAppDomain,
-          }),
-        })
-        .setCookie('rt', tokens.refresh.token, {
-          path: '/',
-          httpOnly: true,
-          secure: configuration().env === 'production',
-          sameSite: configuration().env === 'production' ? 'none' : 'lax',
-          ...(configuration().env === 'production' && {
-            domain: configuration().client.baseAppDomain,
-          }),
-        });
+    const { tokens, message, user } = await this.authService.login(
+      loginDto,
+      reply,
+    );
 
     return {
       success: true,

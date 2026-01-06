@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs, { Dayjs } from 'dayjs';
@@ -8,7 +9,6 @@ import {
   findOneAndUpdateDoc,
   findOneDoc,
 } from '../common/utils/mongoose.utils';
-import configuration from '../config/configuration';
 import { User } from '../user/schema/user.schema';
 
 import { TokenTypes } from './enums/token-enum';
@@ -18,6 +18,7 @@ import { Token } from './schema/token.schema';
 export class TokenService {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
     @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
   ) {}
 
@@ -31,20 +32,16 @@ export class TokenService {
       expires: string;
     };
   }> {
-    const accessTokenExpires = dayjs().add(
-      +configuration().jwt.accessExpirationMinutes!,
-      'minutes',
-    );
+    const accessExpires = this.configService.get('jwt.accessExpirationMinutes');
+    const accessTokenExpires = dayjs().add(accessExpires, 'minutes');
     const accessToken = await this.generateToken(
       user._id,
       accessTokenExpires,
       TokenTypes.ACCESS,
     );
 
-    const refreshTokenExpires = dayjs().add(
-      +configuration().jwt.refreshExpirationDays!,
-      'days',
-    );
+    const refreshExpires = this.configService.get('jwt.refreshExpirationDays');
+    const refreshTokenExpires = dayjs().add(refreshExpires, 'days');
     const refreshToken = await this.generateToken(
       user._id,
       refreshTokenExpires,
@@ -86,7 +83,7 @@ export class TokenService {
       type,
     };
     return this.jwtService.signAsync(payload, {
-      secret: configuration().jwt.secret,
+      secret: this.configService.get('jwt.secret'),
     });
   }
 
@@ -118,7 +115,7 @@ export class TokenService {
     const payload: {
       sub: string;
     } = await this.jwtService.verify(token, {
-      secret: configuration().jwt.secret,
+      secret: this.configService.get('jwt.secret'),
     });
     const tokenDoc = await findOneDoc(this.tokenModel, {
       token,
