@@ -1,0 +1,70 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lock
+
+# Build output (will be built in Docker)
+dist
+build
+coverage
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+test
+*.spec.ts
+*.spec.js
+jest.config.*
+test/
+
+# Documentation
+*.md
+!README.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+.circleci
+
+# Husky
+.husky
+
+# Linting and formatting configs (not needed in production)
+.eslintrc*
+.prettierrc*
+eslint.config.*
+commitlint.config.*
+
+# TypeScript configs (not needed at runtime)
+tsconfig*.json
+
+# Other
+*.log
+logs
+.temp
+.tmp
+*.pid
+*.seed
+*.pid.lock
+report.*.json
