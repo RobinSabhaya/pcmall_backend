@@ -1,35 +1,17 @@
-
-FROM node:20-alpine AS builder
+FROM node:20
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+# For build require dev deps
+RUN npm install -D @swc/cli @swc/core
+
+RUN npm install
 
 COPY . .
 
 RUN npm run build
-
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
-
-COPY package*.json ./
-
-RUN npm ci --only=production && \
-    npm cache clean --force
-
-COPY --from=builder /app/dist ./dist
-
-COPY --from=builder /app/views ./views
-
-RUN chown -R nestjs:nodejs /app
-
-USER nestjs
 
 EXPOSE 5000
 

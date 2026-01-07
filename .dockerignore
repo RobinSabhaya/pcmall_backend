@@ -56,8 +56,6 @@ docs
 eslint.config.*
 commitlint.config.*
 
-# TypeScript configs (not needed at runtime)
-tsconfig*.json
 
 # Other
 *.log
