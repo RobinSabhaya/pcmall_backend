@@ -15,7 +15,9 @@ import configuration from './config/configuration';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({
+      trustProxy: true,
+    }),
   );
 
   // Cookie
@@ -58,6 +60,9 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
-  await app.listen(process.env.PORT ?? 5000);
+  await app.listen({
+    port: configuration().port ?? 5000,
+    host: configuration().host,
+  });
 }
 void bootstrap();
