@@ -51,7 +51,7 @@ export class WarehouseController {
 
   @HttpCode(HttpStatus.OK)
   @Delete('delete')
-  async deleteProduct(
+  async deleteWarehouse(
     @Query() deleteWarehouseDto: DeleteWarehouseDto,
   ): Promise<IDeleteWarehouseResponse> {
     const { message, warehouseData } =
@@ -66,7 +66,7 @@ export class WarehouseController {
 
   @HttpCode(HttpStatus.OK)
   @Get('all')
-  async getAllProducts(): Promise<IGetAllWarehousesResponse> {
+  async getAllWarehouses(): Promise<IGetAllWarehousesResponse> {
     const { warehouseData } = await this.warehouseService.getAllWarehouses();
 
     return {

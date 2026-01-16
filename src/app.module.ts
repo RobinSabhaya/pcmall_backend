@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoryModule } from './category/category.module';
 import configuration from './config/configuration';
+import { FileModule } from './file/file.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
 import { ProductModule } from './product/product.module';
@@ -21,6 +23,7 @@ import { ProductSkuModule } from './product-sku/product-sku.module';
 import { ProductVariantModule } from './product-variant/product-variant.module';
 import { RoleModule } from './role/role.module';
 import { SellerModule } from './seller/seller.module';
+import { ShippingModule } from './shipping/shipping.module';
 import { SubCategoryModule } from './sub-category/sub-category.module';
 import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
@@ -75,6 +78,9 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     WarehouseModule,
     SellerModule,
     SubCategoryModule,
+    FileModule,
+    InventoryModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [

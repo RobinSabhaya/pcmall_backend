@@ -5,6 +5,7 @@ import { Model, QueryFilter, QueryOptions, UpdateQuery } from 'mongoose';
 import { IOption } from '../common/interfaces/common.interface';
 import {
   findOneAndUpdateDoc,
+  findOneDoc,
   paginationQuery,
 } from '../common/utils/mongoose.utils';
 
@@ -142,5 +143,9 @@ export class OrderService {
     options: QueryOptions = {},
   ): Promise<Order | null> {
     return findOneAndUpdateDoc(this.orderModel, filter, payload, options);
+  }
+
+  async findOne(filter: QueryFilter<Order>): Promise<Order | null> {
+    return findOneDoc(this.orderModel, filter);
   }
 }

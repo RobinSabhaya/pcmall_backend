@@ -27,4 +27,9 @@ export const MONGOOSE_MODELS = {
   USER_AUDIT_LOG: 'user_auditLogs',
   USER_PREFERENCE: 'user_preferences',
   USER_SECURITY: 'user_securities',
+  SHIPPING_ADDRESS: 'shipping_address',
+  SHIPPING_PARCEL: 'Shipping_parcel',
+  SHIPPING_RATE: 'shipping_rate',
+  SHIPPING_LABEL: 'shipping_label',
+  SHIPPING_TRACKING: 'shipping_tracking',
 };

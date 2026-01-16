@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 
+import { Public } from '../auth/auth.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../user/schema/user.schema';
 
@@ -65,6 +66,7 @@ export class ProductController {
 
   @HttpCode(HttpStatus.OK)
   @Get('all')
+  @Public()
   async getAllProducts(
     @CurrentUser() user: User,
     @Query() getAllProductsDto: GetAllProductsDto,

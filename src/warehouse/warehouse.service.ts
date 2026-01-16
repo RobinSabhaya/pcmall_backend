@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, QueryFilter } from 'mongoose';
 
 import { IOption } from '../common/interfaces/common.interface';
 import {
@@ -131,5 +131,9 @@ export class WarehouseService {
     return {
       warehouseData,
     };
+  }
+
+  async findOne(filter: QueryFilter<Warehouse>): Promise<Warehouse | null> {
+    return findOneDoc(this.warehouseModel, filter);
   }
 }

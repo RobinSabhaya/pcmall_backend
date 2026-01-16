@@ -16,5 +16,6 @@ import { WarehouseService } from './warehouse.service';
   ],
   controllers: [WarehouseController],
   providers: [WarehouseService],
+  exports: [WarehouseService],
 })
 export class WarehouseModule {}
